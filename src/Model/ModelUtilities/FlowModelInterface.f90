@@ -2,7 +2,7 @@ module FlowModelInterfaceModule
 
   use KindModule, only: DP, I4B, LGP
   use ConstantsModule, only: DONE, DZERO, DHALF, LINELENGTH, LENBUDTXT, &
-                             LENPACKAGENAME
+                             LENPACKAGENAME, LENVARNAME
   use SimModule, only: store_error, store_error_unit
   use SimVariablesModule, only: errmsg
   use NumericalPackageModule, only: NumericalPackageType
@@ -43,6 +43,8 @@ module FlowModelInterfaceModule
     type(PackageBudgetType), dimension(:), allocatable :: gwfpackages !< used to get flows between a package and gwf
     type(BudgetObjectType), pointer :: mvrbudobj => null() !< pointer to the mover budget budget object
     character(len=16), dimension(:), allocatable :: flowpacknamearray !< array of boundary package names (e.g. LAK-1, SFR-3, etc.)
+    character(len=LENVARNAME) :: depvartype = ''
+
   contains
 
     procedure :: advance_bfr
@@ -138,6 +140,7 @@ contains
   end subroutine fmi_ar
 
   !> @brief Deallocate variables
+  !<
   subroutine fmi_da(this)
     ! -- modules
     use MemoryManagerModule, only: mem_deallocate
