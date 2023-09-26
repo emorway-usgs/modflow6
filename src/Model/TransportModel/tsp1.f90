@@ -23,7 +23,7 @@ module TransportModelModule
   public :: TransportModelType
 
   type, extends(NumericalModelType) :: TransportModelType
-    
+
     type(TspFmiType), pointer :: fmi => null() ! flow model interface
     type(TspAdvType), pointer :: adv => null() ! advection package
     type(BudgetType), pointer :: budget => null() !< budget object
@@ -48,11 +48,11 @@ module TransportModelModule
     procedure, private :: create_lstfile
     procedure, private :: create_tsp_packages
     procedure, private :: log_namfile_options
-    
+
   end type TransportModelType
-  
+
 contains
-    
+
   !> @brief Create a new generalized transport model object
   !!
   !! Create a new transport model that will be further refined into GWT or GWE
@@ -282,7 +282,7 @@ contains
     ! -- Return
     return
   end subroutine allocate_tsp_scalars
-  
+
   !> @brief Define the labels corresponding to the flavor of
   !! transport model
   !!
@@ -383,7 +383,7 @@ contains
     ! -- Return
     return
   end subroutine ftype_check
-  
+
   subroutine create_lstfile(this, lst_fname, model_fname, defined)
     ! -- modules
     use KindModule, only: LGP
@@ -553,5 +553,5 @@ contains
     ! -- Return
     return
   end subroutine create_tsp_packages
-  
+
 end module TransportModelModule

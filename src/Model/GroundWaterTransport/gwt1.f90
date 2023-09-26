@@ -78,7 +78,7 @@ module GwtModule
     procedure :: create_packages => create_gwt_packages
     procedure, private :: create_bndpkgs
     procedure, private :: package_create
-    
+
   end type GwtModelType
 
 contains

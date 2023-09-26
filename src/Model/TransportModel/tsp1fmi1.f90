@@ -489,7 +489,7 @@ contains
     return
   end subroutine gwtfmi_allocate_arrays
 
-    !> @brief Calculate the previous saturation level
+  !> @brief Calculate the previous saturation level
   !!
   !! Calculate the groundwater cell head saturation for the end of
   !! the last time step
