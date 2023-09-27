@@ -8,8 +8,8 @@
 module GwtModule
 
   use KindModule, only: DP, I4B
-  use ConstantsModule, only: LENFTYPE, LENMEMPATH, DZERO, LENPAKLOC, &
-                             LENVARNAME
+  use ConstantsModule, only: LENFTYPE, LENMEMPATH, DZERO, DONE, &
+                             LENPAKLOC, LENVARNAME
   use VersionModule, only: write_listfile_header
   use NumericalModelModule, only: NumericalModelType
   use TransportModelModule, only: TransportModelType
@@ -289,6 +289,15 @@ contains
     if (this%indsp > 0) call this%dsp%dsp_ar(this%ibound, this%mst%thetam)
     if (this%inssm > 0) call this%ssm%ssm_ar(this%dis, this%ibound, this%x)
     if (this%inobs > 0) call this%obs%gwt_obs_ar(this%ic, this%x, this%flowja)
+    !
+    ! -- Set governing equation scale factor. Note that this scale factor
+    ! -- cannot be set arbitrarily. For solute transport, it must be set
+    ! -- to 1.  Setting it to a different value will NOT automatically
+    ! -- scale all the terms of the governing equation correctly by that
+    ! -- value. This is because much of the coding in the associated
+    ! -- packages implicitly assumes the governing equation for solute
+    ! -- transport is scaled by 1. (effectively unscaled).
+    this%eqnsclfac = DONE
     !
     ! -- Call dis_ar to write binary grid file
     !call this%dis%dis_ar(this%npf%icelltype)
