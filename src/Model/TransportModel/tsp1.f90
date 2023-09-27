@@ -40,7 +40,17 @@ module TransportModelModule
 
     ! -- public
     procedure, public :: tsp_cr
+    procedure, public :: tsp_df
     procedure, public :: tsp_da
+    procedure, public :: tsp_ac
+    procedure, public :: tsp_mc
+    procedure, public :: tsp_ar
+    procedure, public :: tsp_rp
+    procedure, public :: tsp_ad
+    procedure, public :: tsp_fc
+    procedure, public :: tsp_cc
+    procedure, public :: tsp_cq
+    procedure, public :: tsp_bd
     procedure, public :: allocate_tsp_scalars
     procedure, public :: set_tsp_labels
     procedure, public :: ftype_check
