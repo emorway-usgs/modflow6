@@ -79,7 +79,6 @@ contains
     character(len=*), intent(in) :: modelname
     character(len=*), intent(in) :: macronym
     ! -- local
-    character(len=LENMEMPATH) :: input_mempath
     character(len=LINELENGTH) :: lst_fname
     type(GwfNamParamFoundType) :: found
     !
