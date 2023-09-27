@@ -99,6 +99,7 @@ contains
 
     call mem_allocate(this%iAdvScheme, 'ADVSCHEME', this%memoryPath)
     call mem_allocate(this%ixt3d, 'IXT3D', this%memoryPath)
+    call mem_allocate(this%ieqnsclfac, 'IEQNSCLFAC', this%memoryPath)
 
   end subroutine allocate_scalars
 
@@ -197,6 +198,7 @@ contains
     ! this
     call mem_deallocate(this%iAdvScheme)
     call mem_deallocate(this%ixt3d)
+    call mem_deallocate(this%ieqnsclfac)
 
     ! gwt packages
     call this%dis%dis_da()
@@ -224,6 +226,7 @@ contains
     call mem_deallocate(this%inmvt)
     call mem_deallocate(this%inoc)
     call mem_deallocate(this%inobs)
+    call mem_deallocate(this%eqnsclfac)
 
     ! base
     call this%NumericalModelType%model_da()
