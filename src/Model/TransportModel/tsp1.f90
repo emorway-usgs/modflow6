@@ -34,7 +34,7 @@ module TransportModelModule
     character(len=LENVARNAME) :: tsptype = '' !< "solute" or "heat"
     character(len=LENVARNAME) :: depvartype = '' !< "concentration" or "temperature"
     character(len=LENVARNAME) :: depvarunit = '' !< "mass" or "energy"
-    character(len=LENVARNAME) :: depvarunitabbrev = '' !< "M" or "J"
+    character(len=LENVARNAME) :: depvarunitabbrev = '' !< "M" or "E"
 
   contains
 
@@ -67,7 +67,7 @@ contains
   !!
   !! Create a new transport model that will be further refined into GWT or GWE
   !<
-  subroutine tsp_cr(this, filename, id, modelname, macronym, indis)
+  subroutine tsp_cr(this, filename, id, modelname, indis)
     ! -- modules
     use GwfNamInputModule, only: GwfNamParamFoundType
     use BudgetModule, only: budget_cr
@@ -77,7 +77,6 @@ contains
     integer(I4B), intent(in) :: id
     integer(I4B), intent(inout) :: indis
     character(len=*), intent(in) :: modelname
-    character(len=*), intent(in) :: macronym
     ! -- local
     character(len=LINELENGTH) :: lst_fname
     type(GwfNamParamFoundType) :: found

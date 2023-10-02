@@ -147,7 +147,7 @@ contains
     call budget_cr(this%budget, this%name)
     !
     ! -- Call parent class routine
-    call this%tsp_cr(filename, id, modelname, 'GWT', indis)
+    call this%tsp_cr(filename, id, modelname, indis)
     !
     ! -- create model packages
     call this%create_packages(indis)
