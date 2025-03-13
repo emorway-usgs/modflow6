@@ -8,7 +8,7 @@
 !<
 
 module SensHeatModule
-  use ConstantsModule, only: LINELENGTH, LENMEMPATH, DZERO
+  use ConstantsModule, only: LINELENGTH, LENMEMPATH, DZERO, LENVARNAME
   use KindModule, only: I4B, DP
   use MemoryManagerModule, only: mem_setptr
   use MemoryHelperModule, only: create_mem_path
@@ -23,12 +23,14 @@ module SensHeatModule
   public :: ShfType
   public :: shf_cr
   
+  character(len=16) :: text = '          SHF'
+  
   type, extends(PbstBaseType) :: ShfType
 
     real(DP), pointer :: rhoa => null() !< desity of air
     real(DP), pointer :: cpa => null() !< heat capacity of air
     real(DP), pointer :: cd => null() !< drag coefficient
-    real(DP), dimension(:), pointer, contiguous :: va => null() !< wind speed
+    real(DP), dimension(:), pointer, contiguous :: wspd => null() !< wind speed
     real(DP), dimension(:), pointer, contiguous :: tatm => null() !< temperature of the atmosphere
 
   contains
@@ -36,6 +38,8 @@ module SensHeatModule
     procedure :: da => shf_da
     procedure :: read_option => shf_read_option
     procedure :: pbst_options => shf_options
+    procedure :: subpck_set_stressperiod => shf_set_stressperiod
+    procedure :: pbst_allocate_arrays => shf_allocate_arrays
     procedure, private :: shf_allocate_scalars
   
   end type ShfType
@@ -47,20 +51,22 @@ contains
   !! Create a new sensible heat flux (ShfType) object. Initially for use with 
   !! the SFE package.
   !<
-  subroutine shf_cr(shf, name_model, inunit, iout)
+  subroutine shf_cr(shf, name_model, inunit, iout, ncv)
     ! -- dummy
     type(ShfType), pointer, intent(out) :: shf
     character(len=*), intent(in) :: name_model
     integer(I4B), intent(in) :: inunit
     integer(I4B), intent(in) :: iout
+    integer(I4B), target, intent(in) :: ncv
     !
     allocate (shf)
-    call shf%init(name_model, 'SHF', 'SHF', inunit, iout)
+    call shf%init(name_model, 'SHF', 'SHF', inunit, iout, ncv)
+    shf%text = text
     !
     ! -- allocate scalars
     call shf%shf_allocate_scalars()
   end subroutine shf_cr
-  
+
 
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
   !! package.
@@ -93,12 +99,12 @@ contains
     integer(I4B) :: n
     !
     ! -- time series
-    call mem_allocate(this%va, this%ncv, 'VA', this%memoryPath)
+    call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
     call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
     !
     ! -- initialize
     do n = 1, this%ncv
-      this%va(n) = DZERO
+      this%wspd(n) = DZERO
       this%tatm(n) = DZERO
     end do
   end subroutine
@@ -170,6 +176,10 @@ contains
     call mem_deallocate(this%cpa)
     call mem_deallocate(this%cd)
     !
+    ! -- Deallocate time series
+    call mem_deallocate(this%wspd)
+    call mem_deallocate(this%tatm)
+    !
     ! -- Deallocate parent
     call pbstbase_da(this)
   end subroutine shf_da
@@ -190,4 +200,56 @@ contains
     success = .false.
   end function shf_read_option
   
+  !> @brief Set the stress period attributes based on the keyword
+  !<
+  subroutine shf_set_stressperiod(this, itemno, keyword, found)
+    ! -- module
+    use TimeSeriesManagerModule, only: read_value_or_time_series_adv
+    ! -- dummy
+    class(ShfType), intent(inout) :: this
+    integer(I4B), intent(in) :: itemno
+    character(len=*), intent(in) :: keyword
+    logical, intent(inout) :: found
+    ! -- local
+    character(len=LINELENGTH) :: text
+    integer(I4B) :: ierr
+    integer(I4B) :: jj
+    real(DP), pointer :: bndElem => null()
+    !
+    ! <wspd> WIND SPEED 
+    ! <tatm> TEMPERATURE OF THE ATMOSPHERE 
+    !
+    found = .true.
+    select case (keyword)
+    case ('WSPD')
+      ierr = this%pbst_check_valid(itemno)
+      if (ierr /= 0) then
+        goto 999
+      end if
+      call this%parser%GetString(text)
+      jj = 1
+      bndElem => this%wspd(itemno)
+      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+                                         this%packName, 'BND', this%tsManager, &
+                                         this%iprpak, 'WSPD')
+    case ('TATM')
+      ierr = this%pbst_check_valid(itemno)
+      if (ierr /= 0) then
+        goto 999
+      end if
+      call this%parser%GetString(text)
+      jj = 1
+      bndElem => this%tatm(itemno)
+      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+                                         this%packName, 'BND', this%tsManager, &
+                                         this%iprpak, 'TATM')
+    case default
+      !
+      ! -- Keyword not recognized so return to caller with found = .false.
+      found = .false.
+    end select
+    !
+999 continue
+  end subroutine shf_set_stressperiod
+    
 end module SensHeatModule
