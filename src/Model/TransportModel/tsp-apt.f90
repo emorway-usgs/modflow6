@@ -176,6 +176,7 @@ module TspAptModule
     procedure :: pak_setup_budobj
     procedure :: apt_fill_budobj
     procedure :: pak_fill_budobj
+    procedure :: ancil_rp
     procedure, public :: apt_stor_term
     procedure, public :: apt_tmvr_term
     procedure, public :: apt_fmvr_term ! Made public for uze
@@ -313,7 +314,7 @@ contains
     ! -- Get obs setup
     call this%obs%obs_ar()
     !
-    ! --print a message identifying the apt package.
+    ! -- print a message identifying the apt package.
     write (this%iout, fmtapt) this%inunit
     !
     ! -- Allocate arrays
@@ -359,7 +360,21 @@ contains
         end if
       end if
     end if
+    !!
+    !! -- The following is not callable from apt_ar, only reachable from sfe_ar
+    !call this%pbst_shf_ar()
   end subroutine apt_ar
+  
+  !> @brief Allocate and read appropriate pbst sub-package
+  !< 
+  !subroutine pbst_shf_ar(this)
+  !  ! -- dummy
+  !  class(TspAptType), intent(inout) :: this
+  !  !
+  !  ! -- This routine to be overridden
+  !  call store_error('Program error: pbst_shf_ar should be overwritten.', &
+  !                   terminate=.TRUE.)
+  !end subroutine pbst_shf_ar
 
   !> @brief Advanced package transport read and prepare (rp) routine
   !!
@@ -456,7 +471,11 @@ contains
           call this%inputtab%line_to_columns(line)
         end if
       end do stressperiod
-
+      !
+      ! -- call pbst_rp() routines based on which pbst sub-packages are
+      !    activated (if any)
+      call this%ancil_rp()
+      !
       if (this%iprpak /= 0) then
         call this%inputtab%finalize_table()
       end if
@@ -478,11 +497,26 @@ contains
       this%nodelist(n) = igwfnode
     end do
   end subroutine apt_rp
+  
+  !> @brief Support for ancillary transport package read and prepare (rp) routine
+  !!
+  !! A temporary work-around for calling _rp() routines in the PaBST-family of
+  !! classes.  While specific to GWE at the moment, which cuts against the 
+  !! grain of what TspApt should be all about (i.e., generalized transport code
+  !! that is not specific to either GWT or GWE), it could be leveraged by GWT
+  !! as well if any sort of 'package for a package' process was implemented 
+  !! there. At some point, more likely, this is going to have to be lifted out
+  !!and a more MF6-way of doing things implemented.
+  subroutine ancil_rp(this)
+    ! -- dummy
+    class(TspAptType), intent(inout) :: this
+    ! -- subroutine available for override by apt-child classes
+  end subroutine ancil_rp
 
   subroutine apt_ad_chk(this)
     ! -- dummy
     class(TspAptType), intent(inout) :: this
-    ! function available for override by packages
+    ! -- subroutine available for override by packages
   end subroutine apt_ad_chk
 
   !> @brief Advanced package transport set stress period routine.
@@ -593,9 +627,6 @@ contains
     integer(I4B), intent(in) :: itemno
     character(len=*), intent(in) :: keyword
     logical, intent(inout) :: found
-    ! -- local
-
-    ! -- formats
     !
     ! -- this routine should never be called
     found = .false.
@@ -976,7 +1007,7 @@ contains
                                   pertim, totim, this%iout)
     end if
     !
-    ! -- Print lake flows table
+    ! -- Print feature flows table
     if (ibudfl /= 0 .and. this%iprflow /= 0) then
       call this%budobj%write_flowtable(this%dis, kstp, kper)
     end if
@@ -1176,7 +1207,7 @@ contains
     ! -- local
     integer(I4B) :: n
     !
-    ! -- call standard BndType allocate scalars
+    ! -- call standard BndType allocate arrays
     call this%BndType%allocate_arrays()
     !
     ! -- Allocate
@@ -1520,7 +1551,7 @@ contains
     call mem_allocate(this%lauxvar, this%naux, this%ncv, 'LAUXVAR', &
                       this%memoryPath)
     !
-    ! -- lake boundary and concentrations
+    ! -- feature boundary and concentrations
     if (this%imatrows == 0) then
       call mem_allocate(this%iboundpak, this%ncv, 'IBOUND', this%memoryPath)
       call mem_allocate(this%xnewpak, this%ncv, 'XNEWPAK', this%memoryPath)
@@ -1613,7 +1644,7 @@ contains
         nlak = nlak + 1
       end do
       !
-      ! -- check for duplicate or missing lakes
+      ! -- check for duplicate or missing feature ids
       do n = 1, this%ncv
         if (nboundchk(n) == 0) then
           write (errmsg, '(a,1x,i0)') 'No data specified for feature', n
@@ -1667,7 +1698,7 @@ contains
       ! -- todo: read boundname
     end do
     !
-    ! -- initialize status (iboundpak) of lakes to active
+    ! -- initialize status (iboundpak) of features
     do n = 1, this%ncv
       if (this%status(n) == 'CONSTANT') then
         this%iboundpak(n) = -1
@@ -1811,14 +1842,14 @@ contains
       q = -rrate
       this%ccterm(ilak) = this%ccterm(ilak) + q
       !
-      ! -- See if flow is into lake or out of lake.
+      ! -- See if flow is into feature or out of feature.
       if (q < DZERO) then
         !
-        ! -- Flow is out of lake subtract rate from ratout.
+        ! -- Flow is out of feature subtract rate from ratout.
         ccratout = ccratout - q
       else
         !
-        ! -- Flow is into lake; add rate to ratin.
+        ! -- Flow is into feature; add rate to ratin.
         ccratin = ccratin + q
       end if
     end if
