@@ -86,7 +86,8 @@ module GweSfeModule
 
     !procedure :: bnd_df => sfe_df
     procedure :: bnd_da => sfe_da
-    procedure :: bnd_ar => sfe_ar
+    !procedure :: bnd_ar => sfe_ar
+    procedure :: ancil_rp => pbst_rp
     procedure :: allocate_scalars
     procedure :: apt_allocate_arrays => sfe_allocate_arrays
     procedure :: find_apt_package => find_sfe_package
@@ -196,18 +197,18 @@ contains
   
   !> @brief Allocate and read method for sfe package
   !<
-  subroutine sfe_ar(this)
-    ! -- dummy
-    class(GweSfeType), intent(inout) :: this
-    !
-    ! -- call parent class _ar routine
-    call this%tspapttype%bnd_ar()
-    !
-    ! -- activate appropriate pbst sub-packages
-    if (this%inshf /= 0) then
-      call this%shf%ar()
-    end if
-  end subroutine sfe_ar
+  !subroutine shf_opt_ar(this)
+  !  ! -- dummy
+  !  class(GweSfeType), intent(inout) :: this
+  !  !
+  !  ! -- call parent class _ar routine
+  !  !call this%tspapttype%bnd_ar()
+  !  !
+  !  ! -- activate appropriate pbst sub-packages
+  !  if (this%inshf /= 0) then
+  !    call this%shf%ar()
+  !  end if
+  !end subroutine shf_opt_ar
   
   !> @brief Update simulation options from input mempath
   !<
@@ -223,7 +224,7 @@ contains
     if (filein_fname(shf6_filename, 'SHF6_FILENAME', this%input_mempath, &
                      this%input_fname)) then
       call openfile(this%inshf, this%iout, shf6_filename, 'SHF')
-      call shf_cr(this%shf, this%name_model, this%inshf, this%iout)
+      call shf_cr(this%shf, this%name_model, this%inshf, this%iout, this%ncv)
     end if
   end subroutine source_options
   
@@ -269,8 +270,18 @@ contains
       !
       ! -- create sensible heat flux object
       call openfile(this%inshf, this%iout, fname, 'SHF')
-      call shf_cr(this%shf, this%name_model, this%inshf, this%iout)
+      call shf_cr(this%shf, this%name_model, this%inshf, this%iout, this%ncv)
       this%shf%inputFilename = fname
+      !      
+      ! -- call _ar routine for shf sub-package
+      !    note: this is the best place to call the sub-package (shf) for 
+      !          now because SFE does not override apt_ar(), and since sfe
+      !          does not run its own customized set of _ar() functionality
+      !          there is no opportunity to run shf%ar() from a more
+      !          natural point.  In other words, one place to call shf%ar
+      !          would be from bnd_ar(), however, shf is only callable from 
+      !          sfe and not apt.
+      call this%shf%ar()
     case default
       !
       ! -- No options found
@@ -815,7 +826,28 @@ contains
       this%temproff(n) = DZERO
       this%tempiflw(n) = DZERO
     end do
+    !
+    ! -- Call sub-package(s) allocate arrays
+    if (this%inshf /= 0) then
+      call this%shf%pbst_allocate_arrays()
+    end if
   end subroutine sfe_allocate_arrays
+  
+  !> @brief Call Read and prepare routines for any active pbst subpackages
+  !!
+  !! Overrides ancil_rp() subroutine in tsp-apt.  The idea being that for a
+  !! GWE model with add-on packages (like sensible heat flux, for example)
+  !! they can only be accessed from sfe and not apt.
+  !<
+  subroutine pbst_rp(this)
+    ! -- dummy
+    class(GweSfeType), intent(inout) :: this
+    !
+    ! -- call sensible heat flux sub-package _rp() routine
+    if (this%inshf /= 0) then
+      call this%shf%rp()
+    end if
+  end subroutine pbst_rp
 
   !> @brief Deallocate memory
   !<
