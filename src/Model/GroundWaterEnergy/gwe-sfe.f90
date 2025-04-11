@@ -20,8 +20,9 @@
 ! EXT-INFLOW                idxbudiflw    EXT-INFLOW            rhow * cpw * q * tiflw
 ! EXT-OUTFLOW               idxbudoutf    EXT-OUTFLOW           rhow * cpw * q * tfeat
 
-! -- terms not associated with SFR
-! STRMBD-COND               none          STRMBD-COND           ctherm * (tcell - tfeat) (ctherm is a thermal conductance for the streambed)
+! -- SFE terms
+! STRMBD-COND               idxbudsbcd    STRMBD-COND           ktf * wa / sbthk * (t_cell - t_feat)
+! SENSIBLE HEAT FLUX        idxbudshf     SENS HEAT             cd * rho_a * C_p_a * wspd * (t_air - t_feat)
 
 ! -- terms from a flow file that should be skipped
 ! CONSTANT                  none          none                  none
@@ -102,6 +103,7 @@ module GweSfeModule
     procedure :: sfe_iflw_term
     procedure :: sfe_outf_term
     procedure, private :: sfe_sbcd_term
+    procedure :: sfe_shf_term
     procedure :: pak_df_obs => sfe_df_obs
     procedure :: pak_rp_obs => sfe_rp_obs
     procedure :: pak_bd_obs => sfe_bd_obs
@@ -503,6 +505,17 @@ contains
         call matrix_sln%add_value_pos(ipossymoffd, hcofval)
       end if
     end do
+    !
+    ! -- Add sensible heat flux contribution
+    if (this%inshf /= 0) then
+      do j = 1, this%flowbudptr%budterm(this%idxbudgwf)%nlist
+        call this%sfe_shf_term(j, n1, n2, rrate, rhsval, hcofval)
+        iloc = this%idxlocnode(n1)
+        iposd = this%idxpakdiag(n1)
+        call matrix_sln%add_value_pos(iposd, hcofval)
+        rhs(iloc) = rhs(iloc) + rhsval
+      end do
+    end if
   end subroutine sfe_fc_expanded
 
   !> @ brief Add terms specific to sfr to the explicit sfe solve
@@ -556,6 +569,7 @@ contains
     end if
     !
     ! Note: explicit streambed conduction terms???
+    ! Note: explicit sensible heat flux terms?
   end subroutine sfe_solve
 
   !> @brief Function to return the number of budget terms just for this package.
@@ -574,7 +588,8 @@ contains
     !    3. runoff
     !    4. ext-inflow
     !    5. ext-outflow
-    !    6. strmbd-cond
+    !    6. strmbed-cond
+    !    7. sensible heat flux
     nbudterms = 6
   end function sfe_get_nbudterms
 
@@ -676,6 +691,28 @@ contains
       n2 = this%flowbudptr%budterm(this%idxbudgwf)%id2(n)
       call this%budobj%budterm(idx)%update_term(n1, n2, q)
     end do
+    !
+    ! -- Sensible heat flux
+    if (this%inshf /= 0) then
+      text = '   SENSIBLE-HEAT'
+      idx = idx + 1
+      maxlist = this%flowbudptr%budterm(this%idxbudsbcd)%maxlist
+      naux = 0
+      call this%budobj%budterm(idx)%initialize(text, &
+                                               this%name_model, &
+                                               this%packName, &
+                                               this%name_model, &
+                                               this%packName, &
+                                               maxlist, .false., .false., &
+                                               naux)
+      call this%budobj%budterm(idx)%reset(maxlist)
+      q = DZERO
+      do n = 1, maxlist
+        n1 = this%flowbudptr%budterm(this%idxbudgwf)%id1(n)
+        n2 = this%flowbudptr%budterm(this%idxbudgwf)%id2(n)
+        call this%budobj%budterm(idx)%update_term(n1, n2, q)
+      end do
+    end if
   end subroutine sfe_setup_budobj
 
   !> @brief Copy flow terms into this%budobj
@@ -765,6 +802,18 @@ contains
         flowja(idiag) = flowja(idiag) - q
       end if
     end do
+    !
+    ! -- Sensible-heat
+    if (this%inshf /= 0) then
+      idx = idx + 1
+      nlist = this%flowbudptr%budterm(this%idxbudgwf)%nlist
+      call this%budobj%budterm(idx)%reset(nlist)
+      do j = 1, nlist
+        call this%sfe_shf_term(j, n1, n2, q)
+        call this%budobj%budterm(idx)%update_term(n1, n2, q)
+        call this%apt_accumulate_ccterm(n1, q, ccratin, ccratout)
+      end do
+    end if
   end subroutine sfe_fill_budobj
 
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
@@ -935,6 +984,30 @@ contains
     if (present(rhsval)) rhsval = -rrate
     if (present(hcofval)) hcofval = DZERO
   end subroutine sfe_evap_term
+  
+  !> @brief Sensible Heat Flux (SHF) term
+  !< 
+  subroutine sfe_shf_term(this, ientry, n1, n2, rrate, rhsval, hcofval)
+    ! -- dummy
+    class(GweSfeType) :: this
+    integer(I4B), intent(in) :: ientry
+    integer(I4B), intent(inout) :: n1
+    integer(I4B), intent(inout) :: n2
+    real(DP), intent(inout), optional :: rrate
+    real(DP), intent(inout), optional :: rhsval
+    real(DP), intent(inout), optional :: hcofval
+    ! -- local
+    real(DP) :: sensheat
+    !
+    n1 = this%flowbudptr%budterm(this%idxbudgwf)%id1(ientry)
+    n2 = this%flowbudptr%budterm(this%idxbudgwf)%id2(ientry)
+    !
+    sensheat = 4180.0 ! Fix this value for now, eventually it will need to come from shf equantion
+                      ! and be multiplied by the shared surface area, I think.  
+    if (present(rrate)) rrate = sensheat
+    if (present(rhsval)) rhsval = sensheat
+    if (present(hcofval)) hcofval = DZERO
+  end subroutine sfe_shf_term
 
   !> @brief Runoff term
   !<
