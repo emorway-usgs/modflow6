@@ -1,10 +1,10 @@
 !> @brief This module contains common process-based stream temperature functionality
 !!
 !! This module contains methods for implementing functionality associated with
-!! heat fluxes to a stream reach.  Four sources of thermal energy commonly 
+!! heat fluxes to a stream reach.  Four sources of thermal energy commonly
 !! accounted for in process-based stream temperature modeling include short-
-!! wave radiation, long-wave radiation, sensible heat flux, and latent heat 
-!! flux.  
+!! wave radiation, long-wave radiation, sensible heat flux, and latent heat
+!! flux.
 !<
 module PbstBaseModule
   use ConstantsModule, only: LINELENGTH, MAXCHARLEN, DZERO, LGP, &
@@ -22,14 +22,14 @@ module PbstBaseModule
   implicit none
 
   private
-  
+
   public :: PbstBaseType
   public :: pbstbase_da
-  
+
   character(len=LENVARNAME) :: text = '         PBST'
-  
+
   type, abstract, extends(NumericalPackageType) :: PbstBaseType
-    
+
     character(len=8), dimension(:), pointer, contiguous :: status => null() !< active, inactive, constant
     character(len=LENPACKAGENAME) :: text = '' !< text string for package transport term
     integer(I4B), pointer :: ncv => null() !< number of control volumes
@@ -40,7 +40,7 @@ module PbstBaseModule
     !
     ! -- table objects
     type(TableType), pointer :: inputtab => null() !< input table object
-    
+
   contains
 
     procedure :: init
@@ -55,11 +55,11 @@ module PbstBaseModule
     procedure :: pbst_allocate_arrays
     procedure :: da => pbstbase_da
     procedure :: pbst_check_valid
-  
+
   end type PbstBaseType
-  
+
   abstract interface
-  
+
     !> @brief Announce package and set pointers to variables
     !!
     !! Deferred procedure called by the PbstBaseType code to process a single
@@ -74,9 +74,9 @@ module PbstBaseModule
       ! -- return
       logical :: success
     end function
-  
+
   end interface
-  
+
 contains
 
   !> @brief Initialize the PbstBaseType object
@@ -100,7 +100,7 @@ contains
     this%ncv => ncv
     call this%parser%Initialize(this%inunit, this%iout)
   end subroutine init
-  
+
   !> @brief Allocate and read
   !!
   !!  Method to allocate and read static data for the SHF package
@@ -127,14 +127,14 @@ contains
     ! -- Read options
     call this%read_options()
   end subroutine ar
-  
+
   !> @brief PaBST read and prepare for setting stress period information
   !<
   subroutine rp(this)
     ! -- module
     use TimeSeriesManagerModule, only: read_value_or_time_series_adv
     use TdisModule, only: kper, nper
-    ! -- dummy 
+    ! -- dummy
     class(PbstBaseType) :: this !< ShfType object
     ! -- local
     integer(I4B) :: ierr
@@ -165,7 +165,7 @@ contains
         ! -- read ionper and check for increasing period numbers
         call this%read_check_ionper()
       else
-        ! 
+        !
         ! -- PERIOD block not found
         if (ierr < 0) then
           ! -- End of file found; data applies for remainder of simulation.
@@ -207,7 +207,7 @@ contains
         call this%parser%GetNextLine(endOfBlock)
         if (endOfBlock) exit
         !
-        ! -- get feature number 
+        ! -- get feature number
         itemno = this%parser%GetInteger()
         !
         ! -- read data from the rest of the line
@@ -233,13 +233,13 @@ contains
     ierr = count_errors()
     if (ierr > 0) then
       call this%parser%StoreErrorUnit()
-    end if    
+    end if
   end subroutine rp
 
   !> @brief pbst_set_stressperiod()
   !!
   !! To be overridden by Pbst sub-packages
-  !< 
+  !<
   subroutine pbst_set_stressperiod(this, itemno)
     ! -- dummy
     class(PbstBaseType), intent(inout) :: this
@@ -270,10 +270,10 @@ contains
         write (errmsg, '(a,a)') &
           'Unknown '//trim(this%text)//' status keyword: ', text//'.'
         call store_error(errmsg)
-      end if      
+      end if
     case default
       !
-      ! -- call the specific package to deal with parameters specific to the 
+      ! -- call the specific package to deal with parameters specific to the
       !    process
       call this%subpck_set_stressperiod(itemno, keyword, found)
       ! -- terminate with error if data not valid
@@ -303,7 +303,7 @@ contains
     logical, intent(inout) :: found
     ! -- to be overwritten by pbst subpackages (or "utilities")
   end subroutine subpck_set_stressperiod
-  
+
   !> @brief Read the SHF-specific options from the OPTIONS block
   !<
   subroutine read_options(this)
@@ -374,7 +374,7 @@ contains
   !> @ brief Read additional options for sub-package
   !!
   !!  Read additional options for the SFE boundary package. This method should
-  !!  be overridden by option-processing routine that is in addition to the 
+  !!  be overridden by option-processing routine that is in addition to the
   !!  base options available for all PbstBase packages.
   !<
   subroutine pbst_options(this, option, found)
@@ -416,7 +416,7 @@ contains
     ! -- allocate time series manager
     allocate (this%tsmanager)
   end subroutine pbstbase_allocate_scalars
-  
+
   !> @ brief Allocate arrays
   !!
   !! Allocate base process-based stream temperature package transport arrays
@@ -430,9 +430,9 @@ contains
     integer(I4B) :: n
     !
     ! -- Note: For the time-being, no call to parent class allocation of arrays
-    !    as is done in tsp-apt.f90, for example.  Remember that this class 
-    !    extends NumericalPackage.f90 which doesn't have a standard set of 
-    !    arrays to be allocated, only scalars. 
+    !    as is done in tsp-apt.f90, for example.  Remember that this class
+    !    extends NumericalPackage.f90 which doesn't have a standard set of
+    !    arrays to be allocated, only scalars.
     !call this%BndType%allocate_arrays()
     !
     ! -- allocate character array for status
@@ -443,7 +443,6 @@ contains
       this%status(n) = 'ACTIVE'
     end do
   end subroutine pbst_allocate_arrays
-
 
   !> @brief Deallocate package memory
   !!
@@ -460,7 +459,7 @@ contains
     !
     ! -- Deallocate time series manager
     deallocate (this%tsmanager)
-    ! 
+    !
     ! -- deallocate scalars
     call mem_deallocate(this%ncv)
     !
@@ -478,7 +477,7 @@ contains
     end if
 
   end subroutine pbstbase_da
-  
+
   !> @brief Process-based stream temperature transport (or utility) routine
   !!
   !! Determine if a valid feature number has been specified.

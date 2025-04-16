@@ -79,7 +79,7 @@ module GweSfeModule
     real(DP), dimension(:), pointer, contiguous :: tempiflw => null() !< inflow temperature
     real(DP), dimension(:), pointer, contiguous :: ktf => null() !< thermal conductivity between the sfe and groundwater cell
     real(DP), dimension(:), pointer, contiguous :: rfeatthk => null() !< thickness of streambed material through which thermal conduction occurs
-        
+
     type(ShfType), pointer :: shf => null() ! sensible heat flux (shf) object
     integer(I4B), pointer :: inshf => null() ! SHF (sensible heat flux utility) unit number (0 if unused)
 
@@ -103,14 +103,13 @@ module GweSfeModule
     procedure :: sfe_iflw_term
     procedure :: sfe_outf_term
     procedure, private :: sfe_sbcd_term
-    procedure :: sfe_shf_term
+    procedure, private :: sfe_shf_term
     procedure :: pak_df_obs => sfe_df_obs
     procedure :: pak_rp_obs => sfe_rp_obs
     procedure :: pak_bd_obs => sfe_bd_obs
     procedure :: pak_set_stressperiod => sfe_set_stressperiod
     procedure :: apt_read_cvs => sfe_read_cvs
     procedure :: gc_options => sfe_options
-    procedure, private :: source_options
 
   end type GweSfeType
 
@@ -179,57 +178,7 @@ contains
     sfeobj%depvarunit = dvu
     sfeobj%depvarunitabbrev = dvua
   end subroutine sfe_create
-                        
-  !> @brief Override boundary package type define function
-  !<
-  !subroutine sfe_df(this, neq, dis)
-  !  ! -- dummy
-  !  class(GweSfeType), intent(inout) :: this
-  !  integer(I4B), intent(inout) :: neq !< number of equations
-  !  class(DisBaseType), pointer :: dis !< discretization object
-  !  ! -- local
-  !  !
-  !  ! -- call original define routine in parent class
-  !  call this%bnd_df(neq, dis)
-  !  !
-  !  ! -- supplement define routine with ability to add utility packages
-  !  !call this%source_options()
-  !  !
-  !end subroutine sfe_df
-  
-  !> @brief Allocate and read method for sfe package
-  !<
-  !subroutine shf_opt_ar(this)
-  !  ! -- dummy
-  !  class(GweSfeType), intent(inout) :: this
-  !  !
-  !  ! -- call parent class _ar routine
-  !  !call this%tspapttype%bnd_ar()
-  !  !
-  !  ! -- activate appropriate pbst sub-packages
-  !  if (this%inshf /= 0) then
-  !    call this%shf%ar()
-  !  end if
-  !end subroutine shf_opt_ar
-  
-  !> @brief Update simulation options from input mempath
-  !<
-  subroutine source_options(this)
-    ! -- modules
-    use SourceCommonModule, only: filein_fname
-    ! -- dummy
-    class(GweSfeType) :: this
-    ! -- locals
-    character(len=LINELENGTH) :: shf6_filename
-    !
-    ! -- enforce 0 or 1 SHF6_FILENAME entries in the options block
-    if (filein_fname(shf6_filename, 'SHF6_FILENAME', this%input_mempath, &
-                     this%input_fname)) then
-      call openfile(this%inshf, this%iout, shf6_filename, 'SHF')
-      call shf_cr(this%shf, this%name_model, this%inshf, this%iout, this%ncv)
-    end if
-  end subroutine source_options
-  
+
   !> @brief Set options specific to the GweSfeType
   !!
   !! This routine overrides TspAptType%gc_options
@@ -258,7 +207,7 @@ contains
       call this%parser%GetStringCaps(keyword)
       if (trim(adjustl(keyword)) /= 'FILEIN') then
         errmsg = 'SHF6 keyword must be followed by "FILEIN" '// &
-                     'then by filename.'
+                 'then by filename.'
         call store_error(errmsg)
         call this%parser%StoreErrorUnit()
       end if
@@ -274,14 +223,14 @@ contains
       call openfile(this%inshf, this%iout, fname, 'SHF')
       call shf_cr(this%shf, this%name_model, this%inshf, this%iout, this%ncv)
       this%shf%inputFilename = fname
-      !      
+      !
       ! -- call _ar routine for shf sub-package
-      !    note: this is the best place to call the sub-package (shf) for 
+      !    note: this is the best place to call the sub-package (shf) for
       !          now because SFE does not override apt_ar(), and since sfe
       !          does not run its own customized set of _ar() functionality
       !          there is no opportunity to run shf%ar() from a more
       !          natural point.  In other words, one place to call shf%ar
-      !          would be from bnd_ar(), however, shf is only callable from 
+      !          would be from bnd_ar(), however, shf is only callable from
       !          sfe and not apt.
       call this%shf%ar()
     case default
@@ -590,7 +539,7 @@ contains
     !    5. ext-outflow
     !    6. strmbed-cond
     !    7. sensible heat flux
-    nbudterms = 6
+    nbudterms = 6 ! ??? This should now be 7, but seems to only work with six ???
   end function sfe_get_nbudterms
 
   !> @brief Set up the budget object that stores all the sfe flows
@@ -696,7 +645,7 @@ contains
     if (this%inshf /= 0) then
       text = '   SENSIBLE-HEAT'
       idx = idx + 1
-      maxlist = this%flowbudptr%budterm(this%idxbudsbcd)%maxlist
+      maxlist = this%flowbudptr%budterm(this%idxbudgwf)%maxlist
       naux = 0
       call this%budobj%budterm(idx)%initialize(text, &
                                                this%name_model, &
@@ -881,7 +830,7 @@ contains
       call this%shf%pbst_allocate_arrays()
     end if
   end subroutine sfe_allocate_arrays
-  
+
   !> @brief Call Read and prepare routines for any active pbst subpackages
   !!
   !! Overrides ancil_rp() subroutine in tsp-apt.  The idea being that for a
@@ -984,30 +933,6 @@ contains
     if (present(rhsval)) rhsval = -rrate
     if (present(hcofval)) hcofval = DZERO
   end subroutine sfe_evap_term
-  
-  !> @brief Sensible Heat Flux (SHF) term
-  !< 
-  subroutine sfe_shf_term(this, ientry, n1, n2, rrate, rhsval, hcofval)
-    ! -- dummy
-    class(GweSfeType) :: this
-    integer(I4B), intent(in) :: ientry
-    integer(I4B), intent(inout) :: n1
-    integer(I4B), intent(inout) :: n2
-    real(DP), intent(inout), optional :: rrate
-    real(DP), intent(inout), optional :: rhsval
-    real(DP), intent(inout), optional :: hcofval
-    ! -- local
-    real(DP) :: sensheat
-    !
-    n1 = this%flowbudptr%budterm(this%idxbudgwf)%id1(ientry)
-    n2 = this%flowbudptr%budterm(this%idxbudgwf)%id2(ientry)
-    !
-    sensheat = 4180.0 ! Fix this value for now, eventually it will need to come from shf equantion
-                      ! and be multiplied by the shared surface area, I think.  
-    if (present(rrate)) rrate = sensheat
-    if (present(rhsval)) rhsval = sensheat
-    if (present(hcofval)) hcofval = DZERO
-  end subroutine sfe_shf_term
 
   !> @brief Runoff term
   !<
@@ -1127,6 +1052,31 @@ contains
     if (present(hcofval)) hcofval = ctherm
   end subroutine sfe_sbcd_term
 
+  !> @brief Sensible Heat Flux (SHF) term
+  !<
+  subroutine sfe_shf_term(this, ientry, n1, n2, rrate, rhsval, hcofval)
+    ! -- dummy
+    class(GweSfeType) :: this
+    integer(I4B), intent(in) :: ientry
+    integer(I4B), intent(inout) :: n1
+    integer(I4B), intent(inout) :: n2
+    real(DP), intent(inout), optional :: rrate
+    real(DP), intent(inout), optional :: rhsval
+    real(DP), intent(inout), optional :: hcofval
+    ! -- local
+    real(DP) :: sensheat
+    real(DP) :: strmtemp
+    !
+    n1 = this%flowbudptr%budterm(this%idxbudgwf)%id1(ientry)
+    !
+    strmtemp = this%xnewpak(n1)
+    call this%shf%shf_cq(n1, strmtemp, sensheat)
+    !
+    if (present(rrate)) rrate = sensheat
+    if (present(rhsval)) rhsval = -rrate
+    if (present(hcofval)) hcofval = DZERO
+  end subroutine sfe_shf_term
+
   !> @brief Observations
   !!
   !! Store the observation type supported by the APT package and override
@@ -1203,6 +1153,11 @@ contains
     !    for strmbd-cond observation type.
     call this%obs%StoreObsType('strmbd-cond', .true., indx)
     this%obs%obsData(indx)%ProcessIdPtr => apt_process_obsID
+    !
+    ! -- Store obs type and assign procedure pointer
+    !    for sens-heat-flux observation type.
+    call this%obs%StoreObsType('shf', .true., indx)
+    this%obs%obsData(indx)%ProcessIdPtr => apt_process_obsID
   end subroutine sfe_df_obs
 
   !> @brief Process package specific obs
@@ -1231,6 +1186,8 @@ contains
     case ('TO-MVR')
       call this%rp_obs_byfeature(obsrv)
     case ('STRMBD-COND')
+      call this%rp_obs_byfeature(obsrv)
+    case ('SHF')
       call this%rp_obs_byfeature(obsrv)
     case default
       found = .false.
@@ -1274,6 +1231,10 @@ contains
     case ('STRMBD-COND')
       if (this%iboundpak(jj) /= 0) then
         call this%sfe_sbcd_term(jj, n1, n2, v)
+      end if
+    case ('SHF')
+      if (this%iboundpak(jj) /= 0) then
+        call this%sfe_shf_term(jj, n1, n2, v)
       end if
     case default
       found = .false.
