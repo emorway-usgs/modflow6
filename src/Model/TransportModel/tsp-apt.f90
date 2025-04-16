@@ -364,9 +364,9 @@ contains
     !! -- The following is not callable from apt_ar, only reachable from sfe_ar
     !call this%pbst_shf_ar()
   end subroutine apt_ar
-  
+
   !> @brief Allocate and read appropriate pbst sub-package
-  !< 
+  !<
   !subroutine pbst_shf_ar(this)
   !  ! -- dummy
   !  class(TspAptType), intent(inout) :: this
@@ -497,14 +497,14 @@ contains
       this%nodelist(n) = igwfnode
     end do
   end subroutine apt_rp
-  
+
   !> @brief Support for ancillary transport package read and prepare (rp) routine
   !!
   !! A temporary work-around for calling _rp() routines in the PaBST-family of
-  !! classes.  While specific to GWE at the moment, which cuts against the 
+  !! classes.  While specific to GWE at the moment, which cuts against the
   !! grain of what TspApt should be all about (i.e., generalized transport code
   !! that is not specific to either GWT or GWE), it could be leveraged by GWT
-  !! as well if any sort of 'package for a package' process was implemented 
+  !! as well if any sort of 'package for a package' process was implemented
   !! there. At some point, more likely, this is going to have to be lifted out
   !!and a more MF6-way of doing things implemented.
   subroutine ancil_rp(this)
@@ -648,7 +648,7 @@ contains
     ierr = 0
     if (itemno < 1 .or. itemno > this%ncv) then
       write (errmsg, '(a,1x,i6,1x,a,1x,i6)') &
-        'Featureno ', itemno, 'must be > 0 and <= ', this%ncv
+        'Feature No. ', itemno, 'must be > 0 and <= ', this%ncv
       call store_error(errmsg)
       ierr = 1
     end if
@@ -1435,12 +1435,12 @@ contains
       found = foundgcclassoption
     end select
   end subroutine apt_options
-  
+
   !> @ brief Read additional grandchild options for package
   !!
-  !!  Check whether daughter packages are specified in the options block. 
+  !!  Check whether daughter packages are specified in the options block.
   !!  This method should be overridden by the (grand)child package to read the
-  !!  options that are in addition to the base options implemented in the  
+  !!  options that are in addition to the base options implemented in the
   !!  boundary package class.
   !<
   subroutine gc_options(this, option, found)
@@ -1452,7 +1452,7 @@ contains
     ! Return with found = .false.
     found = .false.
   end subroutine gc_options
-  
+
   !> @brief Determine dimensions for this advanced package
   !<
   subroutine apt_read_dimensions(this)
