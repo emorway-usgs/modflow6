@@ -1,4 +1,4 @@
-!> @brief This module contains methods for calculating sensible heat flux 
+!> @brief This module contains methods for calculating sensible heat flux
 !!
 !! This module contains the methods used to calculate the sensible heat flux
 !! for surface-water boundaries, like streams and lakes.  In its current form,
@@ -15,16 +15,16 @@ module SensHeatModule
   use SimModule, only: store_error
   use SimVariablesModule, only: errmsg
   use PbstBaseModule, only: PbstBaseType, pbstbase_da
-  
+
   implicit none
 
   private
-  
+
   public :: ShfType
   public :: shf_cr
-  
+
   character(len=16) :: text = '          SHF'
-  
+
   type, extends(PbstBaseType) :: ShfType
 
     real(DP), pointer :: rhoa => null() !< desity of air
@@ -41,14 +41,15 @@ module SensHeatModule
     procedure :: subpck_set_stressperiod => shf_set_stressperiod
     procedure :: pbst_allocate_arrays => shf_allocate_arrays
     procedure, private :: shf_allocate_scalars
-  
+    procedure, public :: shf_cq
+
   end type ShfType
-  
+
 contains
-  
+
   !> @brief Create a new ShfType object
   !!
-  !! Create a new sensible heat flux (ShfType) object. Initially for use with 
+  !! Create a new sensible heat flux (ShfType) object. Initially for use with
   !! the SFE package.
   !<
   subroutine shf_cr(shf, name_model, inunit, iout, ncv)
@@ -67,7 +68,6 @@ contains
     call shf%shf_allocate_scalars()
   end subroutine shf_cr
 
-
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
   !! package.
   !<
@@ -76,20 +76,20 @@ contains
     use MemoryManagerModule, only: mem_allocate
     ! -- dummy
     class(ShfType) :: this
-    ! 
+    !
     ! -- allocate
     call mem_allocate(this%rhoa, 'RHOA', this%memoryPath)
     call mem_allocate(this%cpa, 'CPA', this%memoryPath)
     call mem_allocate(this%cd, 'CD', this%memoryPath)
     !
     ! -- initialize to default values
-    this%rhoa = 1.225  ! kg/m3
-    this%cpa = 717.0  ! J/kg/C
-    this%cd = 0.002  ! unitless
+    this%rhoa = 1.225 ! kg/m3
+    this%cpa = 717.0 ! J/kg/C
+    this%cd = 0.002 ! unitless
   end subroutine shf_allocate_scalars
-  
+
   !> @brief Allocate arrays specific to the sensible heat flux (SHF) package
-  !< 
+  !<
   subroutine shf_allocate_arrays(this)
     ! -- modules
     use MemoryManagerModule, only: mem_allocate
@@ -160,7 +160,26 @@ contains
       call this%parser%StoreErrorUnit()
     end select
   end subroutine shf_options
-  
+
+  !> @brief Calculate Sensible Heat Flux
+  !!
+  !! Calculate and return the sensible heat flux for one reach
+  !<
+  subroutine shf_cq(this, ifno, tstrm, shflx)
+    ! -- dummy
+    class(ShfType), intent(inout) :: this
+    integer(I4B), intent(in) :: ifno !< stream reach integer id
+    real(DP), intent(in) :: tstrm !< temperature of the stream reach
+    real(DP), intent(inout) :: shflx !< calculated sensible heat flux amount
+    ! -- local
+    real(DP) :: shf_const
+    real(DP) :: shf_term
+    !
+    ! -- calculate sensible heat flux using HGS equation
+    shf_const = this%cd * this%cpa * this%rhoa
+    shflx = shf_const * this%wspd(ifno) * (this%tatm(ifno) - tstrm)
+  end subroutine shf_cq
+
   !> @brief Deallocate package memory
   !!
   !! Deallocate TVK package scalars and arrays.
@@ -183,7 +202,7 @@ contains
     ! -- Deallocate parent
     call pbstbase_da(this)
   end subroutine shf_da
-  
+
   !> @brief Read a SHF-specific option from the OPTIONS block
   !!
   !! Process a single SHF-specific option. Used when reading the OPTIONS block
@@ -199,7 +218,7 @@ contains
     ! -- There are no TVK-specific options, so just return false
     success = .false.
   end function shf_read_option
-  
+
   !> @brief Set the stress period attributes based on the keyword
   !<
   subroutine shf_set_stressperiod(this, itemno, keyword, found)
@@ -216,8 +235,8 @@ contains
     integer(I4B) :: jj
     real(DP), pointer :: bndElem => null()
     !
-    ! <wspd> WIND SPEED 
-    ! <tatm> TEMPERATURE OF THE ATMOSPHERE 
+    ! <wspd> WIND SPEED
+    ! <tatm> TEMPERATURE OF THE ATMOSPHERE
     !
     found = .true.
     select case (keyword)
@@ -251,5 +270,5 @@ contains
     !
 999 continue
   end subroutine shf_set_stressperiod
-    
+
 end module SensHeatModule
