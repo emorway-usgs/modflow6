@@ -115,6 +115,7 @@ in_record true
 reader urword
 longname reach number for this entry
 description integer value that defines the reach number associated with the specified PERIOD data on the line. RNO must be greater than zero and less than or equal to NREACHES.
+numeric_index true
 
 block period
 name shfsetting
