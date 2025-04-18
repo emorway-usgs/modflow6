@@ -1,10 +1,10 @@
-# makefile created by pymake for the 'mf6' executable.
+# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
 
 
 include ./makedefaults
 
 # Define the source file directories
-SOURCEDIR1=../src
+SOURCEDIR1=../src                                                      
 SOURCEDIR2=../src/Distributed
 SOURCEDIR3=../src/Exchange
 SOURCEDIR4=../src/Idm
@@ -378,6 +378,20 @@ $(OBJDIR)/swf-evp.o \
 $(OBJDIR)/swf-cdb.o \
 $(OBJDIR)/NumericalModel.o \
 $(OBJDIR)/gwf-chd.o \
+$(OBJDIR)/PbstBase.o \
+$(OBJDIR)/InterfaceMap.o \
+$(OBJDIR)/SeqVector.o \
+$(OBJDIR)/ImsLinearSettings.o \
+$(OBJDIR)/ConvergenceSummary.o \
+$(OBJDIR)/Integer2dReader.o \
+$(OBJDIR)/MethodCellTernary.o \
+$(OBJDIR)/MethodCellPollockQuad.o \
+$(OBJDIR)/MethodCellPollock.o \
+$(OBJDIR)/MethodCellPassToBot.o \
+$(OBJDIR)/VectorInterpolation.o \
+$(OBJDIR)/swf-cxs.o \
+$(OBJDIR)/CellWithNbrs.o \
+$(OBJDIR)/NumericalExchange.o \
 $(OBJDIR)/tsp-ssm.o \
 $(OBJDIR)/tsp-oc.o \
 $(OBJDIR)/tsp-obs.o \
@@ -394,6 +408,7 @@ $(OBJDIR)/GwfMvrPeriodData.o \
 $(OBJDIR)/ImsLinearMisc.o \
 $(OBJDIR)/gwf-npf.o \
 $(OBJDIR)/GwfBuyInputData.o \
+$(OBJDIR)/gwe-shf.o \
 $(OBJDIR)/GweCndOptions.o \
 $(OBJDIR)/VirtualBase.o \
 $(OBJDIR)/STLVecInt.o \
@@ -547,7 +562,9 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
+$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
