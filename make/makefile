@@ -1,4 +1,4 @@
-# makefile created by pymake for the 'mf6' executable.
+# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
 
 
 include ./makedefaults
@@ -101,7 +101,7 @@ ${SOURCEDIR44} \
 ${SOURCEDIR45} \
 ${SOURCEDIR46} \
 ${SOURCEDIR47} \
-${SOURCEDIR48} 
+${SOURCEDIR48}
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -396,6 +396,20 @@ $(OBJDIR)/swf-evp.o \
 $(OBJDIR)/swf-cdb.o \
 $(OBJDIR)/NumericalModel.o \
 $(OBJDIR)/gwf-chd.o \
+$(OBJDIR)/PbstBase.o \
+$(OBJDIR)/InterfaceMap.o \
+$(OBJDIR)/SeqVector.o \
+$(OBJDIR)/ImsLinearSettings.o \
+$(OBJDIR)/ConvergenceSummary.o \
+$(OBJDIR)/Integer2dReader.o \
+$(OBJDIR)/MethodCellTernary.o \
+$(OBJDIR)/MethodCellPollockQuad.o \
+$(OBJDIR)/MethodCellPollock.o \
+$(OBJDIR)/MethodCellPassToBot.o \
+$(OBJDIR)/VectorInterpolation.o \
+$(OBJDIR)/swf-cxs.o \
+$(OBJDIR)/CellWithNbrs.o \
+$(OBJDIR)/NumericalExchange.o \
 $(OBJDIR)/tsp-ssm.o \
 $(OBJDIR)/tsp-oc.o \
 $(OBJDIR)/tsp-obs.o \
@@ -565,7 +579,6 @@ $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
 $(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
-$(OBJDIR)/gwt-mst_orig.o \
 $(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
