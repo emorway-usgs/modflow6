@@ -1066,13 +1066,18 @@ contains
     ! -- local
     real(DP) :: sensheat
     real(DP) :: strmtemp
+    integer(I4B) :: auxpos
+    real(DP) :: sa !< surface area of stream reach, different than wetted area
     !
-    n1 = this%flowbudptr%budterm(this%idxbudgwf)%id1(ientry)
+    n1 = this%flowbudptr%budterm(this%idxbudevap)%id1(ientry)
+    ! -- For now, there is only 1 aux variable under 'EVAPORATION'
+    auxpos = this%flowbudptr%budterm(this%idxbudevap)%naux
+    sa = this%flowbudptr%budterm(this%idxbudevap)%auxvar(auxpos, ientry)
     !
     strmtemp = this%xnewpak(n1)
     call this%shf%shf_cq(n1, strmtemp, sensheat)
     !
-    if (present(rrate)) rrate = sensheat
+    if (present(rrate)) rrate = sensheat * sa
     if (present(rhsval)) rhsval = -rrate
     if (present(hcofval)) hcofval = DZERO
   end subroutine sfe_shf_term
