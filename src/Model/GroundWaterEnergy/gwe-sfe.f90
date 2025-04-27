@@ -185,7 +185,6 @@ contains
   subroutine sfe_options(this, option, found)
     ! -- modules
     use ConstantsModule, only: MAXCHARLEN, LGP
-    use OpenSpecModule, only: access, form
     use InputOutputModule, only: urword, getunit, assign_iounit, openfile
     ! -- dummy
     class(GweSfeType), intent(inout) :: this
