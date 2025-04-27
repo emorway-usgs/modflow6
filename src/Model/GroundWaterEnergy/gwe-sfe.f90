@@ -193,7 +193,8 @@ contains
     character(len=*), intent(inout) :: option
     logical, intent(inout) :: found
     ! -- local
-    character(len=MAXCHARLEN) :: fname, keyword
+    character(len=LINELENGTH) :: fname
+    character(len=MAXCHARLEN) :: keyword
     logical(LGP) :: foundgcclassoption
     ! -- formats
     character(len=*), parameter :: fmtaptbin = &
