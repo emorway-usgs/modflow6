@@ -69,7 +69,7 @@ type double precision
 reader urword
 optional true
 longname heat capacity of air
-description mass-based heat capacity of the air used by calculations related to sensible heat flux.  This value is set to 717.0 J/kg/C if no overriding value is specified.  A user-specified value should be provided for models that use units other than joules, kilograms, and degrees celcius or if it is necessary to use a value other than the default.
+description mass-based heat capacity of the air used by calculations related to sensible heat flux.  This value is set to 717.0 J/kg/C if no overriding value is specified.  A user-specified value should be provided for models that use units other than joules, kilograms, and degrees celsius or if it is necessary to use a value other than the default.
 default_value 717.0
 mf6internal cpa
 
