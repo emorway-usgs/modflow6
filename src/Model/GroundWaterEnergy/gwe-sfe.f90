@@ -136,7 +136,6 @@ contains
     character(len=*), intent(in) :: dvu !< For GWE, set to "energy" in TspAptType
     character(len=*), intent(in) :: dvua !< For GWE, set to "E" in TspAptType
     ! -- local
-    integer(I4B) :: inshf
     type(GweSfeType), pointer :: sfeobj
     !
     ! -- Allocate the object and assign values to object variables
@@ -195,7 +194,6 @@ contains
     ! -- local
     character(len=LINELENGTH) :: fname
     character(len=MAXCHARLEN) :: keyword
-    logical(LGP) :: foundgcclassoption
     ! -- formats
     character(len=*), parameter :: fmtaptbin = &
       "(4x, a, 1x, a, 1x, ' WILL BE SAVED TO FILE: ', a, &
