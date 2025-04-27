@@ -173,7 +173,6 @@ contains
     real(DP), intent(inout) :: shflx !< calculated sensible heat flux amount
     ! -- local
     real(DP) :: shf_const
-    real(DP) :: shf_term
     !
     ! -- calculate sensible heat flux using HGS equation
     shf_const = this%cd * this%cpa * this%rhoa
