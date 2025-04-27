@@ -1,4 +1,4 @@
-# Test the use of the sensible heat flux utility used in conjuction with the 
+# Test the use of the sensible heat flux utility used in conjunction with the 
 # SFE advanced package. 
 # This test to include:
 #  - with gw-sw interaction
