@@ -308,7 +308,9 @@ contains
     do ip = 1, this%flowbudptr%nbudterm
       select case (trim(adjustl(this%flowbudptr%budterm(ip)%flowtype)))
       case ('FLOW-JA-FACE')
-        this%idxbudfjf = ip
+        if (this%flowbudptr%budterm(ip)%maxlist /= 0) then
+          this%idxbudfjf = ip
+        end if
         this%idxbudssm(ip) = 0
       case ('GWF')
         this%idxbudgwf = ip
@@ -537,7 +539,7 @@ contains
     !    5. ext-outflow
     !    6. strmbed-cond
     !    7. sensible heat flux
-    nbudterms = 6 ! ??? This should now be 7, but seems to only work with six ???
+    nbudterms = 7
   end function sfe_get_nbudterms
 
   !> @brief Set up the budget object that stores all the sfe flows
