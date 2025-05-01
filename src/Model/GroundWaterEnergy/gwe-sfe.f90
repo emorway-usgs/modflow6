@@ -538,8 +538,16 @@ contains
     !    4. ext-inflow
     !    5. ext-outflow
     !    6. strmbed-cond
-    !    7. sensible heat flux
-    nbudterms = 7
+    nbudterms = 6
+    ! -- optional utilities
+    !    X. shortwave radiation
+    !    X. longwave radiation
+    !    X. sensible heat flux
+    !    X. latent heat
+    if (this%inshf /= 0) then
+      nbudterms = nbudterms + 1
+    end if
+    !
   end function sfe_get_nbudterms
 
   !> @brief Set up the budget object that stores all the sfe flows
