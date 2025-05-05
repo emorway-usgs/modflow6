@@ -95,6 +95,12 @@ jobs:
       - name: Build MF6
         run: pixi run build builddir
 
+      - name: Setup mf5to6
+        run: pixi run setup-mf5to6 -Dwerror=true builddir
+
+      - name: Build mf5to6
+        run: pixi run build-mf5to6 builddir
+
       - name: Show build log
         if: failure()
         run: cat builddir/meson-logs/meson-log.txt
@@ -151,6 +157,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -267,6 +275,8 @@ jobs:
           fi
           pixi run setup builddir $setupargs
           pixi run build builddir
+          pixi run setup-mf5to6 builddir $setupargs
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -419,6 +429,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
