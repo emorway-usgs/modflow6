@@ -152,7 +152,7 @@ MODFLOW~6 is tested with a large number of example problems, and new capabilitie
 
 % -------------------------------------------------
 \section{Release History}
-A list of all MODFLOW 6 releases is shown in table \ref{tab:releases}.  Changes introduced in previous releases are described in Appendix~\ref{app:A}.
+A list of all previous MODFLOW 6 releases is shown in table \ref{tab:releases}.  Changes introduced in previous releases are described in Appendix~\ref{app:A}.
 
 \begin{table}[h]
 \begin{center}
@@ -230,7 +230,7 @@ The Time-Variable Hydraulic Conductivity (TVK) Package is incompatible with the 
 If a GWF-GWF Exchange is active, then neither of the connected GWF Models can have an active Viscosity (VSC) Package.
 
 \item 
-If a GWT-GWT Exchange is active, then constant concentration conditions cannot be assigned on the interface between the two connected models.  
+If a GWT-GWT or GWE-GWE Exchange is active, then constant concentration (CNC) or constant temperature (CTP) conditions should not be assigned on the interface between the two connected models because the budget reported in the listing file will contain errors.  
 
 \end{enumerate}
 
