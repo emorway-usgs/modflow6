@@ -1,8 +1,8 @@
 # Developing MODFLOW 6
 
-This document describes how to set up a development environment to modify, build and test MODFLOW 6. Details on how to contribute your code to the repository are found in the separate document [CONTRIBUTING.md](CONTRIBUTING.md). 
+This document describes how to set up a development environment to modify, build and test MODFLOW 6. Details on how to contribute your code to the repository are found in the separate document [CONTRIBUTING.md](./CONTRIBUTING.md). 
 
-To build and test an extended version of the program, first read the instructions below and then continue in [EXTENDED.md](EXTENDED.md).
+To build and test an extended version of the program, first read the instructions below and then continue in [EXTENDED.md](./EXTENDED.md).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -72,7 +72,7 @@ To build and test an extended version of the program, first read the instruction
 Before you can build and test MODFLOW 6, you must install and configure the following on your development machine:
 
 - git
-- Python3.9+
+- Python3.10+
 - a modern Fortran compiler
 
 Some additional, optional tools are also discussed below.
@@ -90,7 +90,7 @@ git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 ### Python
 
-Python 3.9+ is required to run MODFLOW 6 tests and in some cases to build MODFLOW 6. Information on installing the python environment is given in the [Installing Python environment](#install-the-python-environment) section. The MODFLOW 6 python environment should be installed after [locally cloning the repository](#get-the-modflow-6-repository).
+Python 3.10+ is required to run MODFLOW 6 tests and in some cases to build MODFLOW 6. Information on installing the python environment is given in the [Installing Python environment](#install-the-python-environment) section. The MODFLOW 6 python environment should be installed after [locally cloning the repository](#get-the-modflow-6-repository).
 
 ### Fortran compiler
 
@@ -202,7 +202,7 @@ Visual Studio installers can be downloaded from the [official website](https://v
 
 *Doxygen & LaTeX*
 
-[Doxygen](https://www.doxygen.nl/index.html) is used to generate the [MODFLOW 6 source code documentation](https://modflow-usgs.github.io/modflow6/). [Graphviz](https://graphviz.org/) is used by doxygen to produce source code diagrams. [LaTeX](https://www.latex-project.org/) is used to generate the MODFLOW 6 release notes and Input/Output documents.
+[Doxygen](https://www.doxygen.nl/index.html) is used to generate the [MODFLOW 6 source code documentation](https://MODFLOW-ORG.github.io/modflow6/). [Graphviz](https://graphviz.org/) is used by doxygen to produce source code diagrams. [LaTeX](https://www.latex-project.org/) is used to generate the MODFLOW 6 release notes and Input/Output documents.
 
 These programs can be installed from various sources, including by conda, macports, or from individual sources such as https://www.tug.org/. Details about USGS LaTeX libraries can be seen in addition to linux installs in the CI workflow for the docs (`.github/workflows/ci-docs.yml`).
 
@@ -212,7 +212,7 @@ These programs can be installed from various sources, including by conda, macpor
 Fork and clone the MODFLOW 6 repository:
 
 1. Login to your GitHub account or create one by following the instructions given [here](https://github.com/signup/free).
-2. [Fork](http://help.github.com/forking) the [main MODFLOW 6](https://github.com/MODFLOW-USGS/modflow6).
+2. [Fork](http://help.github.com/forking) the [main MODFLOW 6](https://github.com/MODFLOW-ORG/modflow6).
 3. Clone your fork of the MODFLOW 6 repository and create an `upstream` remote pointing back to your fork.
 
 After forking the MODFLOW 6 repository on GitHub.
@@ -232,12 +232,12 @@ cd modflow6
 3. Add the main MODFLOW 6 repository as an upstream remote to your repository.
 
 ```shell
-git remote add upstream https://github.com/MODFLOW-USGS/modflow6.git
+git remote add upstream https://github.com/MODFLOW-ORG/modflow6.git
 ```
 
 ## Install the python environment
 
-Python 3.9+ is required to run MODFLOW 6 tests and in some cases to build MODFLOW 6. Miniforge is the recommended python distribution if you do not have an existing Conda or Mamba based python distribution.
+Python 3.10+ is required to run MODFLOW 6 tests and in some cases to build MODFLOW 6. Miniforge is the recommended python distribution if you do not have an existing Conda or Mamba based python distribution.
 
 The [environment file for MODFLOW 6](./environment.yml) includes all of the required [python dependencies](#python-dependencies). Install the `modflow6` environment using the Conda `environment.yml` file in the repository. 
 
@@ -302,17 +302,17 @@ Like MODFLOW 6, `flopy` is modular &mdash; for each MODFLOW 6 package there is g
 
 #### `modflow-devtools`
 
-The tests use a set of shared fixtures and utilities provided by the [`modflow-devtools`](https://github.com/MODFLOW-USGS/modflow-devtools) package.
+The tests use a set of shared fixtures and utilities provided by the [`modflow-devtools`](https://github.com/MODFLOW-ORG/modflow-devtools) package.
 
 ## Building
 
 Meson is the recommended build tool for MODFLOW 6. [Meson](https://mesonbuild.com/Getting-meson.html) must be installed and on your [PATH](https://en.wikipedia.org/wiki/PATH_(variable)). Creating and activating the provided Pixi or Conda environment should be sufficient for this.
 
-Meson build configuration files are provided for MODFLOW 6, for the ZONEBUDGET and MODFLOW 2005 to 6 converter utility programs, and for Fortran unit tests (see [Testing](#testing) section below).
+### MODFLOW 6 and ZONEBUDGET
+Meson build configuration files are provided for MODFLOW 6 and the ZONEBUDGET utility program, and for Fortran unit tests (see [Testing](#testing) section below).
 
 - `meson.build`
 - `utils/zonebudget/meson.build`
-- `utils/mf5to6/meson.build`
 - `autotest/meson.build`
 
 Building MODFLOW 6 requires two steps:
@@ -351,6 +351,50 @@ or using pixi:
 
 ```shell
 pixi run build builddir
+```
+
+### MODFLOW 2005 to 6 converter
+Meson build configuration files are provided for the MODFLOW 2005 to 6 converter utility program.
+
+- `utils/mf5to6/meson.build`
+- `utils/mf5to6/src/meson.build`
+
+Building MODFLOW 2005 to 6 converter program requires two steps:
+
+- configure the build directory
+- build the project
+
+To configure the build directory for a debug version from the `<project root>/utils/mf5to6` directory:
+
+```shell
+meson setup --prefix=$(pwd)/../../  builddir -Ddebug=true
+```
+Or to configure the build directory for an optimized release version from the `<project root>/utils/mf5to6` directory:
+
+```shell
+meson setup --prefix=$(pwd)/../../ builddir
+```
+
+or using pixi to setup the build directory from the `<project root>` directory:
+
+```shell
+pixi run setup-mf5to6 builddir
+```
+
+Debug versions can be built using pixi by adding `-Ddebug=true` at the end of the pixi command. Other meson commands (for example, `--wipe`, _etc._) added to the pixi command are passed through to Meson.
+
+Substitute `%CD%` as necessary on Windows.
+
+To build MODFLOW 6 and install binaries to `<project root>/bin/` from the `<project root>/utils/mf5to6` directory:
+
+```shell
+meson install -C builddir
+```
+
+or using pixi from the `<project root>` directory:
+
+```shell
+pixi run build-mf5to6 builddir
 ```
 
 **Note:** If using Visual Studio Code, you can use tasks as described [here](.vscode/README.md) to automate the above.
@@ -517,11 +561,11 @@ As mentioned above, binaries live in the `bin` subdirectory of the project root.
 
 - local development binaries in the top-level `bin`
 - binaries rebuilt in development mode from the latest MODFLOW 6 release in `bin/rebuilt/`
-- related programs installed from the [executables distribution](https://github.com/MODFLOW-USGS/executables/releases) in `bin/downloaded/`
+- related programs installed from the [executables distribution](https://github.com/MODFLOW-ORG/executables/releases) in `bin/downloaded/`
 
 ##### Rebuilding release binaries
 
-Tests require the latest official MODFLOW 6 release to be compiled in develop mode with the same Fortran compiler as the development version. A number of binaries distributed from the [executables repo](https://github.com/MODFLOW-USGS/executables) must also be installed. The script `autotest/get_exes.py` does both of these things. It can be run from the project root with:
+Tests require the latest official MODFLOW 6 release to be compiled in develop mode with the same Fortran compiler as the development version. A number of binaries distributed from the [executables repo](https://github.com/MODFLOW-ORG/executables) must also be installed. The script `autotest/get_exes.py` does both of these things. It can be run from the project root with:
 
 ```shell
 pixi run get-exes
@@ -575,9 +619,9 @@ pixi run update-fortran-definitions
 
 Some autotests load models from external repositories:
 
-- [`MODFLOW-USGS/modflow6-testmodels`](https://github.com/MODFLOW-USGS/modflow6-testmodels)
-- [`MODFLOW-USGS/modflow6-largetestmodels`](https://github.com/MODFLOW-USGS/modflow6-largetestmodels)
-- [`MODFLOW-USGS/modflow6-examples`](https://github.com/MODFLOW-USGS/modflow6-examples)
+- [`MODFLOW-ORG/modflow6-testmodels`](https://github.com/MODFLOW-ORG/modflow6-testmodels)
+- [`MODFLOW-ORG/modflow6-largetestmodels`](https://github.com/MODFLOW-ORG/modflow6-largetestmodels)
+- [`MODFLOW-ORG/modflow6-examples`](https://github.com/MODFLOW-ORG/modflow6-examples)
 
 See the [MODFLOW devtools documentation](https://modflow-devtools.readthedocs.io/en/latest/md/install.html#installing-external-model-repositories) for instructions to install external model repositories.
 
@@ -789,7 +833,7 @@ The framework has three hooks:
 
 A test script conventionally contains one or more test cases, fed to the test function as `idx, name` pairs. `idx` can be used to index parameter values or expected results for a specific test case. The test case `name` is useful for model/subdirectory naming, etc.
 
-The framework will not run an unknown program. The path to any program under test (or used for a comparison) must be registered in the `targets` dictionary. Keys are strings. See `autotest/conftest.py` for the contents of `targets` &mdash; naming follows the [executables distribution](https://github.com/MODFLOW-USGS/executables).
+The framework will not run an unknown program. The path to any program under test (or used for a comparison) must be registered in the `targets` dictionary. Keys are strings. See `autotest/conftest.py` for the contents of `targets` &mdash; naming follows the [executables distribution](https://github.com/MODFLOW-ORG/executables).
 
 The `.run()` function
 

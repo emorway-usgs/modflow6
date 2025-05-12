@@ -20,7 +20,7 @@ PROJ_ROOT_PATH = get_project_root_path()
 EXAMPLES_REPO_PATH = PROJ_ROOT_PATH.parent / "modflow6-examples"
 BUILD_PATH = PROJ_ROOT_PATH / "builddir"
 BIN_PATH = PROJ_ROOT_PATH / "bin"
-GITHUB_REPO = "MODFLOW-USGS/modflow6"
+GITHUB_REPO = "MODFLOW-ORG/modflow6"
 BENCHMARKS_FILE_NAME = "run-time-comparison.md"
 IS_WINDOWS = sys.platform.lower() == "win32"
 EXE_EXT = ".exe" if IS_WINDOWS else ""
@@ -258,7 +258,7 @@ def write_results(
             + f"to the previous version ({previous_v}). "
             + "The current example models available from the "
             + "[MODFLOW 6 Examples GitHub Repository]"
-            + "(https://github.com/MODFLOW-USGS/modflow6-examples) are "
+            + "(https://github.com/MODFLOW-ORG/modflow6-examples) are "
             + "used to compare run times. Simulations that fail are "
             + "indicated by '--'. The percent difference, where calculated, "
             + "is relative to the simulation run time for the previous "
@@ -292,7 +292,7 @@ def run_benchmarks(
     current_bin_path: PathLike,
     previous_bin_path: PathLike,
     examples_path: PathLike,
-    output_path: PathLike,
+    out_path: PathLike,
     excluded: list[str] = [],
 ):
     """Benchmark current development version against previous release
@@ -303,7 +303,7 @@ def run_benchmarks(
     current_bin_path = Path(current_bin_path).expanduser().absolute()
     previous_bin_path = Path(previous_bin_path).expanduser().absolute()
     examples_path = Path(examples_path).expanduser().absolute()
-    output_path = Path(output_path).expanduser().absolute()
+    out_path = Path(out_path).expanduser().absolute()
 
     example_dirs = get_model_paths(examples_path, excluded=excluded)
     if not any(example_dirs):
@@ -322,7 +322,7 @@ def run_benchmarks(
         )
 
     if not old_exe.is_file():
-        version, download_path = fetch_latest(output_path)
+        version, download_path = fetch_latest(out_path)
         print(f"Rebuilding latest MODFLOW 6 release {version} in development mode")
         meson_build(
             project_path=download_path,
@@ -360,7 +360,7 @@ def run_benchmarks(
     write_results(
         current_exe=dev_exe,
         previous_exe=old_exe,
-        output_path=output_path,
+        output_path=out_path,
         current_total=current_total,
         previous_total=previous_total,
         lines=lines,
@@ -374,7 +374,7 @@ def test_run_benchmarks(tmp_path):
         current_bin_path=BIN_PATH,
         previous_bin_path=BIN_PATH / "rebuilt",
         examples_path=EXAMPLES_REPO_PATH / "examples",
-        output_path=tmp_path,
+        out_path=tmp_path,
         excluded=["previous"],
     )
     assert (tmp_path / BENCHMARKS_FILE_NAME).is_file()
@@ -386,7 +386,7 @@ if __name__ == "__main__":
         epilog=textwrap.dedent(
             """\
     Benchmarks the current version of MODFLOW 6 against the latest official release,
-    with the example models stored in the MODFLOW-USGS/modflow6-examples repository.
+    with the example models stored in the MODFLOW-ORG/modflow6-examples repository.
             """
         ),
     )
@@ -439,6 +439,6 @@ if __name__ == "__main__":
         current_bin_path=current_bin_path,
         previous_bin_path=previous_bin_path,
         examples_path=examples_repo_path / "examples",
-        output_path=output_path,
+        out_path=output_path,
         excluded=["previous"],
     )

@@ -95,7 +95,7 @@ def test_copy_sources(tmp_path):
 
     assert (tmp_path / "src" / "meson.build").is_file()
     assert (tmp_path / "srcbmi" / "meson.build").is_file()
-    assert (tmp_path / "utils" / "meson.build").is_file()
+    assert (tmp_path / "utils" / "mf5to6" / "meson.build").is_file()
     assert (tmp_path / "msvs" / "mf6.sln").is_file()
 
     assert (tmp_path / "utils").is_dir()
@@ -115,7 +115,7 @@ def setup_examples(
     examples_path = Path(examples_path).expanduser().absolute()
 
     # find and download example models distribution from latest examples release
-    latest = get_release("MODFLOW-USGS/modflow6-examples", tag="latest", verbose=True)
+    latest = get_release("MODFLOW-ORG/modflow6-examples", tag="latest", verbose=True)
     assets = latest["assets"]
     print(f"Found {len(assets)} assets from the latest examples release:")
     pprint([a["name"] for a in assets])
@@ -207,6 +207,11 @@ def build_programs_meson(build_path: PathLike, bin_path: PathLike, force: bool =
         print(f"Building binaries in {build_path}, installing to {bin_path}")
         meson_build(
             project_path=PROJ_ROOT_PATH,
+            build_path=build_path,
+            bin_path=bin_path,
+        )
+        meson_build(
+            project_path=PROJ_ROOT_PATH / "utils/mf5to6",
             build_path=build_path,
             bin_path=bin_path,
         )
@@ -324,7 +329,7 @@ def build_distribution(
     build_documentation(
         bin_path=output_path / "bin",
         full=full,
-        output_path=output_path / "doc",
+        out_path=output_path / "doc",
         force=force,
     )
 

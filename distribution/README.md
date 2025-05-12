@@ -30,7 +30,7 @@ MODFLOW 6 releases come in two flavors:
 - nightly development builds
 - full/approved distributions
 
-Development builds are created nightly from the tip of the `develop` branch and released from the [`MODFLOW-USGS/modflow6-nightly-build` repository](https://github.com/MODFLOW-USGS/modflow6-nightly-build). Development distributions contain only MODFLOW 6 input/output documentation, release notes, `code.json` metadata, and core executables and libraries:
+Development builds are created nightly from the tip of the `develop` branch and released from the [`MODFLOW-ORG/modflow6-nightly-build` repository](https://github.com/MODFLOW-ORG/modflow6-nightly-build). Development distributions contain only MODFLOW 6 input/output documentation, release notes, `code.json` metadata, and core executables and libraries:
 
 - `mf6`: MODFLOW 6 executable
 - `zbud6`: Zonebudget executable
@@ -78,19 +78,11 @@ These should occur roughly in the order presented above. The procedure is automa
 
 ### Update release notes
 
-The release notes document is constructed from the `doc/ReleaseNotes/ReleaseNotes.tex` LaTeX file. During each development cycle, release notes should be maintained in `doc/ReleaseNotes/develop.tex` &mdash; this file is referenced from `doc/ReleaseNotes/ReleaseNotes.tex`.
+The release notes PDF document is constructed from the `doc/ReleaseNotes/ReleaseNotes.tex` LaTeX file. During development, release notes should be maintained in `doc/ReleaseNotes/develop.toml` &mdash; this file is turned into a LaTeX file by `doc/ReleaseNotes/mk_releasenotes.py`. A pixi task is available for this, e.g. `pixi run make-release-notes`. The resulting LaTex file is referenced from `doc/ReleaseNotes/ReleaseNotes.tex`.
 
 Before making a release, add a line to the Release History section of `ReleaseNotes.tex` providing the version number, date and DOI of the current release, e.g. `6.4.4 & February 13, 2024 & \url{https://doi.org/10.5066/P9FL1JCC}`.
 
-After each release is made, several steps are required to reset the release notes for the next development cycle:
-
-- copy `develop.tex` into a new file `doc/ReleaseNotes/previous/vx.y.z.tex` (where `x.y.z` is the semantic version just released)
-- add a new entry like `\input{./previous/vx.y.z.tex}` to line 3 of `doc/ReleaseNotes/appendixA.tex`
-- overwrite `develop.tex` with the contents of `doc/ReleaseNotes/vx.y.z-template.tex`
-
-Now new changes can be added to `develop.tex` as development proceeds.
-
-**Note**: Newly deprecated MF6IO options are included in the release notes. See the [developer docs](../DEVELOPER.md#deprecation-policy) for more info on MF6's deprecation policy, searching for deprecations among DFNs, and generating a deprecations table for insertion into the release notes.
+**Note**: Deprecated and removed MF6IO options are included in the release notes. See the [developer docs](../DEVELOPER.md#deprecation-policy) for more info on deprecation policy, searching for deprecations among DFNs, and generating a deprecations/removals table for insertion into the release notes.
 
 ### Update version info
 
@@ -132,13 +124,13 @@ The `build_makefiles.py` script is used to rewrite makefiles after Fortran sourc
 
 ### Build example models
 
-MODFLOW 6 [example models](https://github.com/MODFLOW-USGS/modflow6-examples) are bundled with official releases. Example models must be built and run to generate plots and tables before documentation can be generated. The `release.yml` workflow attempts to download the latest release from the examples repository, only re-building and re-running example models if no such release is available. See the examples repository for more information on preparing example models.
+MODFLOW 6 [example models](https://github.com/MODFLOW-ORG/modflow6-examples) are bundled with official releases. Example models must be built and run to generate plots and tables before documentation can be generated. The `release.yml` workflow attempts to download the latest release from the examples repository, only re-building and re-running example models if no such release is available. See the examples repository for more information on preparing example models.
 
 ### Benchmark example models
 
 MODFLOW 6 documentation includes a performance evaluation comparing the current version against the last official release. Benchmarks must run before a release can be prepared. Benchmarks run as a component of the `docs.yml` CI workflow &mdash; `release.yml` attempts to download benchmark results if available, only re-running them if necessary.
 
-The `benchmark.py` script benchmarks the current development version of MODFLOW 6 against the latest release rebuilt in development mode, using the models from the `MODFLOW-USGS/modflow6-examples` repository. Paths to pre-built binaries for both versions can be provided via the `--current-bin-path` (short `-c`) and `--previous-bin-path` (short `-p`) command line options. If bin paths are not provided, executables are rebuilt in the default locations:
+The `benchmark.py` script benchmarks the current development version of MODFLOW 6 against the latest release rebuilt in development mode, using the models from the `MODFLOW-ORG/modflow6-examples` repository. Paths to pre-built binaries for both versions can be provided via the `--current-bin-path` (short `-c`) and `--previous-bin-path` (short `-p`) command line options. If bin paths are not provided, executables are rebuilt in the default locations:
 
 `<project root>/bin`: current development version
 `<project root>/bin/rebuilt`: previous version
@@ -157,7 +149,7 @@ The above will write results to a markdown file `.benchmarks/run-time-comparison
 
 Extensive documentation is bundled with official MODFLOW 6 releases. MODFLOW 6 documentation is written in LaTeX. Some LaTeX files (in particular for MODFLOW 6 input/output documentation) are automatically generated from DFN files. The `release.yml` workflow first runs `update_version.py` to update version strings to be substituted into the docs, then runs `build_docs.py` to regenerate LaTeX files where necessary, download benchmark results (and convert the Markdown results file to LaTeX), download publications hosted on the USGS website, and finally convert LaTeX to PDFs.
 
-Manually building MODFLOW 6 documentation requires additional Python dependencies specified in `build_rtd_docs/requirements.rtd.txt`. Styles defined in the [`MODFLOW-USGS/usgslatex`](https://github.com/MODFLOW-USGS/usgslatex) are also required. (See that repository's `README` for installation instructions or this repo's [`../.github/workflows/docs.yml](../.github/workflows/docs.yml) CI workflow for an example.)
+Manually building MODFLOW 6 documentation requires additional Python dependencies specified in `build_rtd_docs/requirements.rtd.txt`. Styles defined in the [`MODFLOW-ORG/usgslatex`](https://github.com/MODFLOW-ORG/usgslatex) are also required. (See that repository's `README` for installation instructions or this repo's [`../.github/workflows/docs.yml](../.github/workflows/docs.yml) CI workflow for an example.)
 
 ### Build the distribution archive
 
@@ -169,7 +161,7 @@ The script has several other arguments:
 
 - `--build-path`: path to the build workspace, defaults to `<project root>/builddir`
 - `--output-path (-o)`: path to create a distribution zipfile, defaults to `<project root>/distribution/`
-- `--examples-repo-path (-e)`: path to the [`MODFLOW-USGS/modflow6-examples`](https://github.com/MODFLOW-USGS/modflow6-examples) repository, defaults to `modflow6-examples` side-by-side with project root
+- `--examples-repo-path (-e)`: path to the [`MODFLOW-ORG/modflow6-examples`](https://github.com/MODFLOW-ORG/modflow6-examples) repository, defaults to `modflow6-examples` side-by-side with project root
 - `--force (-f)`: whether to recreate and overwrite preexisting components of the distribution, if they already exist
 
 Default paths are resolved relative to the script's location on the filesystem, *not* the current working directory, so the script can be run from `distribution/`, from the project root, or from anywhere else. This is true of all scripts in the `distribution/` directory.
@@ -186,13 +178,13 @@ The steps above are automated in the `.github/workflows/release.yml` and `releas
 
 The `release.yml` workflow has no triggers of its own, and must be dispatched by `.github/workflows/release_dispatch.yml`, in one of two ways:
 
-- Push a release branch to the `MODFLOW-USGS/modflow6` repository. This method should be used for proper releases. 
+- Push a release branch to the `MODFLOW-ORG/modflow6` repository. This method should be used for proper releases. 
 - Manually trigger the workflow via GitHub CLI or web UI. Useful for testing release candidates or verifying the release automation before a final release is made &mdash; see the [Testing](#testing) section below for more detail.
 
 To release an official version of MODFLOW 6 via the release branch method:
 
 1. Create a release candidate branch from the tip of `develop` or `master`. The branch's name must begin with `v` followed by the version number. For an officially approved release, include *only* the version number. For a preliminary release candidate, append `rc` after the version number, e.g. `v6.4.0rc`. If the branch name does not end in `rc`, the release is assumed to be approved.
-2. Push the branch to the `MODFLOW-USGS/modflow6` repository. This triggers the release workflow. If the release is still an unapproved candidate (i.e. the branch name ends with `rc`) binaries are built with `IDEVELOPMODE` set to 1, and the workflow ends after uploading binaries and documentation artifacts for inspection. If the release is approved/official, the workflow drafts a pull request against the `master` branch.
+2. Push the branch to the `MODFLOW-ORG/modflow6` repository. This triggers the release workflow. If the release is still an unapproved candidate (i.e. the branch name ends with `rc`) binaries are built with `IDEVELOPMODE` set to 1, and the workflow ends after uploading binaries and documentation artifacts for inspection. If the release is approved/official, the workflow drafts a pull request against the `master` branch.
 3. To continue with the release, merge (**do not squash**) the PR into `master`. This triggers another job to tag the new tip of `master` with the release number, draft a release, and upload binaries and documentation as release assets.
 4. If the release assets pass inspection, publish the release. The following format convention is used for the GitHub release post:
 
@@ -204,7 +196,13 @@ To release an official version of MODFLOW 6 via the release branch method:
     Visit the USGS "MODFLOW and Related Programs" site for information on MODFLOW 6 and related software: https://doi.org/10.5066/F76Q1VQV
     ```
 
-5. Create a branch from `master`, naming it something like `post-release-x.y.z-reset`. Run `distribution/update_version.py -v x.y.z.devN`, substituting `x`, `y`, `z` and `N` as appropriate for the next development cycle's version number. This will substitute the version number into all necessary files and will also set `IDEVELOPMODE` back to 1. Reset release notes as described [above](#update-release-notes). Open a pull request into `master` from the reset branch. Merge (**do not squash**) the PR.
+5. Create a branch from `master`, naming it something like `post-release-x.y.z-reset`. Run `distribution/update_version.py -v x.y.z.devN`, substituting `x`, `y`, `z` and `N` as appropriate for the next development cycle's version number. This will substitute the version number into all necessary files and will also set `IDEVELOPMODE` back to 1. Reset the release notes by
+
+    - copying the `develop.tex` file generated from `develop.toml` to `doc/ReleaseNotes/previous/vx.y.z.tex` (where `x.y.z` is the semantic version just released), then
+    - inserting a new line `\input{./previous/vx.y.z.tex}` at the top of `doc/ReleaseNotes/appendixA.tex`, then
+    - clearing `develop.toml`.
+
+Open a pull request into `master` from the reset branch. Merge (**do not squash**) the PR.
 
 **Note**: Squashing the release PR into `master` or the post-release reset PR into `develop` causes `develop` and `master` to diverge, leading to conflicts at the next release time. Both pull requests should be **merged with a merge commit**, *not* squashed.
 

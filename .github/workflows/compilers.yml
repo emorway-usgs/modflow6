@@ -75,16 +75,10 @@ jobs:
         with:
           path: modflow6
 
-      - name: Checkout modflow6-testmodels
-        uses: actions/checkout@v4
-        with:
-          repository: MODFLOW-USGS/modflow6-testmodels
-          path: modflow6-testmodels
-    
       - name: Checkout modflow6-examples
         uses: actions/checkout@v4
         with:
-          repository: MODFLOW-USGS/modflow6-examples
+          repository: MODFLOW-ORG/modflow6-examples
           path: modflow6-examples
     
       - name: Setup ${{ matrix.compiler }} ${{ matrix.version }}
@@ -94,9 +88,9 @@ jobs:
           version: ${{ matrix.version }}
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
@@ -114,6 +108,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -202,7 +198,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.9
+          python-version: '3.10'
 
       - name: Install packages
         run: pip install tabulate pandas

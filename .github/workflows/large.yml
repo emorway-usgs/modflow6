@@ -60,16 +60,10 @@ jobs:
         with:
           path: modflow6
 
-      - name: Checkout modflow6-largetestmodels
-        uses: actions/checkout@v4
-        with:
-          repository: MODFLOW-USGS/modflow6-largetestmodels
-          path: modflow6-largetestmodels
-
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
@@ -87,6 +81,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Get executables
         working-directory: modflow6

@@ -12,14 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@v0.8.1
+      - uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           cache: false
 
       - name: Update pixi lock file
         run: |
-          rm pixi.lock
           pixi global install pixi-diff-to-markdown
           printf "Update pixi dependencies to the latest version\n\n" >> diff.md
           pixi update --json | pixi exec pixi-diff-to-markdown >> diff.md

@@ -49,9 +49,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
 
       - name: Check Fortran source formatting
         run: pixi run check-format
@@ -85,15 +85,21 @@ jobs:
           version: ${{ env.FC_V }}
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
 
       - name: Setup MF6
         run: pixi run setup -Dwerror=true builddir
 
       - name: Build MF6
         run: pixi run build builddir
+
+      - name: Setup mf5to6
+        run: pixi run setup-mf5to6 -Dwerror=true builddir
+
+      - name: Build mf5to6
+        run: pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -130,9 +136,9 @@ jobs:
           version: ${{ env.FC_V }}
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
@@ -151,6 +157,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -228,16 +236,10 @@ jobs:
         with:
           path: modflow6
 
-      - name: Checkout test models
-        uses: actions/checkout@v4
-        with:
-          repository: MODFLOW-USGS/modflow6-testmodels
-          path: modflow6-testmodels
-
       - name: Checkout examples
         uses: actions/checkout@v4
         with:
-          repository: MODFLOW-USGS/modflow6-examples
+          repository: MODFLOW-ORG/modflow6-examples
           path: modflow6-examples
 
       - name: Setup ${{ env.FC }} ${{ env.FC_V }}
@@ -247,9 +249,9 @@ jobs:
           version: ${{ env.FC_V }}
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
@@ -273,6 +275,8 @@ jobs:
           fi
           pixi run setup builddir $setupargs
           pixi run build builddir
+          pixi run setup-mf5to6 builddir $setupargs
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -335,7 +339,7 @@ jobs:
         if: runner.os == 'Linux'
         uses: actions/checkout@v4
         with:
-          repository: MODFLOW-USGS/usgslatex
+          repository: MODFLOW-ORG/usgslatex
           path: usgslatex
 
       - name: Install TeX Live
@@ -394,22 +398,16 @@ jobs:
         with:
           path: modflow6
 
-      - name: Checkout test models
-        uses: actions/checkout@v4
-        with:
-          repository: MODFLOW-USGS/modflow6-testmodels
-          path: modflow6-testmodels
-
       - name: Checkout examples
         uses: actions/checkout@v4
         with:
-          repository: MODFLOW-USGS/modflow6-examples
+          repository: MODFLOW-ORG/modflow6-examples
           path: modflow6-examples
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
@@ -431,6 +429,8 @@ jobs:
         run: |
           pixi run setup builddir
           pixi run build builddir
+          pixi run setup-mf5to6 builddir
+          pixi run build-mf5to6 builddir
 
       - name: Show build log
         if: failure()
@@ -510,9 +510,9 @@ jobs:
           path: modflow6
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.1
+        uses: prefix-dev/setup-pixi@v0.8.8
         with:
-          pixi-version: v0.40.1
+          pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
 
       - name: Custom pixi install
