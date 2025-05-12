@@ -214,7 +214,7 @@ contains
     ! -- return
     logical :: success
     !
-    ! -- There are no TVK-specific options, so just return false
+    ! -- There are no SHF-specific options, so just return false
     success = .false.
   end function shf_read_option
 
