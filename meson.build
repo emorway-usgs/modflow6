@@ -1,7 +1,7 @@
 project(
   'MODFLOW 6',
   'fortran',
-  version: '6.6.2',
+  version: '6.7.0.dev2',
   license: 'CC0',
   meson_version: '>= 1.7.1',
   default_options : [
