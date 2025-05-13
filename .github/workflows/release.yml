@@ -272,6 +272,13 @@ jobs:
           name: bin-${{ steps.ostag.outputs.ostag }}
           path: modflow6/bin
 
+      - name: Checkout modflow6-testmodels
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        uses: actions/checkout@v4
+        with:
+          repository: MODFLOW-ORG/modflow6-testmodels
+          path: modflow6-testmodels
+
       - name: Checkout modflow6-examples
         if: inputs.run_tests == true && runner.os != 'Windows'
         uses: actions/checkout@v4
@@ -291,24 +298,47 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: pytest -v --durations 0 get_exes.py
 
-      - name: Test modflow6
+      - name: Set markers
         if: inputs.run_tests == true && runner.os != 'Windows'
-        working-directory: modflow6/autotest
-        env:
-          REPOS_PATH: ${{ github.workspace }}
+        id: set_markers
         run: |
           markers="not large"
           if [[ "${{ inputs.developmode }}" == "false" ]]; then
             markers="$markers and not developmode"
           fi
+          echo "markers=$markers" >> $GITHUB_OUTPUT
 
+      - name: Set filters
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        id: set_filters
+        run: |
           filters=""
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
             # comparison fails on macos-14 with optimization=1
             filters="not test028_sfr_rewet"
           fi
+          echo "filters=$filters" >> $GITHUB_OUTPUT
 
-          pytest -v -n auto --durations 0 -m "$markers" -k "$filters"
+      - name: Test MF6
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6/autotest
+        env:
+          REPOS_PATH: ${{ github.workspace }}
+        run: pytest -v -n auto -m "${{ steps.set_markers.outputs.markers }} and not external" -k "${{ steps.set_filters.outputs.filters }}"
+
+      - name: Test MF6 models
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6/autotest
+        env:
+          REPOS_PATH: ${{ github.workspace }}
+        run: pytest -v -n auto -m "${{ steps.set_markers.outputs.markers }} and external" -k "${{ steps.set_filters.outputs.filters }}" --models-path ../../modflow6-testmodels/mf6
+
+      - name: Test converter models
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6/autotest
+        env:
+          REPOS_PATH: ${{ github.workspace }}
+        run: pytest -v -n auto -m "${{ steps.set_markers.outputs.markers }} and external" -k "${{ steps.set_filters.outputs.filters }}" --models-path ../../modflow6-testmodels/mf5to6 --namefile-pattern "*.nam"
       
       - name: Upload failed test output
         if: failure()
