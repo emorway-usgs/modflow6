@@ -6,7 +6,7 @@
 !! can be invoked from the NPF package.  Once this package is completed in its
 !! prototyped form, it will likely be moved around.
 !<
-
+    
 module ShortwaveModule
   use ConstantsModule, only: LINELENGTH, LENMEMPATH, DZERO, LENVARNAME
   use KindModule, only: I4B, DP
@@ -26,13 +26,13 @@ module ShortwaveModule
   character(len=16) :: text = '          SWR'
 
   type, extends(PbstBaseType) :: SwrType
-
+      
     real(DP), dimension(:), pointer, contiguous :: solr => null() !< solar radiation
     real(DP), dimension(:), pointer, contiguous :: shd => null() !< shade fraction
     real(DP), dimension(:), pointer, contiguous :: swrefl => null() !< shortwave reflectance of water surface
-
+      
   contains
-
+  
     procedure :: da => swr_da
     procedure :: read_option => swr_read_option
     !procedure :: pbst_options => swr_options
@@ -40,9 +40,9 @@ module ShortwaveModule
     procedure :: pbst_allocate_arrays => swr_allocate_arrays
     !procedure, private :: swr_allocate_scalars
     procedure, public :: swr_cq
-
+  
   end type SwrType
-
+  
 contains
 
   !> @brief Create a new SwrType object
@@ -65,28 +65,28 @@ contains
     ! -- allocate scalars
     !call swr%swr_allocate_scalars()
   end subroutine swr_cr
-
+  
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
   !! package.
   !! NO SCALARS IN THIS YET
   !<
   !subroutine swr_allocate_scalars(this)
-  ! -- modules
-  !use MemoryManagerModule, only: mem_allocate
-  ! -- dummy
-  !class(SwrType) :: this
-  !
-  ! -- allocate
-  !call mem_allocate(this%solr, 'SOLR', this%memoryPath)
-  !call mem_allocate(this%shd, 'SHD', this%memoryPath)
-  !call mem_allocate(this%swrefl, 'SWREFL', this%memoryPath)
-  !
-  ! -- initialize to default values
-  !this%solr = 600 ! W/m3
-  !this%shd = 0.25 ! dimensionless fraction
-  !this%swrefl = 0.03 ! dimensionless fraction
+    ! -- modules
+    !use MemoryManagerModule, only: mem_allocate
+    ! -- dummy
+    !class(SwrType) :: this
+    !
+    ! -- allocate
+    !call mem_allocate(this%solr, 'SOLR', this%memoryPath)
+    !call mem_allocate(this%shd, 'SHD', this%memoryPath)
+    !call mem_allocate(this%swrefl, 'SWREFL', this%memoryPath)
+    !
+    ! -- initialize to default values
+    !this%solr = 600 ! W/m3
+    !this%shd = 0.25 ! dimensionless fraction
+    !this%swrefl = 0.03 ! dimensionless fraction
   !end subroutine swr_allocate_scalars
-
+  
   !> @brief Allocate arrays specific to the sensible heat flux (SWR) package
   !<
   subroutine swr_allocate_arrays(this)
@@ -109,18 +109,18 @@ contains
       this%swrefl(n) = DZERO
     end do
   end subroutine
-
+  
   !> @brief Set options specific to the SwrType
   !!
   ! NOT USED RIGHT NOW BECAUSE NO CONSTANTS
   !! This routine overrides PbstBaseType%bnd_options
   !<
   !subroutine swr_options(this, option, found)
-  ! -- dummy
+    ! -- dummy
   !  class(SwrType), intent(inout) :: this
   !  character(len=*), intent(inout) :: option
   !  logical, intent(inout) :: found
-  !
+    !
   !  found = .true.
   !  select case (option)
   !  case ('DENSITY_AIR')
@@ -161,7 +161,7 @@ contains
   !    call store_error(errmsg)
   !    call this%parser%StoreErrorUnit()
   !  end select
-  ! end subroutine swr_options
+ ! end subroutine swr_options
 
   !> @brief Calculate Shortwave Radiation Heat Flux
   !!
@@ -177,9 +177,9 @@ contains
     !real(DP) :: swr_const
     !
     ! -- calculate shortwave radiation heat flux (version: user input of sol rad data)
-    swrflx = (1 - this%shd(ifno)) * (1 - this%swrefl(ifno)) * this%solr(ifno)
+    swrflx = (1-this%shd(ifno)) * (1-this%swrefl(ifno)) * this%solr(ifno)
   end subroutine swr_cq
-
+  
   !> @brief Deallocate package memory
   !!
   !! Deallocate TVK package scalars and arrays.
@@ -203,7 +203,7 @@ contains
     ! -- Deallocate parent
     call pbstbase_da(this)
   end subroutine swr_da
-
+  
   !> @brief Read a SWR-specific option from the OPTIONS block
   !!
   !! Process a single SWR-specific option. Used when reading the OPTIONS block
@@ -219,7 +219,7 @@ contains
     ! -- There are no SWR-specific options, so just return false
     success = .false.
   end function swr_read_option
-
+  
   !> @brief Set the stress period attributes based on the keyword
   !<
   subroutine swr_set_stressperiod(this, itemno, keyword, found)
@@ -274,7 +274,7 @@ contains
       bndElem => this%solr(itemno)
       call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
                                          this%packName, 'BND', this%tsManager, &
-                                         this%iprpak, 'SOLR')
+                                         this%iprpak, 'SOLR') 
     case default
       !
       ! -- Keyword not recognized so return to caller with found = .false.
@@ -283,5 +283,5 @@ contains
     !
 999 continue
   end subroutine swr_set_stressperiod
-
+  
 end module ShortwaveModule
