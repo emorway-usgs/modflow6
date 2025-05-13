@@ -1,4 +1,4 @@
-# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
+# makefile created by pymake for the 'mf6' executable.
 
 
 include ./makedefaults
@@ -25,8 +25,8 @@ SOURCEDIR18=../src/Model/SurfaceWaterFlow
 SOURCEDIR19=../src/Model/TransportModel
 SOURCEDIR20=../src/Solution
 SOURCEDIR21=../src/Solution/LinearMethods
-SOURCEDIR22=../src/Solution/ParticleTracker
-SOURCEDIR23=../src/Solution/PETSc
+SOURCEDIR22=../src/Solution/PETSc
+SOURCEDIR23=../src/Solution/ParticleTracker
 SOURCEDIR24=../src/Timing
 SOURCEDIR25=../src/Utilities
 SOURCEDIR26=../src/Utilities/ArrayRead
@@ -358,6 +358,8 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
+$(OBJDIR)/tsp-apt.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -517,12 +519,11 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
-$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
-$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
+$(OBJDIR)/gwe-swr.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o \
