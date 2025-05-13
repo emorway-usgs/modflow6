@@ -55,9 +55,9 @@ surf_Q_in = [
     [10.0],
 ]
 # shortwave radiation parameter values
-solr = 4788.08709 # unrealistically high to drive a 1 deg C rise in stream temperature
+solr = 4788.08709  # unrealistically high to drive a 1 deg C rise in stream temperature
 shd = 0.1
-swrefl = 0.03 
+swrefl = 0.03
 
 # Transport related parameters
 porosity = sy  # porosity (unitless)
@@ -69,7 +69,7 @@ Cpw = 4180  # Heat capacity of water ($J/kg/C$)
 Cps = 880  # Heat capacity of the solids ($J/kg/C$)
 Cpa = 717.0  # Heat capacity of the atmosphere ($J/kg/C$)
 lhv = 2454000.0  # Latent heat of vaporization ($J/kg$)
-#c_d = 0.002  # Drag coefficient ($unitless$)
+# c_d = 0.002  # Drag coefficient ($unitless$)
 # Thermal conductivity of the streambed material ($W/m/C$)
 K_therm_strmbed = 0.0
 rbthcnd = 0.0001
@@ -439,8 +439,8 @@ def check_output(idx, test):
 
     # confirm that the energy added to the stream results in a 1 deg C rise in temp
     # temperature gradient
-    #tgrad = tatm - strm_temp
-    ener_per_sqm = solr * (1-shd) * (1-swrefl)
+    # tgrad = tatm - strm_temp
+    ener_per_sqm = solr * (1 - shd) * (1 - swrefl)
     ener_transfer = ener_per_sqm * (delr * calc_strm_wid)
     # calculate expected temperature rise based on energy transfer
     temp_rise = ener_transfer / (surf_Q_in[idx][0] * Cpw * rhow)
