@@ -1,4 +1,4 @@
-# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
+# makefile created by pymake for the 'mf6' executable.
 
 
 include ./makedefaults
@@ -372,6 +372,8 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
+$(OBJDIR)/tsp-apt.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -536,12 +538,11 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
-$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
-$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
+$(OBJDIR)/gwe-swr.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o \
