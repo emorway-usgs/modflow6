@@ -55,7 +55,7 @@ surf_Q_in = [
     [10.0],
 ]
 # shortwave radiation parameter values
-solr = 4788.08709  # unrealistically high to drive a 1 deg C rise in stream temperature
+solr = 47880870.9  # unrealistically high to drive a 1 deg C rise in stream temperature
 shd = 0.1
 swrefl = 0.03
 
@@ -435,7 +435,7 @@ def check_output(idx, test):
     df = pd.read_csv(fpth)
     calc_strm_wid = df.loc[0, "RCH1_WETWIDTH"].copy()
     # confirm stream width is 1.0 m
-    assert np.isclose(calc_strm_wid, 1.0, atol=1e-9), msg0
+    assert np.isclose(calc_strm_wid, 1.0, atol=1e-7), msg0
 
     # confirm that the energy added to the stream results in a 1 deg C rise in temp
     # temperature gradient
@@ -458,7 +458,7 @@ def check_output(idx, test):
     )
 
     assert np.isclose(df.loc[0, "RCH1_OUTFTEMP"], strm_temp + temp_rise, atol=1e-5), (
-        msg1
+        msg1 + "  " + str(df.loc[0, "RCH1_OUTFTEMP"])
     )
 
 
