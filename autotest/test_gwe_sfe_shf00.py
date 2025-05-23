@@ -447,9 +447,9 @@ def check_output(idx, test):
     # calculate expected temperature rise based on energy transfer
     temp_rise = ener_transfer / (surf_Q_in[idx][0] * Cpw * rhow)
 
-    fpth = os.path.join(test.workspace, gwename + ".sfe.obs.csv")
-    assert os.path.isfile(fpth)
-    df = pd.read_csv(fpth)
+    fpth2 = os.path.join(test.workspace, gwename + ".sfe.obs.csv")
+    assert os.path.isfile(fpth2)
+    df2 = pd.read_csv(fpth2)
 
     # confirm 1 deg C rise in temp
     msg1 = (
@@ -459,7 +459,7 @@ def check_output(idx, test):
         + str(temp_rise)
     )
 
-    assert np.isclose(df.loc[0, "RCH1_OUTFTEMP"], strm_temp + temp_rise, atol=1e-5), (
+    assert np.isclose(df2.loc[0, "RCH1_OUTFTEMP"], strm_temp + temp_rise, atol=1e-6), (
         msg1
     )
 
