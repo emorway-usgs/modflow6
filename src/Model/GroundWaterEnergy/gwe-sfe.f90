@@ -723,7 +723,7 @@ contains
     end if
     ! -- Shortwave radiation heat flux
     if (this%inswr /= 0) then
-      text = '   SHORTWAVE-RADIATION'
+      text = 'SHRTWV-RADIATION'
       idx = idx + 1
       maxlist = this%flowbudptr%budterm(this%idxbudgwf)%maxlist
       naux = 0
