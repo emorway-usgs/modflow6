@@ -616,6 +616,7 @@
 		<File RelativePath="..\src\Utilities\Vector\VectorBase.f90"/></Filter>
 		<File RelativePath="..\src\Utilities\ArrayHandlers.f90"/>
 		<File RelativePath="..\src\Utilities\ArrayReaders.f90"/>
+		<File RelativePath="..\src\Utilities\BinaryFileReader.f90"/>
 		<File RelativePath="..\src\Utilities\BlockParser.f90"/>
 		<File RelativePath="..\src\Utilities\Budget.f90"/>
 		<File RelativePath="..\src\Utilities\BudgetFileReader.f90"/>
