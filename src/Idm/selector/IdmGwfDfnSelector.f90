@@ -11,6 +11,7 @@ module IdmGwfDfnSelectorModule
   use GwfDisuInputModule
   use GwfDisvInputModule
   use GwfDrnInputModule
+  use GwfDrngInputModule
   use GwfEvtInputModule
   use GwfEvtaInputModule
   use GwfGhbInputModule
@@ -69,6 +70,8 @@ contains
       call set_param_pointer(input_definition, gwf_disv_param_definitions)
     case ('DRN')
       call set_param_pointer(input_definition, gwf_drn_param_definitions)
+    case ('DRNG')
+      call set_param_pointer(input_definition, gwf_drng_param_definitions)
     case ('EVT')
       call set_param_pointer(input_definition, gwf_evt_param_definitions)
     case ('EVTA')
@@ -113,6 +116,8 @@ contains
       call set_param_pointer(input_definition, gwf_disv_aggregate_definitions)
     case ('DRN')
       call set_param_pointer(input_definition, gwf_drn_aggregate_definitions)
+    case ('DRNG')
+      call set_param_pointer(input_definition, gwf_drng_aggregate_definitions)
     case ('EVT')
       call set_param_pointer(input_definition, gwf_evt_aggregate_definitions)
     case ('EVTA')
@@ -157,6 +162,8 @@ contains
       call set_block_pointer(input_definition, gwf_disv_block_definitions)
     case ('DRN')
       call set_block_pointer(input_definition, gwf_drn_block_definitions)
+    case ('DRNG')
+      call set_block_pointer(input_definition, gwf_drng_block_definitions)
     case ('EVT')
       call set_block_pointer(input_definition, gwf_evt_block_definitions)
     case ('EVTA')
@@ -200,6 +207,8 @@ contains
       multi_package = gwf_disv_multi_package
     case ('DRN')
       multi_package = gwf_drn_multi_package
+    case ('DRNG')
+      multi_package = gwf_drng_multi_package
     case ('EVT')
       multi_package = gwf_evt_multi_package
     case ('EVTA')
@@ -246,6 +255,8 @@ contains
       call set_subpkg_pointer(subpackages, gwf_disv_subpackages)
     case ('DRN')
       call set_subpkg_pointer(subpackages, gwf_drn_subpackages)
+    case ('DRNG')
+      call set_subpkg_pointer(subpackages, gwf_drng_subpackages)
     case ('EVT')
       call set_subpkg_pointer(subpackages, gwf_evt_subpackages)
     case ('EVTA')
@@ -289,6 +300,8 @@ contains
     case ('DISV')
       integrated = .true.
     case ('DRN')
+      integrated = .true.
+    case ('DRNG')
       integrated = .true.
     case ('EVT')
       integrated = .true.

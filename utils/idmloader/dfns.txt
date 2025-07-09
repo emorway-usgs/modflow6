@@ -6,6 +6,7 @@ gwf-dis.dfn
 gwf-disu.dfn
 gwf-disv.dfn
 gwf-drn.dfn
+gwf-drng.dfn
 gwf-evt.dfn
 gwf-evta.dfn
 gwf-ghb.dfn
