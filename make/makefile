@@ -193,6 +193,7 @@ $(OBJDIR)/gwf-drngidm.o \
 $(OBJDIR)/gwf-disvidm.o \
 $(OBJDIR)/gwf-disuidm.o \
 $(OBJDIR)/gwf-disidm.o \
+$(OBJDIR)/gwf-csubidm.o \
 $(OBJDIR)/gwf-chdidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \

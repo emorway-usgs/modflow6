@@ -7,6 +7,7 @@ module IdmGwfDfnSelectorModule
                                    InputBlockDefinitionType
   use GwfNamInputModule
   use GwfChdInputModule
+  use GwfCsubInputModule
   use GwfDisInputModule
   use GwfDisuInputModule
   use GwfDisvInputModule
@@ -62,6 +63,8 @@ contains
       call set_param_pointer(input_definition, gwf_nam_param_definitions)
     case ('CHD')
       call set_param_pointer(input_definition, gwf_chd_param_definitions)
+    case ('CSUB')
+      call set_param_pointer(input_definition, gwf_csub_param_definitions)
     case ('DIS')
       call set_param_pointer(input_definition, gwf_dis_param_definitions)
     case ('DISU')
@@ -108,6 +111,8 @@ contains
       call set_param_pointer(input_definition, gwf_nam_aggregate_definitions)
     case ('CHD')
       call set_param_pointer(input_definition, gwf_chd_aggregate_definitions)
+    case ('CSUB')
+      call set_param_pointer(input_definition, gwf_csub_aggregate_definitions)
     case ('DIS')
       call set_param_pointer(input_definition, gwf_dis_aggregate_definitions)
     case ('DISU')
@@ -154,6 +159,8 @@ contains
       call set_block_pointer(input_definition, gwf_nam_block_definitions)
     case ('CHD')
       call set_block_pointer(input_definition, gwf_chd_block_definitions)
+    case ('CSUB')
+      call set_block_pointer(input_definition, gwf_csub_block_definitions)
     case ('DIS')
       call set_block_pointer(input_definition, gwf_dis_block_definitions)
     case ('DISU')
@@ -199,6 +206,8 @@ contains
       multi_package = gwf_nam_multi_package
     case ('CHD')
       multi_package = gwf_chd_multi_package
+    case ('CSUB')
+      multi_package = gwf_csub_multi_package
     case ('DIS')
       multi_package = gwf_dis_multi_package
     case ('DISU')
@@ -247,6 +256,8 @@ contains
       call set_subpkg_pointer(subpackages, gwf_nam_subpackages)
     case ('CHD')
       call set_subpkg_pointer(subpackages, gwf_chd_subpackages)
+    case ('CSUB')
+      call set_subpkg_pointer(subpackages, gwf_csub_subpackages)
     case ('DIS')
       call set_subpkg_pointer(subpackages, gwf_dis_subpackages)
     case ('DISU')
@@ -292,6 +303,8 @@ contains
     case ('NAM')
       integrated = .true.
     case ('CHD')
+      integrated = .true.
+    case ('CSUB')
       integrated = .true.
     case ('DIS')
       integrated = .true.
