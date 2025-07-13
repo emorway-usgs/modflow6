@@ -2,7 +2,7 @@ module BudgetFileReaderModule
 
   use KindModule
   use SimModule, only: store_error, store_error_unit
-  use ConstantsModule, only: LINELENGTH
+  use ConstantsModule, only: LINELENGTH, LENHUGELINE
   use BinaryFileReaderModule, only: BinaryFileReaderType, BinaryFileHeaderType
 
   implicit none
@@ -13,6 +13,7 @@ module BudgetFileReaderModule
   type, extends(BinaryFileHeaderType) :: BudgetFileHeaderType
     character(len=16) :: budtxt
     integer(I4B) :: nval, idum1, idum2, imeth
+    real(DP) :: delt
     character(len=16) :: srcmodelname, srcpackagename
     character(len=16) :: dstmodelname, dstpackagename
     integer(I4B) :: ndat, naux, nlist
@@ -38,6 +39,7 @@ module BudgetFileReaderModule
     procedure :: initialize
     procedure :: read_header
     procedure :: read_record
+    procedure :: rewind
     procedure :: finalize
   end type BudgetFileReaderType
 
@@ -58,13 +60,10 @@ contains
     logical :: success
     !
     this%inunit = iu
-    this%endoffile = .false.
     this%nbudterms = 0
     ncrbud = 0
     maxaux = 0
-    !
-    allocate (BudgetFileHeaderType :: this%header)
-    allocate (BudgetFileHeaderType :: this%headernext)
+    call this%rewind()
     !
     ! -- Determine number of budget terms within a time step
     if (iout > 0) &
@@ -94,7 +93,7 @@ contains
     allocate (this%nauxarray(this%nbudterms))
     allocate (this%auxtxtarray(maxaux, this%nbudterms))
     this%auxtxtarray(:, :) = ''
-    rewind (this%inunit)
+    call this%rewind()
     !
     ! -- Now read through again and store budget text names
     do ibudterm = 1, this%nbudterms
@@ -114,7 +113,7 @@ contains
         end if
       end select
     end do
-    rewind (this%inunit)
+    call this%rewind()
     if (iout > 0) &
       write (iout, '(a, i0, a)') 'Detected ', this%nbudterms, &
       ' unique flow terms in budget file.'
@@ -150,6 +149,7 @@ contains
       h%nlist = 0
       if (allocated(h%auxtxt)) deallocate (h%auxtxt)
 
+      inquire (unit=this%inunit, pos=h%pos)
       read (this%inunit, iostat=iostat) h%kstp, h%kper, &
         h%budtxt, h%nval, h%idum1, h%idum2
       if (iostat /= 0) then
@@ -259,8 +259,9 @@ contains
   function get_str(this) result(str)
     class(BudgetFileHeaderType), intent(in) :: this
     character(len=:), allocatable :: str
+    character(len=LENHUGELINE) :: temp
 
-    write (str, '(*(G0))') &
+    write (temp, '(*(G0))') &
       'Budget file header (pos: ', this%pos, &
       ', kper: ', this%kper, &
       ', kstp: ', this%kstp, &
@@ -280,7 +281,20 @@ contains
       ', naux: ', this%naux, &
       ', nlist: ', this%nlist, &
       ')'
-    str = trim(str)
+    str = trim(temp)
   end function get_str
+
+  subroutine rewind (this)
+    class(BudgetFileReaderType), intent(inout) :: this
+
+    rewind (this%inunit)
+    this%endoffile = .false.
+    if (allocated(this%header)) deallocate (this%header)
+    if (allocated(this%headernext)) deallocate (this%headernext)
+    allocate (BudgetFileHeaderType :: this%header)
+    allocate (BudgetFileHeaderType :: this%headernext)
+    this%header%pos = 1
+    this%headernext%pos = 1
+  end subroutine rewind
 
 end module BudgetFileReaderModule

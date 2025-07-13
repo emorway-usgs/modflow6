@@ -9,7 +9,7 @@ module BinaryFileReaderModule
   type :: BinaryFileHeaderType
     integer(I4B) :: pos
     integer(I4B) :: kper, kstp
-    real(DP) :: delt, pertim, totim
+    real(DP) :: pertim, totim
   contains
     procedure :: get_str
   end type BinaryFileHeaderType
@@ -20,11 +20,21 @@ module BinaryFileReaderModule
     class(BinaryFileHeaderType), allocatable :: headernext
     logical(LGP) :: endoffile
   contains
+    procedure(read_header_if), deferred :: read_header
     procedure(read_record_if), deferred :: read_record
     procedure :: peek_record
+    procedure :: rewind
   end type BinaryFileReaderType
 
   abstract interface
+    subroutine read_header_if(this, success, iout)
+      import BinaryFileReaderType
+      import I4B, LGP
+      class(BinaryFileReaderType), intent(inout) :: this
+      logical(LGP), intent(out) :: success
+      integer(I4B), intent(in), optional :: iout
+    end subroutine read_header_if
+
     subroutine read_record_if(this, success, iout)
       import BinaryFileReaderType
       import I4B, LGP
@@ -44,7 +54,6 @@ contains
       'Binary file header (pos: ', this%pos, &
       ', kper: ', this%kper, &
       ', kstp: ', this%kstp, &
-      ', delt: ', this%delt, &
       ', pertim: ', this%pertim, &
       ', totim: ', this%totim, &
       ')'
@@ -68,4 +77,17 @@ contains
     end if
   end subroutine peek_record
 
+  !> @brief Rewind the file to the beginning.
+  subroutine rewind (this)
+    class(BinaryFileReaderType), intent(inout) :: this
+
+    rewind (this%inunit)
+    if (allocated(this%header)) deallocate (this%header)
+    if (allocated(this%headernext)) deallocate (this%headernext)
+    allocate (BinaryFileHeaderType :: this%header)
+    allocate (BinaryFileHeaderType :: this%headernext)
+    this%header%pos = 1
+    this%headernext%pos = 1
+    this%endoffile = .false.
+  end subroutine rewind
 end module BinaryFileReaderModule
