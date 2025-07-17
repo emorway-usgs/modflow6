@@ -529,13 +529,12 @@
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileStoInput.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\StructArray.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\StructVector.f90"/></Filter>
-		<File RelativePath="..\src\Utilities\Idm\BoundInputContext.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\DefinitionSelect.f90"/>
-		<File RelativePath="..\src\Utilities\Idm\DynamicPackageParams.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\IdmLoad.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\IdmLogger.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\InputDefinition.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\InputLoadType.f90"/>
+		<File RelativePath="..\src\Utilities\Idm\LoadContext.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\ModelPackageInputs.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\ModflowInput.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\SourceCommon.f90"/>
