@@ -21,6 +21,7 @@ gwf-sto.dfn
 gwf-wel.dfn
 gwf-welg.dfn
 gwt-nam.dfn
+gwt-adv.dfn
 gwt-dis.dfn
 gwt-disu.dfn
 gwt-disv.dfn
@@ -30,6 +31,7 @@ gwt-ic.dfn
 gwt-ist.dfn
 gwt-mst.dfn
 gwe-nam.dfn
+gwe-adv.dfn
 gwe-ic.dfn
 gwe-ctp.dfn
 gwe-cnd.dfn

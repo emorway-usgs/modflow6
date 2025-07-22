@@ -691,6 +691,7 @@ contains
     character(len=LENMEMPATH) :: mempath
     integer(I4B), pointer :: inunit
     integer(I4B) :: n
+    character(len=LENMEMPATH) :: mempathadv = ''
     character(len=LENMEMPATH) :: mempathic = ''
     !
     ! -- Initialize
@@ -732,7 +733,8 @@ contains
       case ('MVT6', 'MVE6')
         this%inmvt = inunit
       case ('ADV6')
-        this%inadv = inunit
+        this%inadv = 1
+        mempathadv = mempath
       case ('SSM6')
         this%inssm = inunit
       case ('OC6')
@@ -749,8 +751,8 @@ contains
                this%depvartype)
     call fmi_cr(this%fmi, this%name, this%infmi, this%iout, this%eqnsclfac, &
                 this%depvartype)
-    call adv_cr(this%adv, this%name, this%inadv, this%iout, this%fmi, &
-                this%eqnsclfac)
+    call adv_cr(this%adv, this%name, mempathadv, this%inadv, this%iout, &
+                this%fmi, this%eqnsclfac)
     call ssm_cr(this%ssm, this%name, this%inssm, this%iout, this%fmi, &
                 this%eqnsclfac, this%depvartype)
     call mvt_cr(this%mvt, this%name, this%inmvt, this%iout, this%fmi, &

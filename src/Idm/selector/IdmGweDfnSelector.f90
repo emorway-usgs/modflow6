@@ -6,6 +6,7 @@ module IdmGweDfnSelectorModule
   use InputDefinitionModule, only: InputParamDefinitionType, &
                                    InputBlockDefinitionType
   use GweNamInputModule
+  use GweAdvInputModule
   use GweIcInputModule
   use GweCtpInputModule
   use GweCndInputModule
@@ -49,6 +50,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_param_pointer(input_definition, gwe_nam_param_definitions)
+    case ('ADV')
+      call set_param_pointer(input_definition, gwe_adv_param_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwe_ic_param_definitions)
     case ('CTP')
@@ -73,6 +76,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_param_pointer(input_definition, gwe_nam_aggregate_definitions)
+    case ('ADV')
+      call set_param_pointer(input_definition, gwe_adv_aggregate_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwe_ic_aggregate_definitions)
     case ('CTP')
@@ -97,6 +102,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_block_pointer(input_definition, gwe_nam_block_definitions)
+    case ('ADV')
+      call set_block_pointer(input_definition, gwe_adv_block_definitions)
     case ('IC')
       call set_block_pointer(input_definition, gwe_ic_block_definitions)
     case ('CTP')
@@ -120,6 +127,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       multi_package = gwe_nam_multi_package
+    case ('ADV')
+      multi_package = gwe_adv_multi_package
     case ('IC')
       multi_package = gwe_ic_multi_package
     case ('CTP')
@@ -146,6 +155,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_subpkg_pointer(subpackages, gwe_nam_subpackages)
+    case ('ADV')
+      call set_subpkg_pointer(subpackages, gwe_adv_subpackages)
     case ('IC')
       call set_subpkg_pointer(subpackages, gwe_ic_subpackages)
     case ('CTP')
@@ -169,6 +180,8 @@ contains
     integrated = .false.
     select case (subcomponent)
     case ('NAM')
+      integrated = .true.
+    case ('ADV')
       integrated = .true.
     case ('IC')
       integrated = .true.

@@ -174,6 +174,7 @@ $(OBJDIR)/gwt-disvidm.o \
 $(OBJDIR)/gwt-disuidm.o \
 $(OBJDIR)/gwt-disidm.o \
 $(OBJDIR)/gwt-cncidm.o \
+$(OBJDIR)/gwt-advidm.o \
 $(OBJDIR)/gwf-welidm.o \
 $(OBJDIR)/gwf-welgidm.o \
 $(OBJDIR)/gwf-stoidm.o \
@@ -201,6 +202,7 @@ $(OBJDIR)/gwe-disuidm.o \
 $(OBJDIR)/gwe-disidm.o \
 $(OBJDIR)/gwe-ctpidm.o \
 $(OBJDIR)/gwe-cndidm.o \
+$(OBJDIR)/gwe-advidm.o \
 $(OBJDIR)/exg-olfgwfidm.o \
 $(OBJDIR)/exg-gwtgwtidm.o \
 $(OBJDIR)/exg-gwfprtidm.o \

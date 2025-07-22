@@ -6,6 +6,7 @@ module IdmGwtDfnSelectorModule
   use InputDefinitionModule, only: InputParamDefinitionType, &
                                    InputBlockDefinitionType
   use GwtNamInputModule
+  use GwtAdvInputModule
   use GwtDisInputModule
   use GwtDisuInputModule
   use GwtDisvInputModule
@@ -51,6 +52,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_param_pointer(input_definition, gwt_nam_param_definitions)
+    case ('ADV')
+      call set_param_pointer(input_definition, gwt_adv_param_definitions)
     case ('DIS')
       call set_param_pointer(input_definition, gwt_dis_param_definitions)
     case ('DISU')
@@ -79,6 +82,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_param_pointer(input_definition, gwt_nam_aggregate_definitions)
+    case ('ADV')
+      call set_param_pointer(input_definition, gwt_adv_aggregate_definitions)
     case ('DIS')
       call set_param_pointer(input_definition, gwt_dis_aggregate_definitions)
     case ('DISU')
@@ -107,6 +112,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_block_pointer(input_definition, gwt_nam_block_definitions)
+    case ('ADV')
+      call set_block_pointer(input_definition, gwt_adv_block_definitions)
     case ('DIS')
       call set_block_pointer(input_definition, gwt_dis_block_definitions)
     case ('DISU')
@@ -134,6 +141,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       multi_package = gwt_nam_multi_package
+    case ('ADV')
+      multi_package = gwt_adv_multi_package
     case ('DIS')
       multi_package = gwt_dis_multi_package
     case ('DISU')
@@ -164,6 +173,8 @@ contains
     select case (subcomponent)
     case ('NAM')
       call set_subpkg_pointer(subpackages, gwt_nam_subpackages)
+    case ('ADV')
+      call set_subpkg_pointer(subpackages, gwt_adv_subpackages)
     case ('DIS')
       call set_subpkg_pointer(subpackages, gwt_dis_subpackages)
     case ('DISU')
@@ -191,6 +202,8 @@ contains
     integrated = .false.
     select case (subcomponent)
     case ('NAM')
+      integrated = .true.
+    case ('ADV')
       integrated = .true.
     case ('DIS')
       integrated = .true.
