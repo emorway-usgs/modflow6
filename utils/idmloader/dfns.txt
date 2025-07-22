@@ -19,6 +19,7 @@ gwf-rcha.dfn
 gwf-riv.dfn
 gwf-sto.dfn
 gwf-wel.dfn
+gwf-welg.dfn
 gwt-nam.dfn
 gwt-dis.dfn
 gwt-disu.dfn

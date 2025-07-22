@@ -175,6 +175,7 @@ $(OBJDIR)/gwt-disuidm.o \
 $(OBJDIR)/gwt-disidm.o \
 $(OBJDIR)/gwt-cncidm.o \
 $(OBJDIR)/gwf-welidm.o \
+$(OBJDIR)/gwf-welgidm.o \
 $(OBJDIR)/gwf-stoidm.o \
 $(OBJDIR)/gwf-rividm.o \
 $(OBJDIR)/gwf-rchidm.o \

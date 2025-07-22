@@ -187,6 +187,7 @@
 		<File RelativePath="..\src\Idm\gwf-rividm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-stoidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-welidm.f90"/>
+		<File RelativePath="..\src\Idm\gwf-welgidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-cncidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-disidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-disuidm.f90"/>
