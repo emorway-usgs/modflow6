@@ -165,6 +165,7 @@ $(OBJDIR)/olf-dis2didm.o \
 $(OBJDIR)/olf-dfwidm.o \
 $(OBJDIR)/olf-chdidm.o \
 $(OBJDIR)/olf-cdbidm.o \
+$(OBJDIR)/gwt-ssmidm.o \
 $(OBJDIR)/gwt-namidm.o \
 $(OBJDIR)/gwt-mstidm.o \
 $(OBJDIR)/gwt-istidm.o \
@@ -195,6 +196,7 @@ $(OBJDIR)/gwf-disuidm.o \
 $(OBJDIR)/gwf-disidm.o \
 $(OBJDIR)/gwf-csubidm.o \
 $(OBJDIR)/gwf-chdidm.o \
+$(OBJDIR)/gwe-ssmidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \
 $(OBJDIR)/gwe-disvidm.o \

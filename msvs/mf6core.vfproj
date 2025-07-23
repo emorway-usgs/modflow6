@@ -169,6 +169,7 @@
 		<File RelativePath="..\src\Idm\gwe-disvidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-icidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-namidm.f90"/>
+		<File RelativePath="..\src\Idm\gwe-ssmidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-chdidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-csubidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-disidm.f90"/>
@@ -199,6 +200,7 @@
 		<File RelativePath="..\src\Idm\gwt-istidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-mstidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-namidm.f90"/>
+		<File RelativePath="..\src\Idm\gwt-ssmidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-cdbidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-chdidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-cxsidm.f90"/>

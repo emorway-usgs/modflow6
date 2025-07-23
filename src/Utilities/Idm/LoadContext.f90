@@ -430,6 +430,8 @@ contains
         end if
       case ('NAM')
         in_scope = .true.
+      case ('SSM')
+        if (tagname == 'MIXED') in_scope = .true.
       case default
         errmsg = 'LoadContext in_scope needs new check for: '// &
                  trim(idt%tagname)

@@ -15,6 +15,7 @@ module IdmGwtDfnSelectorModule
   use GwtIcInputModule
   use GwtIstInputModule
   use GwtMstInputModule
+  use GwtSsmInputModule
 
   implicit none
   private
@@ -70,6 +71,8 @@ contains
       call set_param_pointer(input_definition, gwt_ist_param_definitions)
     case ('MST')
       call set_param_pointer(input_definition, gwt_mst_param_definitions)
+    case ('SSM')
+      call set_param_pointer(input_definition, gwt_ssm_param_definitions)
     case default
     end select
     return
@@ -100,6 +103,8 @@ contains
       call set_param_pointer(input_definition, gwt_ist_aggregate_definitions)
     case ('MST')
       call set_param_pointer(input_definition, gwt_mst_aggregate_definitions)
+    case ('SSM')
+      call set_param_pointer(input_definition, gwt_ssm_aggregate_definitions)
     case default
     end select
     return
@@ -130,6 +135,8 @@ contains
       call set_block_pointer(input_definition, gwt_ist_block_definitions)
     case ('MST')
       call set_block_pointer(input_definition, gwt_mst_block_definitions)
+    case ('SSM')
+      call set_block_pointer(input_definition, gwt_ssm_block_definitions)
     case default
     end select
     return
@@ -159,6 +166,8 @@ contains
       multi_package = gwt_ist_multi_package
     case ('MST')
       multi_package = gwt_mst_multi_package
+    case ('SSM')
+      multi_package = gwt_ssm_multi_package
     case default
       call store_error('Idm selector subcomponent not found; '//&
                        &'component="GWT"'//&
@@ -191,6 +200,8 @@ contains
       call set_subpkg_pointer(subpackages, gwt_ist_subpackages)
     case ('MST')
       call set_subpkg_pointer(subpackages, gwt_mst_subpackages)
+    case ('SSM')
+      call set_subpkg_pointer(subpackages, gwt_ssm_subpackages)
     case default
     end select
     return
@@ -220,6 +231,8 @@ contains
     case ('IST')
       integrated = .true.
     case ('MST')
+      integrated = .true.
+    case ('SSM')
       integrated = .true.
     case default
     end select
