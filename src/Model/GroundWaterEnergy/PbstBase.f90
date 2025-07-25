@@ -52,14 +52,46 @@ module PbstBaseModule
     procedure :: subpck_set_stressperiod
     procedure(read_option), deferred :: read_option
     procedure, private :: pbstbase_allocate_scalars
-    procedure :: pbst_allocate_arrays
+    ! procedure :: pbst_allocate_arrays
     procedure :: da => pbstbase_da
     procedure :: pbst_check_valid
+    procedure(ar_set_pointers), deferred :: ar_set_pointers
+    procedure(get_pointer_to_value), deferred :: get_pointer_to_value
 
   end type PbstBaseType
 
   abstract interface
 
+  !> @brief Announce package and set pointers to variables
+    !!
+    !! Deferred procedure called by the PbstBaseType code to announce the
+    !! specific package version and set any required array and variable
+    !! pointers from other packages.
+    !<
+    subroutine ar_set_pointers(this)
+      ! -- modules
+      import PbstBaseType
+      ! -- dummy
+      class(PbstBaseType) :: this
+    end subroutine
+    
+     !> @brief Get an array value pointer given a variable name and node index
+    !!
+    !! Deferred procedure called by the PbstBaseType code to retrieve a pointer
+    !! to a given node's value for a given named variable.
+    !<
+    function get_pointer_to_value(this, n, varName) result(bndElem)
+      ! -- modules
+      use KindModule, only: I4B, DP
+      import PbstBaseType
+      ! -- dummy
+      class(PbstBaseType) :: this
+      integer(I4B), intent(in) :: n
+      character(len=*), intent(in) :: varName
+      ! -- return
+      real(DP), pointer :: bndElem
+    end function
+  
     !> @brief Announce package and set pointers to variables
     !!
     !! Deferred procedure called by the PbstBaseType code to process a single
@@ -417,32 +449,32 @@ contains
     allocate (this%tsmanager)
   end subroutine pbstbase_allocate_scalars
 
-  !> @ brief Allocate arrays
-  !!
-  !! Allocate base process-based stream temperature package transport arrays
-  !<
-  subroutine pbst_allocate_arrays(this)
-    ! -- modules
-    use MemoryManagerModule, only: mem_allocate
-    ! -- dummy
-    class(PbstBaseType), intent(inout) :: this
-    ! -- local
-    integer(I4B) :: n
-    !
-    ! -- Note: For the time-being, no call to parent class allocation of arrays
-    !    as is done in tsp-apt.f90, for example.  Remember that this class
-    !    extends NumericalPackage.f90 which doesn't have a standard set of
-    !    arrays to be allocated, only scalars.
-    !call this%BndType%allocate_arrays()
-    !
-    ! -- allocate character array for status
-    allocate (this%status(this%ncv))
-    !
-    ! -- initialize arrays
-    do n = 1, this%ncv
-      this%status(n) = 'ACTIVE'
-    end do
-  end subroutine pbst_allocate_arrays
+  !!> @ brief Allocate arrays
+  !!!
+  !!! Allocate base process-based stream temperature package transport arrays
+  !!<
+  !subroutine pbst_allocate_arrays(this)
+  !  ! -- modules
+  !  use MemoryManagerModule, only: mem_allocate
+  !  ! -- dummy
+  !  class(PbstBaseType), intent(inout) :: this
+  !  ! -- local
+  !  integer(I4B) :: n
+  !  !
+  !  ! -- Note: For the time-being, no call to parent class allocation of arrays
+  !  !    as is done in tsp-apt.f90, for example.  Remember that this class
+  !  !    extends NumericalPackage.f90 which doesn't have a standard set of
+  !  !    arrays to be allocated, only scalars.
+  !  !call this%BndType%allocate_arrays()
+  !  !
+  !  ! -- allocate character array for status
+  !  allocate (this%status(this%ncv))
+  !  !
+  !  ! -- initialize arrays
+  !  do n = 1, this%ncv
+  !    this%status(n) = 'ACTIVE'
+  !  !end do
+  !end subroutine pbst_allocate_arrays
 
   !> @brief Deallocate package memory
   !!
