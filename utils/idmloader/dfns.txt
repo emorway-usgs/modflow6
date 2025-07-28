@@ -1,6 +1,7 @@
 sim-nam.dfn
 sim-tdis.dfn
 gwf-nam.dfn
+gwf-buy.dfn
 gwf-chd.dfn
 gwf-csub.dfn
 gwf-dis.dfn

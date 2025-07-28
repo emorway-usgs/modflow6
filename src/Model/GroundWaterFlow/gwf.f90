@@ -1437,10 +1437,11 @@ contains
     integer(I4B), dimension(:), allocatable :: bndpkgs
     integer(I4B) :: n
     integer(I4B) :: indis = 0 ! DIS enabled flag
-    character(len=LENMEMPATH) :: mempathnpf = ''
-    character(len=LENMEMPATH) :: mempathic = ''
-    character(len=LENMEMPATH) :: mempathsto = ''
+    character(len=LENMEMPATH) :: mempathbuy = ''
     character(len=LENMEMPATH) :: mempathcsub = ''
+    character(len=LENMEMPATH) :: mempathic = ''
+    character(len=LENMEMPATH) :: mempathnpf = ''
+    character(len=LENMEMPATH) :: mempathsto = ''
     !
     ! -- set input model memory path
     model_mempath = create_mem_path(component=this%name, context=idm_context)
@@ -1474,7 +1475,8 @@ contains
         this%innpf = 1
         mempathnpf = mempath
       case ('BUY6')
-        this%inbuy = inunit
+        this%inbuy = 1
+        mempathbuy = mempath
       case ('VSC6')
         this%invsc = inunit
       case ('GNC6')
@@ -1509,7 +1511,7 @@ contains
     ! -- Create packages that are tied directly to model
     call npf_cr(this%npf, this%name, mempathnpf, this%innpf, this%iout)
     call xt3d_cr(this%xt3d, this%name, this%innpf, this%iout)
-    call buy_cr(this%buy, this%name, this%inbuy, this%iout)
+    call buy_cr(this%buy, this%name, mempathbuy, this%inbuy, this%iout)
     call vsc_cr(this%vsc, this%name, this%invsc, this%iout)
     call gnc_cr(this%gnc, this%name, this%ingnc, this%iout)
     call hfb_cr(this%hfb, this%name, this%inhfb, this%iout)

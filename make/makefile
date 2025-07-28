@@ -196,6 +196,7 @@ $(OBJDIR)/gwf-disuidm.o \
 $(OBJDIR)/gwf-disidm.o \
 $(OBJDIR)/gwf-csubidm.o \
 $(OBJDIR)/gwf-chdidm.o \
+$(OBJDIR)/gwf-buyidm.o \
 $(OBJDIR)/gwe-ssmidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \
