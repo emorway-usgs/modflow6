@@ -1442,6 +1442,7 @@ contains
     character(len=LENMEMPATH) :: mempathic = ''
     character(len=LENMEMPATH) :: mempathnpf = ''
     character(len=LENMEMPATH) :: mempathsto = ''
+    character(len=LENMEMPATH) :: mempathvsc = ''
     !
     ! -- set input model memory path
     model_mempath = create_mem_path(component=this%name, context=idm_context)
@@ -1478,7 +1479,8 @@ contains
         this%inbuy = 1
         mempathbuy = mempath
       case ('VSC6')
-        this%invsc = inunit
+        this%invsc = 1
+        mempathvsc = mempath
       case ('GNC6')
         this%ingnc = inunit
       case ('HFB6')
@@ -1512,7 +1514,7 @@ contains
     call npf_cr(this%npf, this%name, mempathnpf, this%innpf, this%iout)
     call xt3d_cr(this%xt3d, this%name, this%innpf, this%iout)
     call buy_cr(this%buy, this%name, mempathbuy, this%inbuy, this%iout)
-    call vsc_cr(this%vsc, this%name, this%invsc, this%iout)
+    call vsc_cr(this%vsc, this%name, mempathvsc, this%invsc, this%iout)
     call gnc_cr(this%gnc, this%name, this%ingnc, this%iout)
     call hfb_cr(this%hfb, this%name, this%inhfb, this%iout)
     call sto_cr(this%sto, this%name, mempathsto, this%insto, this%iout)

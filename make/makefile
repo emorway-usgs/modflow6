@@ -178,6 +178,7 @@ $(OBJDIR)/gwt-cncidm.o \
 $(OBJDIR)/gwt-advidm.o \
 $(OBJDIR)/gwf-welidm.o \
 $(OBJDIR)/gwf-welgidm.o \
+$(OBJDIR)/gwf-vscidm.o \
 $(OBJDIR)/gwf-stoidm.o \
 $(OBJDIR)/gwf-rividm.o \
 $(OBJDIR)/gwf-rchidm.o \
