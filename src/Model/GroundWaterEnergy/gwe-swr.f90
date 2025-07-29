@@ -35,9 +35,11 @@ module ShortwaveModule
 
     procedure :: da => swr_da
     procedure :: read_option => swr_read_option
+    procedure :: ar_set_pointers => swr_ar_set_pointers
+    procedure :: get_pointer_to_value => swr_get_pointer_to_value
     !procedure :: pbst_options => swr_options
-    procedure :: subpck_set_stressperiod => swr_set_stressperiod
-    procedure :: pbst_allocate_arrays => swr_allocate_arrays
+    !procedure :: subpck_set_stressperiod => swr_set_stressperiod
+    !procedure :: pbst_allocate_arrays => swr_allocate_arrays
     !procedure, private :: swr_allocate_scalars
     procedure, public :: swr_cq
 
@@ -50,21 +52,87 @@ contains
   !! Create a new shortwave radiation flux (SwrType) object. Initially for use with
   !! the SFE package.
   !<
-  subroutine swr_cr(swr, name_model, inunit, iout, ncv)
+
+  subroutine swr_cr(this, name_model, inunit, iout, ncv)
     ! -- dummy
-    type(SwrType), pointer, intent(out) :: swr
+    type(SwrType), pointer, intent(out) :: this
     character(len=*), intent(in) :: name_model
     integer(I4B), intent(in) :: inunit
     integer(I4B), intent(in) :: iout
     integer(I4B), target, intent(in) :: ncv
     !
-    allocate (swr)
-    call swr%init(name_model, 'SWR', 'SWR', inunit, iout, ncv)
-    swr%text = text
+
+    allocate (this)
+    call this%init(name_model, 'SWR', 'SWR', inunit, iout, ncv)
+    this%text = text
     !
     ! -- allocate scalars
     !call swr%swr_allocate_scalars()
   end subroutine swr_cr
+
+   !> @brief Announce package and set pointers to variables
+  !!
+  !! Announce package version and set array and variable pointers from the ABC
+  !! package for access by SWR.
+  !<
+  subroutine swr_ar_set_pointers(this)
+    ! -- dummy
+    class(SwrType) :: this
+    ! -- local
+    character(len=LENMEMPATH) :: abcMemoryPath
+    ! -- formats
+    character(len=*), parameter :: fmtswr = &
+      "(1x,/1x,'SWR -- SHORTWAVE RADIATION PACKAGE, VERSION 1, 05/01/2025', &
+      &' INPUT READ FROM UNIT ', i0, //)"
+    !
+    ! -- Print a message identifying the SWR package
+    write (this%iout, fmtswr) this%inunit
+    !
+    ! -- Set pointers to other package variables
+    ! -- ABC
+    abcMemoryPath = create_mem_path(this%name_model, 'ABC')
+    call mem_setptr(this%solr, 'SOLR', abcMemoryPath)
+    call mem_setptr(this%shd, 'SHD', abcMemoryPath)
+    call mem_setptr(this%swrefl, 'SWREFL', abcMemoryPath)
+   
+  end subroutine swr_ar_set_pointers
+  
+  !!> @brief Get an array value pointer given a variable name and node index
+  !!!
+  !!! Return a pointer to the given node's value in the appropriate ABC array
+  !!! based on the given variable name string.
+  !!<
+  function swr_get_pointer_to_value(this, n, varName) result(bndElem)
+      ! -- dummy
+      class(SwrType) :: this
+      integer(I4B), intent(in) :: n
+      character(len=*), intent(in) :: varName
+      ! -- return
+      real(DP), pointer :: bndElem
+      
+      select case(varName)
+          case default
+          bndElem => null()
+      end select
+    end function
+  
+  !function swr_get_pointer_to_value(this, n, varName) result(bndElem)
+  !  ! -- dummy
+  !  class(SwrType) :: this
+  !  integer(I4B), intent(in) :: n
+  !  character(len=*), intent(in) :: varName
+  !  ! -- return
+  !  real(DP), pointer :: bndElem
+  !  !
+  !  select case (varName)
+  !  case ('TATM')
+  !    bndElem => this%tatm(n)
+  !  case ('WSPD')
+  !    bndElem => this%wspd(n)
+  !  case default
+  !    bndElem => null()
+  !  end select
+  !end function shf_get_pointer_to_value
 
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
   !! package.
@@ -89,26 +157,26 @@ contains
 
   !> @brief Allocate arrays specific to the sensible heat flux (SWR) package
   !<
-  subroutine swr_allocate_arrays(this)
-    ! -- modules
-    use MemoryManagerModule, only: mem_allocate
-    ! -- dummy
-    class(SwrType), intent(inout) :: this
-    ! -- local
-    integer(I4B) :: n
-    !
-    ! -- time series
-    call mem_allocate(this%solr, this%ncv, 'SOLR', this%memoryPath)
-    call mem_allocate(this%shd, this%ncv, 'SHD', this%memoryPath)
-    call mem_allocate(this%swrefl, this%ncv, 'SWREFL', this%memoryPath)
-    !
-    ! -- initialize
-    do n = 1, this%ncv
-      this%solr(n) = DZERO
-      this%shd(n) = DZERO
-      this%swrefl(n) = DZERO
-    end do
-  end subroutine
+  !subroutine swr_allocate_arrays(this)
+  !  ! -- modules
+  !  use MemoryManagerModule, only: mem_allocate
+  !  ! -- dummy
+  !  class(SwrType), intent(inout) :: this
+  !  ! -- local
+  !  integer(I4B) :: n
+  !  !
+  !  ! -- time series
+  !  call mem_allocate(this%solr, this%ncv, 'SOLR', this%memoryPath)
+  !  call mem_allocate(this%shd, this%ncv, 'SHD', this%memoryPath)
+  !  call mem_allocate(this%swrefl, this%ncv, 'SWREFL', this%memoryPath)
+  !  !
+  !  ! -- initialize
+  !  do n = 1, this%ncv
+  !    this%solr(n) = DZERO
+  !    this%shd(n) = DZERO
+  !    this%swrefl(n) = DZERO
+  !  end do
+  !end subroutine
 
   !> @brief Set options specific to the SwrType
   !!
@@ -186,7 +254,8 @@ contains
   !<
   subroutine swr_da(this)
     ! -- modules
-    use MemoryManagerModule, only: mem_deallocate
+
+    !use MemoryManagerModule, only: mem_deallocate
     ! -- dummy
     class(SwrType) :: this
     !
@@ -196,9 +265,10 @@ contains
     !call mem_deallocate(this%cd)
     !
     ! -- Deallocate time series
-    call mem_deallocate(this%shd)
-    call mem_deallocate(this%swrefl)
-    call mem_deallocate(this%solr)
+
+    nullify (this%shd)
+    nullify (this%swrefl)
+    nullify (this%solr)
     !
     ! -- Deallocate parent
     call pbstbase_da(this)
@@ -222,66 +292,66 @@ contains
 
   !> @brief Set the stress period attributes based on the keyword
   !<
-  subroutine swr_set_stressperiod(this, itemno, keyword, found)
-    ! -- module
-    use TimeSeriesManagerModule, only: read_value_or_time_series_adv
-    ! -- dummy
-    class(SwrType), intent(inout) :: this
-    integer(I4B), intent(in) :: itemno
-    character(len=*), intent(in) :: keyword
-    logical, intent(inout) :: found
-    ! -- local
-    character(len=LINELENGTH) :: text
-    integer(I4B) :: ierr
-    integer(I4B) :: jj
-    real(DP), pointer :: bndElem => null()
-    !
-    ! <shd> SHADE
-    ! <swrefl> REFLECTANCE OF SHORTWAVE RADIATION OFF WATER SURFACE
-    ! <solr> SOLAR RADIATION
-    !
-    found = .true.
-    select case (keyword)
-    case ('SHD')
-      ierr = this%pbst_check_valid(itemno)
-      if (ierr /= 0) then
-        goto 999
-      end if
-      call this%parser%GetString(text)
-      jj = 1
-      bndElem => this%shd(itemno)
-      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
-                                         this%packName, 'BND', this%tsManager, &
-                                         this%iprpak, 'SHD')
-    case ('SWREFL')
-      ierr = this%pbst_check_valid(itemno)
-      if (ierr /= 0) then
-        goto 999
-      end if
-      call this%parser%GetString(text)
-      jj = 1
-      bndElem => this%swrefl(itemno)
-      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
-                                         this%packName, 'BND', this%tsManager, &
-                                         this%iprpak, 'SWREFL')
-    case ('SOLR')
-      ierr = this%pbst_check_valid(itemno)
-      if (ierr /= 0) then
-        goto 999
-      end if
-      call this%parser%GetString(text)
-      jj = 1
-      bndElem => this%solr(itemno)
-      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
-                                         this%packName, 'BND', this%tsManager, &
-                                         this%iprpak, 'SOLR')
-    case default
-      !
-      ! -- Keyword not recognized so return to caller with found = .false.
-      found = .false.
-    end select
-    !
-999 continue
-  end subroutine swr_set_stressperiod
+!  subroutine swr_set_stressperiod(this, itemno, keyword, found)
+!    ! -- module
+!    use TimeSeriesManagerModule, only: read_value_or_time_series_adv
+!    ! -- dummy
+!    class(SwrType), intent(inout) :: this
+!    integer(I4B), intent(in) :: itemno
+!    character(len=*), intent(in) :: keyword
+!    logical, intent(inout) :: found
+!    ! -- local
+!    character(len=LINELENGTH) :: text
+!    integer(I4B) :: ierr
+!    integer(I4B) :: jj
+!    real(DP), pointer :: bndElem => null()
+!    !
+!    ! <shd> SHADE
+!    ! <swrefl> REFLECTANCE OF SHORTWAVE RADIATION OFF WATER SURFACE
+!    ! <solr> SOLAR RADIATION
+!    !
+!    found = .true.
+!    select case (keyword)
+!    case ('SHD')
+!      ierr = this%pbst_check_valid(itemno)
+!      if (ierr /= 0) then
+!        goto 999
+!      end if
+!      call this%parser%GetString(text)
+!      jj = 1
+!      bndElem => this%shd(itemno)
+!      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+!                                         this%packName, 'BND', this%tsManager, &
+!                                         this%iprpak, 'SHD')
+!    case ('SWREFL')
+!      ierr = this%pbst_check_valid(itemno)
+!      if (ierr /= 0) then
+!        goto 999
+!      end if
+!      call this%parser%GetString(text)
+!      jj = 1
+!      bndElem => this%swrefl(itemno)
+!      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+!                                         this%packName, 'BND', this%tsManager, &
+!                                         this%iprpak, 'SWREFL')
+!    case ('SOLR')
+!      ierr = this%pbst_check_valid(itemno)
+!      if (ierr /= 0) then
+!        goto 999
+!      end if
+!      call this%parser%GetString(text)
+!      jj = 1
+!      bndElem => this%solr(itemno)
+!      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+!                                         this%packName, 'BND', this%tsManager, &
+!                                         this%iprpak, 'SOLR')
+!    case default
+!      !
+!      ! -- Keyword not recognized so return to caller with found = .false.
+!      found = .false.
+!    end select
+!    !
+!999 continue
+!  end subroutine swr_set_stressperiod
 
 end module ShortwaveModule
