@@ -52,6 +52,7 @@ contains
   !! Create a new shortwave radiation flux (SwrType) object. Initially for use with
   !! the SFE package.
   !<
+
   subroutine swr_cr(this, name_model, inunit, iout, ncv)
     ! -- dummy
     type(SwrType), pointer, intent(out) :: this
@@ -60,6 +61,7 @@ contains
     integer(I4B), intent(in) :: iout
     integer(I4B), target, intent(in) :: ncv
     !
+
     allocate (this)
     call this%init(name_model, 'SWR', 'SWR', inunit, iout, ncv)
     this%text = text
@@ -252,6 +254,7 @@ contains
   !<
   subroutine swr_da(this)
     ! -- modules
+
     !use MemoryManagerModule, only: mem_deallocate
     ! -- dummy
     class(SwrType) :: this
@@ -262,6 +265,7 @@ contains
     !call mem_deallocate(this%cd)
     !
     ! -- Deallocate time series
+
     nullify (this%shd)
     nullify (this%swrefl)
     nullify (this%solr)
