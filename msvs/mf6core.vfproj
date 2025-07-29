@@ -280,6 +280,7 @@
 		<File RelativePath="..\src\Model\Geometry\CircularGeometry.f90"/>
 		<File RelativePath="..\src\Model\Geometry\RectangularGeometry.f90"/></Filter>
 		<Filter Name="GroundWaterEnergy">
+		<File RelativePath="..\src\Model\GroundWaterEnergy\gwe-abc.f90"/>
 		<File RelativePath="..\src\Model\GroundWaterEnergy\gwe-cnd.f90"/>
 		<File RelativePath="..\src\Model\GroundWaterEnergy\gwe-ctp.f90"/>
 		<File RelativePath="..\src\Model\GroundWaterEnergy\gwe-esl.f90"/>
