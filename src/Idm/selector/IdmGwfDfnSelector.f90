@@ -18,6 +18,7 @@ module IdmGwfDfnSelectorModule
   use GwfEvtaInputModule
   use GwfGhbInputModule
   use GwfGhbgInputModule
+  use GwfHfbInputModule
   use GwfIcInputModule
   use GwfNpfInputModule
   use GwfRchInputModule
@@ -89,6 +90,8 @@ contains
       call set_param_pointer(input_definition, gwf_ghb_param_definitions)
     case ('GHBG')
       call set_param_pointer(input_definition, gwf_ghbg_param_definitions)
+    case ('HFB')
+      call set_param_pointer(input_definition, gwf_hfb_param_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwf_ic_param_definitions)
     case ('NPF')
@@ -145,6 +148,8 @@ contains
       call set_param_pointer(input_definition, gwf_ghb_aggregate_definitions)
     case ('GHBG')
       call set_param_pointer(input_definition, gwf_ghbg_aggregate_definitions)
+    case ('HFB')
+      call set_param_pointer(input_definition, gwf_hfb_aggregate_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwf_ic_aggregate_definitions)
     case ('NPF')
@@ -201,6 +206,8 @@ contains
       call set_block_pointer(input_definition, gwf_ghb_block_definitions)
     case ('GHBG')
       call set_block_pointer(input_definition, gwf_ghbg_block_definitions)
+    case ('HFB')
+      call set_block_pointer(input_definition, gwf_hfb_block_definitions)
     case ('IC')
       call set_block_pointer(input_definition, gwf_ic_block_definitions)
     case ('NPF')
@@ -256,6 +263,8 @@ contains
       multi_package = gwf_ghb_multi_package
     case ('GHBG')
       multi_package = gwf_ghbg_multi_package
+    case ('HFB')
+      multi_package = gwf_hfb_multi_package
     case ('IC')
       multi_package = gwf_ic_multi_package
     case ('NPF')
@@ -314,6 +323,8 @@ contains
       call set_subpkg_pointer(subpackages, gwf_ghb_subpackages)
     case ('GHBG')
       call set_subpkg_pointer(subpackages, gwf_ghbg_subpackages)
+    case ('HFB')
+      call set_subpkg_pointer(subpackages, gwf_hfb_subpackages)
     case ('IC')
       call set_subpkg_pointer(subpackages, gwf_ic_subpackages)
     case ('NPF')
@@ -369,6 +380,8 @@ contains
     case ('GHB')
       integrated = .true.
     case ('GHBG')
+      integrated = .true.
+    case ('HFB')
       integrated = .true.
     case ('IC')
       integrated = .true.

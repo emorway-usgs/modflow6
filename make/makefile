@@ -189,6 +189,7 @@ $(OBJDIR)/gwf-rchaidm.o \
 $(OBJDIR)/gwf-npfidm.o \
 $(OBJDIR)/gwf-namidm.o \
 $(OBJDIR)/gwf-icidm.o \
+$(OBJDIR)/gwf-hfbidm.o \
 $(OBJDIR)/gwf-ghbidm.o \
 $(OBJDIR)/gwf-ghbgidm.o \
 $(OBJDIR)/gwf-evtidm.o \
