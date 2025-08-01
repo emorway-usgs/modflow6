@@ -31,6 +31,7 @@ module AbcModule
   use NumericalPackageModule, only: NumericalPackageType
   use TimeSeriesManagerModule, only: TimeSeriesManagerType, tsmanager_cr
   use TableModule, only: TableType, table_cr
+  use BndExtModule, only: BndExtType
 
   implicit none
 
@@ -41,14 +42,16 @@ module AbcModule
 
   character(len=LENVARNAME) :: text = '          ABC'
 
-  type, extends(NumericalPackageType) :: AbcType
+  !type, extends(NumericalPackageType) :: AbcType
+  type, extends(BndExtType) :: AbcType
 
     integer(I4B), pointer :: ncv => null() !< number of control volumes
-    type(TimeSeriesManagerType), pointer :: tsmanager => null()
-    character(len=LENPACKAGENAME) :: text = '' !< text string for package transport term
+    !type(TimeSeriesManagerType), pointer :: tsmanager => null()
+    !character(len=LENPACKAGENAME) :: text = '' !< text string for package transport term
     character(len=LINELENGTH), pointer, public :: inputFilename => null() !< a particular abc input file name, could be for sensible heat flux or latent heat flux subpackages, for example
+    logical, pointer, public :: active => null() !< logical indicating if a atmospheric boundary condition object is active
     ! -- table objects
-    type(TableType), pointer :: inputtab => null() !< input table object
+    !type(TableType), pointer :: inputtab => null() !< input table object
   
     logical, pointer, public :: shf_active => null() !< logical indicating if a sensible heat flux object is active
     logical, pointer, public :: swr_active => null() !< logical indicating if a shortwave radition heat flux object is active
@@ -83,7 +86,7 @@ module AbcModule
     procedure :: abc_options ! read options block
     !procedure :: subpck_set_stressperiod => abc_set_stressperiod
     procedure :: abc_set_stressperiod
-    procedure ::  abc_allocate_arrays
+    procedure :: abc_allocate_arrays
     procedure, private :: abc_allocate_scalars
     procedure, public :: abc_cq
     procedure, private :: abc_shf_term
@@ -352,6 +355,13 @@ module AbcModule
     ! -- dummy
     class(AbcType) :: this
     !
+    allocate (this%active)
+    allocate (this%inputFilename)
+    !
+    ! -- initialize
+    this%active = .false.
+    this%inputFilename = ''
+    !
     ! -- allocate
     call mem_allocate(this%shf_active, 'SHF_ACTIVE', this%memoryPath)
     call mem_allocate(this%swr_active, 'SWR_ACTIVE', this%memoryPath)
@@ -361,43 +371,61 @@ module AbcModule
     call mem_allocate(this%rhoa, 'RHOA', this%memoryPath)
     call mem_allocate(this%cpa, 'CPA', this%memoryPath)
     call mem_allocate(this%cd, 'CD', this%memoryPath)
-    
+    !
     ! -- initialize to default values
     this%shf_active = .false.
     this%swr_active = .false.
-    this%inshf = 0
-    this%inswr = 0
+    this%inshf = 1 ! Initialize to one for 'on'
+    this%inswr = 1
     ! -- initalize to SHF specific default values
     this%rhoa = 1.225 ! kg/m3
     this%cpa = 717.0 ! J/kg/C
     this%cd = 0.002 ! unitless
-    
+    !
+    ! -- call standard NumericalPackageType allocate scalars
+    call this%NumericalPackageType%allocate_scalars()
+    !
+    ! -- allocate time series manager
+    allocate (this%tsmanager) 
   end subroutine abc_allocate_scalars
 
   !> @brief Allocate arrays specific to the atmspheric boundary package
   !<
   subroutine abc_allocate_arrays(this)
     ! -- modules
-    use MemoryManagerModule, only: mem_allocate
+    !! use MemoryManagerModule, only: mem_allocate
+    use MemoryManagerModule, only: mem_setptr, mem_checkin, mem_allocate
     ! -- dummy
     class(AbcType), intent(inout) :: this
+   ! integer(I4B), dimension(:), pointer, contiguous, optional :: nodelist
+    !real(DP), dimension(:, :), pointer, contiguous, optional :: auxvar
     ! -- local
     integer(I4B) :: n
     !
     ! -- Call sub-package(s) allocate arrays
     if (this%inshf /= 0) then
-      !call this%shf%shf_allocate_arrays()
-        ! 
-        ! OR ???
-        !
-       ! -- time series
-       call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
-       call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
-       ! -- initialize
-       do n = 1, this%ncv
-         this%wspd(n) = DZERO
-         this%tatm(n) = DZERO
-       end do
+       ! -- allocate base arrays
+       !call this%BndExtType%allocate_arrays(nodelist, auxvar)
+       !
+       ! -- set WSPD and TATM context pointer
+       call mem_setptr(this%wspd, 'WSPD', this%input_mempath)
+       call mem_setptr(this%tatm, 'TATM', this%input_mempath)
+       !
+       ! -- checkin WSPD and TATM input context pointer
+       call mem_checkin(this%wspd, 'WSPD', this%memoryPath, &
+           'WSPD', this%input_mempath)
+        call mem_checkin(this%tatm, 'TATM', this%memoryPath, &
+           'TATM', this%input_mempath)
+       
+        
+       !! -- time series
+       !call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
+       !call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
+       !! -- initialize
+       !do n = 1, this%ncv
+       !  this%wspd(n) = DZERO
+       !  this%tatm(n) = DZERO
+       !end do
     end if
     if (this%inswr /= 0) then
       !call this%swr%swr_allocate_arrays()

@@ -214,6 +214,7 @@ contains
   !    call this%parser%StoreErrorUnit()
   !  end select
   !end subroutine shf_options
+
   !> @brief Calculate Sensible Heat Flux
   !!
   !! Calculate and return the sensible heat flux for one reach
@@ -228,7 +229,7 @@ contains
     real(DP) :: shf_const
     !
     ! -- calculate sensible heat flux using HGS equation
-    shf_const = this%cd * this%cpa * this%rhoa
+     shf_const = this%cd * this%cpa * this%rhoa
     shflx = shf_const * this%wspd(ifno) * (this%tatm(ifno) - tstrm)
   end subroutine shf_cq
 
@@ -328,4 +329,5 @@ contains
 !    !
 !999 continue
 !  end subroutine shf_set_stressperiod
+
 end module SensHeatModule
