@@ -1,49 +1,32 @@
 """
-Test the advection schemes in the gwt advection package for two-dimensional
-injection of solute into the middle of a square grid.  The test will pass
-if the results are symmetric.
+Test the dependent_variable_scale option for gwt for a one-dimensional model grid
+of square cells.
 """
-
-import os
 
 import flopy
 import numpy as np
 import pytest
 from framework import TestFramework
 
-cases = ["adv04a", "adv04b", "adv04c", "adv04d"]
-scheme = ["upstream", "central", "tvd", "utvd"]
+cases = ["dvscale"]
 
 
-def build_models(idx, test):
-    nlay, nrow, ncol = 1, 21, 21
+def build_model(idx, ws, dvscale=False):
+    nlay, nrow, ncol = 1, 1, 100
     nper = 1
     perlen = [5.0]
     nstp = [200]
     tsmult = [1.0]
-    steady = [True]
     delr = 1.0
     delc = 1.0
+    top = 1.0
     botm = [0.0]
     strt = 1.0
-    hnoflo = 1e30
-    hdry = -1e30
     hk = 1.0
-
-    top = 1.0
     laytyp = 0
 
-    # put constant heads all around the box
-    chdlist = []
-    ib = np.ones((nlay, nrow, ncol), dtype=int)
-    ib[:, 1 : nrow - 1, 1 : ncol - 1] = 0
-    idloc = np.where(ib > 0)
-    for k, i, j in zip(idloc[0], idloc[1], idloc[2]):
-        chdlist.append([(k, i, j), 0.0])
-    chdspdict = {0: chdlist}
-
-    # injection well with rate and concentration of 1.
-    w = {0: [[(0, int(nrow / 2), int(ncol / 2)), 1.0, 1.0]]}
+    c = {0: [[(0, 0, 99), 0.0000000, 100.0, 1.0]]}
+    w = {0: [[(0, 0, 0), 1.0, 1e6]]}
 
     nouter, ninner = 100, 300
     hclose, rclose, relax = 1e-6, 1e-6, 1.0
@@ -55,7 +38,6 @@ def build_models(idx, test):
     name = cases[idx]
 
     # build MODFLOW 6 files
-    ws = test.workspace
     sim = flopy.mf6.MFSimulation(
         sim_name=name, version="mf6", exe_name="mf6", sim_ws=ws
     )
@@ -64,10 +46,10 @@ def build_models(idx, test):
 
     # create gwf model
     gwfname = "gwf_" + name
-    gwf = flopy.mf6.MFModel(
+    gwf = flopy.mf6.ModflowGwf(
         sim,
-        model_type="gwf6",
         modelname=gwfname,
+        save_flows=True,
         model_nam_file=f"{gwfname}.nam",
     )
 
@@ -106,17 +88,23 @@ def build_models(idx, test):
     ic = flopy.mf6.ModflowGwfic(gwf, strt=strt, filename=f"{gwfname}.ic")
 
     # node property flow
-    npf = flopy.mf6.ModflowGwfnpf(gwf, save_flows=False, icelltype=laytyp, k=hk, k33=hk)
-    # storage
-    # sto = flopy.mf6.ModflowGwfsto(gwf, save_flows=False,
-    #                              iconvert=laytyp[idx],
-    #                              ss=ss[idx], sy=sy[idx],
-    #                              steady_state={0: True, 2: True},
-    #                              transient={1: True})
+    npf = flopy.mf6.ModflowGwfnpf(
+        gwf,
+        save_flows=False,
+        icelltype=laytyp,
+        k=hk,
+        k33=hk,
+        save_specific_discharge=True,
+    )
 
-    # chd files
-    chd = flopy.mf6.ModflowGwfchd(
-        gwf, stress_period_data=chdspdict, save_flows=False, pname="CHD-1"
+    # ghb files
+    chd = flopy.mf6.ModflowGwfghb(
+        gwf,
+        maxbound=len(c),
+        stress_period_data=c,
+        save_flows=False,
+        auxiliary="CONCENTRATION",
+        pname="GHB-1",
     )
 
     # wel files
@@ -124,6 +112,7 @@ def build_models(idx, test):
         gwf,
         print_input=True,
         print_flows=True,
+        maxbound=len(w),
         stress_period_data=w,
         save_flows=False,
         auxiliary="CONCENTRATION",
@@ -136,18 +125,19 @@ def build_models(idx, test):
         budget_filerecord=f"{gwfname}.cbc",
         head_filerecord=f"{gwfname}.hds",
         headprintrecord=[("COLUMNS", 10, "WIDTH", 15, "DIGITS", 6, "GENERAL")],
-        saverecord=[("HEAD", "LAST")],
+        saverecord=[("HEAD", "LAST"), ("BUDGET", "LAST")],
         printrecord=[("HEAD", "LAST"), ("BUDGET", "LAST")],
     )
 
     # create gwt model
     gwtname = "gwt_" + name
-    gwt = flopy.mf6.MFModel(
+    gwt = flopy.mf6.ModflowGwt(
         sim,
-        model_type="gwt6",
+        dependent_variable_scaling=dvscale,
         modelname=gwtname,
         model_nam_file=f"{gwtname}.nam",
     )
+    gwt.name_file.save_flows = True
 
     # create iterative model solution and register the gwt model with it
     imsgwt = flopy.mf6.ModflowIms(
@@ -184,13 +174,16 @@ def build_models(idx, test):
     ic = flopy.mf6.ModflowGwtic(gwt, strt=0.0, filename=f"{gwtname}.ic")
 
     # advection
-    adv = flopy.mf6.ModflowGwtadv(gwt, scheme=scheme[idx], filename=f"{gwtname}.adv")
+    adv = flopy.mf6.ModflowGwtadv(gwt, scheme="upstream", filename=f"{gwtname}.adv")
 
     # mass storage and transfer
     mst = flopy.mf6.ModflowGwtmst(gwt, porosity=0.1)
 
     # sources
-    sourcerecarray = [("WEL-1", "AUX", "CONCENTRATION")]
+    sourcerecarray = [
+        ("WEL-1", "AUX", "CONCENTRATION"),
+        ("GHB-1", "AUX", "CONCENTRATION"),
+    ]
     ssm = flopy.mf6.ModflowGwtssm(
         gwt, sources=sourcerecarray, filename=f"{gwtname}.ssm"
     )
@@ -201,7 +194,7 @@ def build_models(idx, test):
         budget_filerecord=f"{gwtname}.cbc",
         concentration_filerecord=f"{gwtname}.ucn",
         concentrationprintrecord=[("COLUMNS", 10, "WIDTH", 15, "DIGITS", 6, "GENERAL")],
-        saverecord=[("CONCENTRATION", "LAST")],
+        saverecord=[("CONCENTRATION", "LAST"), ("BUDGET", "LAST")],
         printrecord=[("CONCENTRATION", "LAST"), ("BUDGET", "LAST")],
     )
 
@@ -214,30 +207,45 @@ def build_models(idx, test):
         filename=f"{name}.gwfgwt",
     )
 
-    return sim, None
+    return sim
 
 
-def check_output(idx, test):
-    name = cases[idx]
-    gwtname = "gwt_" + name
+def build_models(idx, test):
+    ws = test.workspace
+    sim = build_model(idx, ws, dvscale=True)
 
-    fpth = os.path.join(test.workspace, f"{gwtname}.ucn")
-    try:
-        cobj = flopy.utils.HeadFile(fpth, precision="double", text="CONCENTRATION")
-        conc = cobj.get_data()
-    except:
-        assert False, f'could not load data from "{fpth}"'
+    ws = test.workspace / "mf6"
+    mc = build_model(idx, ws, dvscale=False)
 
-    # Check to make sure that the concentrations are symmetric in both the
-    # up-down and left-right directions
-    concud = np.flipud(conc)
-    assert np.allclose(concud, conc), (
-        "simulated concentrations are not symmetric in up-down direction."
-    )
+    return sim, mc
 
-    conclr = np.fliplr(conc)
-    assert np.allclose(conclr, conc), (
-        "simulated concentrations are not symmetric in left-right direction."
+
+def check_results(test):
+    ws = test.workspace
+    sim = flopy.mf6.MFSimulation.load(sim_ws=ws)
+    gwt_names = sorted([name for name in sim.model_names if "gwt" in name])
+    gwt_models = [sim.get_model(name) for name in gwt_names]
+
+    conc = []
+    for gwt in gwt_models:
+        conc += gwt.output.concentration().get_data().squeeze().tolist()
+    conc = np.array(conc)
+
+    ws = test.workspace / "mf6"
+    sim = flopy.mf6.MFSimulation.load(sim_ws=ws)
+    gwt_names = sorted([name for name in sim.model_names if "gwt" in name])
+    gwt_models = [sim.get_model(name) for name in gwt_names]
+
+    answer = []
+    for gwt in gwt_models:
+        answer += gwt.output.concentration().get_data().squeeze().tolist()
+    answer = np.array(answer)
+
+    print(f"conc:       {conc}\n")
+    print(f"answer:     {answer}\n")
+    print(f"difference: {conc - answer}\n")
+    assert np.allclose(conc, answer), (
+        "Results for the transport model are not close to the defined answer."
     )
 
 
@@ -247,7 +255,8 @@ def test_mf6model(idx, name, function_tmpdir, targets):
         name=name,
         workspace=function_tmpdir,
         targets=targets,
+        compare="mf6",
         build=lambda t: build_models(idx, t),
-        check=lambda t: check_output(idx, t),
+        check=lambda t: check_results(t),
     )
     test.run()

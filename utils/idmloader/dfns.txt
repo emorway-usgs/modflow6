@@ -13,11 +13,13 @@ gwf-evt.dfn
 gwf-evta.dfn
 gwf-ghb.dfn
 gwf-ghbg.dfn
+gwf-hfb.dfn
 gwf-ic.dfn
 gwf-npf.dfn
 gwf-rch.dfn
 gwf-rcha.dfn
 gwf-riv.dfn
+gwf-rivg.dfn
 gwf-sto.dfn
 gwf-vsc.dfn
 gwf-wel.dfn
@@ -32,6 +34,7 @@ gwt-cnc.dfn
 gwt-ic.dfn
 gwt-ist.dfn
 gwt-mst.dfn
+gwt-src.dfn
 gwt-ssm.dfn
 gwe-nam.dfn
 gwe-adv.dfn
