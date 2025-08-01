@@ -23,19 +23,19 @@ SOURCEDIR16=../src/Model/OverlandFlow
 SOURCEDIR17=../src/Model/ParticleTracking
 SOURCEDIR18=../src/Model/SurfaceWaterFlow
 SOURCEDIR19=../src/Model/TransportModel
-SOURCEDIR20=../src/Model/TransportModel/InterpolationScheme
-SOURCEDIR21=../src/Solution
-SOURCEDIR22=../src/Solution/LinearMethods
-SOURCEDIR23=../src/Solution/PETSc
-SOURCEDIR24=../src/Solution/ParticleTracker
-SOURCEDIR25=../src/Solution/ParticleTracker/Domain
-SOURCEDIR26=../src/Solution/ParticleTracker/Method
-SOURCEDIR27=../src/Solution/ParticleTracker/Particle
-SOURCEDIR28=../src/Timing
-SOURCEDIR29=../src/Utilities
-SOURCEDIR30=../src/Utilities/ArrayRead
-SOURCEDIR31=../src/Utilities/Export
-SOURCEDIR32=../src/Utilities/Export/tmp
+SOURCEDIR20=../src/Model/TransportModel/Gradient
+SOURCEDIR21=../src/Model/TransportModel/InterpolationScheme
+SOURCEDIR22=../src/Solution
+SOURCEDIR23=../src/Solution/LinearMethods
+SOURCEDIR24=../src/Solution/PETSc
+SOURCEDIR25=../src/Solution/ParticleTracker
+SOURCEDIR26=../src/Solution/ParticleTracker/Domain
+SOURCEDIR27=../src/Solution/ParticleTracker/Method
+SOURCEDIR28=../src/Solution/ParticleTracker/Particle
+SOURCEDIR29=../src/Timing
+SOURCEDIR30=../src/Utilities
+SOURCEDIR31=../src/Utilities/ArrayRead
+SOURCEDIR32=../src/Utilities/Export
 SOURCEDIR33=../src/Utilities/Idm
 SOURCEDIR34=../src/Utilities/Idm/mf6blockfile
 SOURCEDIR35=../src/Utilities/Idm/netcdf
@@ -314,6 +314,7 @@ $(OBJDIR)/SubcellRect.o \
 $(OBJDIR)/MethodSubcellTernary.o \
 $(OBJDIR)/MethodSubcellPollock.o \
 $(OBJDIR)/TimeStepSelect.o \
+$(OBJDIR)/LinearAlgebraUtils.o \
 $(OBJDIR)/SfrCrossSectionUtils.o \
 $(OBJDIR)/MethodSubcellPool.o \
 $(OBJDIR)/MethodCell.o \
@@ -322,6 +323,8 @@ $(OBJDIR)/CellRectQuad.o \
 $(OBJDIR)/CellRect.o \
 $(OBJDIR)/SwfCxsUtils.o \
 $(OBJDIR)/PrintSaveManager.o \
+$(OBJDIR)/tsp-fmi.o \
+$(OBJDIR)/SingularValueDecomposition.o \
 $(OBJDIR)/SfrCrossSectionManager.o \
 $(OBJDIR)/dag_module.o \
 $(OBJDIR)/BoundaryPackageExt.o \
@@ -333,8 +336,10 @@ $(OBJDIR)/VectorInterpolation.o \
 $(OBJDIR)/swf-cxs.o \
 $(OBJDIR)/OutputControlData.o \
 $(OBJDIR)/gwf-ic.o \
-$(OBJDIR)/tsp-fmi.o \
 $(OBJDIR)/InterpolationSchemeInterface.o \
+$(OBJDIR)/IGradient.o \
+$(OBJDIR)/DisUtils.o \
+$(OBJDIR)/PseudoInverse.o \
 $(OBJDIR)/UzfEtUtil.o \
 $(OBJDIR)/Xt3dAlgorithm.o \
 $(OBJDIR)/TvBase.o \
@@ -355,9 +360,11 @@ $(OBJDIR)/BaseModel.o \
 $(OBJDIR)/TspSpc.o \
 $(OBJDIR)/GweInputData.o \
 $(OBJDIR)/tsp-ic.o \
+$(OBJDIR)/UTVDScheme.o \
 $(OBJDIR)/UpstreamScheme.o \
 $(OBJDIR)/TVDScheme.o \
 $(OBJDIR)/TspAdvOptions.o \
+$(OBJDIR)/LeastSquaresGradient.o \
 $(OBJDIR)/CentralDifferenceScheme.o \
 $(OBJDIR)/AdvSchemeEnum.o \
 $(OBJDIR)/UzfCellGroup.o \
@@ -538,13 +545,10 @@ $(OBJDIR)/RunControlFactory.o \
 $(OBJDIR)/IdmLoad.o \
 $(OBJDIR)/ConnectionBuilder.o \
 $(OBJDIR)/comarg.o \
-$(OBJDIR)/LinearAlgebraUtils.o \
 $(OBJDIR)/mf6core.o \
-$(OBJDIR)/SingularValueDecomposition.o \
 $(OBJDIR)/BaseGeometry.o \
 $(OBJDIR)/mf6.o \
 $(OBJDIR)/StringList.o \
-$(OBJDIR)/PseudoInverse.o \
 $(OBJDIR)/MemorySetHandler.o \
 $(OBJDIR)/ilut.o \
 $(OBJDIR)/sparsekit.o \

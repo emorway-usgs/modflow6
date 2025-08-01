@@ -7,6 +7,9 @@ module TspAdvModule
   use TspFmiModule, only: TspFmiType
   use TspAdvOptionsModule, only: TspAdvOptionsType
   use MatrixBaseModule, only: MatrixBaseType
+  ! -- Gradient schemes
+  use IGradient, only: IGradientType
+  use LeastSquaresGradientModule, only: LeastSquaresGradientType
   ! -- Interpolation schemes
   use InterpolationSchemeInterfaceModule, only: InterpolationSchemeInterface, &
                                                 CoefficientsType
@@ -14,6 +17,7 @@ module TspAdvModule
   use UpstreamSchemeModule, only: UpstreamSchemeType
   use CentralDifferenceSchemeModule, only: CentralDifferenceSchemeType
   use TVDSchemeModule, only: TVDSchemeType
+  use UTVDSchemeModule, only: UTVDSchemeType
 
   implicit none
   private
@@ -28,6 +32,7 @@ module TspAdvModule
     real(DP), pointer :: eqnsclfac => null() !< governing equation scale factor; =1. for solute; =rhow*cpw for energy
 
     class(InterpolationSchemeInterface), allocatable :: face_interpolation !< interpolation scheme for face values
+    class(IGradientType), allocatable :: gradient !< cell centered gradient
   contains
 
     procedure :: adv_df
@@ -133,6 +138,10 @@ contains
     case (ADV_SCHEME_TVD)
       this%face_interpolation = &
         TVDSchemeType(this%dis, this%fmi, this%ibound)
+    case (ADV_SCHEME_UTVD)
+      this%gradient = LeastSquaresGradientType(this%dis)
+      this%face_interpolation = &
+        UTVDSchemeType(this%dis, this%fmi, this%gradient)
     case default
       call store_error("Unknown advection scheme", terminate=.TRUE.)
     end select
@@ -335,8 +344,8 @@ contains
     ! -- dummy
     class(TspAdvType) :: this
     ! -- locals
-    character(len=LENVARNAME), dimension(3) :: scheme = &
-      &[character(len=LENVARNAME) :: 'UPSTREAM', 'CENTRAL', 'TVD']
+    character(len=LENVARNAME), dimension(4) :: scheme = &
+      &[character(len=LENVARNAME) :: 'UPSTREAM', 'CENTRAL', 'TVD', 'UTVD']
     logical(LGP) :: found_scheme, found_atspercel
     ! -- formats
     character(len=*), parameter :: fmtiadvwt = &
@@ -352,7 +361,7 @@ contains
       ! should currently be set to index of scheme names
       if (this%iadvwt == 0) then
         write (errmsg, '(a, a)') &
-          'Unknown scheme, must be "UPSTREAM", "CENTRAL" or "TVD"'
+          'Unknown scheme, must be "UPSTREAM", "CENTRAL", "TVD" or "UTVD"'
         call store_error(errmsg)
         call store_error_filename(this%input_fname)
       else
