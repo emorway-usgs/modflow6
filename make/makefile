@@ -4,7 +4,7 @@
 include ./makedefaults
 
 # Define the source file directories
-SOURCEDIR1=../src                                                      
+SOURCEDIR1=../src
 SOURCEDIR2=../src/Distributed
 SOURCEDIR3=../src/Exchange
 SOURCEDIR4=../src/Idm
@@ -27,32 +27,31 @@ SOURCEDIR20=../src/Model/TransportModel/Gradient
 SOURCEDIR21=../src/Model/TransportModel/InterpolationScheme
 SOURCEDIR22=../src/Solution
 SOURCEDIR23=../src/Solution/LinearMethods
-SOURCEDIR24=../src/Solution/PETSc
-SOURCEDIR25=../src/Solution/ParticleTracker
-SOURCEDIR26=../src/Solution/ParticleTracker/Domain
-SOURCEDIR27=../src/Solution/ParticleTracker/Method
-SOURCEDIR28=../src/Solution/ParticleTracker/Particle
+SOURCEDIR24=../src/Solution/ParticleTracker
+SOURCEDIR25=../src/Solution/ParticleTracker/Domain
+SOURCEDIR26=../src/Solution/ParticleTracker/Method
+SOURCEDIR27=../src/Solution/ParticleTracker/Particle
+SOURCEDIR28=../src/Solution/PETSc
 SOURCEDIR29=../src/Timing
 SOURCEDIR30=../src/Utilities
 SOURCEDIR31=../src/Utilities/ArrayRead
 SOURCEDIR32=../src/Utilities/Export
-SOURCEDIR33=../src/Utilities/Export/tmp
-SOURCEDIR34=../src/Utilities/Idm
-SOURCEDIR35=../src/Utilities/Idm/mf6blockfile
-SOURCEDIR36=../src/Utilities/Idm/netcdf
-SOURCEDIR37=../src/Utilities/Libraries
-SOURCEDIR38=../src/Utilities/Libraries/blas
-SOURCEDIR39=../src/Utilities/Libraries/daglib
-SOURCEDIR40=../src/Utilities/Libraries/rcm
-SOURCEDIR41=../src/Utilities/Libraries/sparsekit
-SOURCEDIR42=../src/Utilities/Libraries/sparskit2
-SOURCEDIR43=../src/Utilities/Matrix
-SOURCEDIR44=../src/Utilities/Memory
-SOURCEDIR45=../src/Utilities/Observation
-SOURCEDIR46=../src/Utilities/OutputControl
-SOURCEDIR47=../src/Utilities/Performance
-SOURCEDIR48=../src/Utilities/TimeSeries
-SOURCEDIR49=../src/Utilities/Vector
+SOURCEDIR33=../src/Utilities/Idm
+SOURCEDIR34=../src/Utilities/Idm/mf6blockfile
+SOURCEDIR35=../src/Utilities/Idm/netcdf
+SOURCEDIR36=../src/Utilities/Libraries
+SOURCEDIR37=../src/Utilities/Libraries/blas
+SOURCEDIR38=../src/Utilities/Libraries/daglib
+SOURCEDIR39=../src/Utilities/Libraries/rcm
+SOURCEDIR40=../src/Utilities/Libraries/sparsekit
+SOURCEDIR41=../src/Utilities/Libraries/sparskit2
+SOURCEDIR42=../src/Utilities/Matrix
+SOURCEDIR43=../src/Utilities/Memory
+SOURCEDIR44=../src/Utilities/Observation
+SOURCEDIR45=../src/Utilities/OutputControl
+SOURCEDIR46=../src/Utilities/Performance
+SOURCEDIR47=../src/Utilities/TimeSeries
+SOURCEDIR48=../src/Utilities/Vector
 
 VPATH = \
 ${SOURCEDIR1} \
@@ -102,8 +101,7 @@ ${SOURCEDIR44} \
 ${SOURCEDIR45} \
 ${SOURCEDIR46} \
 ${SOURCEDIR47} \
-${SOURCEDIR48} \
-${SOURCEDIR49} 
+${SOURCEDIR48} 
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -356,6 +354,7 @@ $(OBJDIR)/gwf-lak.o \
 $(OBJDIR)/GwfVscInputData.o \
 $(OBJDIR)/gwf-ghb.o \
 $(OBJDIR)/gwf-drn.o \
+$(OBJDIR)/PbstBase.o \
 $(OBJDIR)/MethodModel.o \
 $(OBJDIR)/MethodCellPool.o \
 $(OBJDIR)/CellUtil.o \
@@ -381,6 +380,8 @@ $(OBJDIR)/HGeoUtil.o \
 $(OBJDIR)/gwf-vsc.o \
 $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
+$(OBJDIR)/gwe-swr.o \
+$(OBJDIR)/gwe-shf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
 $(OBJDIR)/MethodDisv.o \
@@ -395,28 +396,14 @@ $(OBJDIR)/swf-evp.o \
 $(OBJDIR)/swf-cdb.o \
 $(OBJDIR)/NumericalModel.o \
 $(OBJDIR)/gwf-chd.o \
-$(OBJDIR)/PbstBase.o \
-$(OBJDIR)/InterfaceMap.o \
-$(OBJDIR)/SeqVector.o \
-$(OBJDIR)/ImsLinearSettings.o \
-$(OBJDIR)/ConvergenceSummary.o \
-$(OBJDIR)/Integer2dReader.o \
-$(OBJDIR)/MethodCellTernary.o \
-$(OBJDIR)/MethodCellPollockQuad.o \
-$(OBJDIR)/MethodCellPollock.o \
-$(OBJDIR)/MethodCellPassToBot.o \
-$(OBJDIR)/VectorInterpolation.o \
-$(OBJDIR)/swf-cxs.o \
-$(OBJDIR)/CellWithNbrs.o \
-$(OBJDIR)/NumericalExchange.o \
 $(OBJDIR)/tsp-ssm.o \
 $(OBJDIR)/tsp-oc.o \
 $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
-$(OBJDIR)/tsp-apt.o \
-$(OBJDIR)/gwt-mst.o \
+$(OBJDIR)/tsp-apt_weird_chngs.o \
+$(OBJDIR)/gwt-mst_updates.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -425,7 +412,7 @@ $(OBJDIR)/GwfMvrPeriodData.o \
 $(OBJDIR)/ImsLinearMisc.o \
 $(OBJDIR)/gwf-npf.o \
 $(OBJDIR)/GwfBuyInputData.o \
-$(OBJDIR)/gwe-shf.o \
+$(OBJDIR)/gwe-abc.o \
 $(OBJDIR)/GweCndOptions.o \
 $(OBJDIR)/VirtualBase.o \
 $(OBJDIR)/STLVecInt.o \
@@ -576,11 +563,15 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
+$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
+$(OBJDIR)/gwt-mst_orig.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
-$(OBJDIR)/gwe-swr.o \
+$(OBJDIR)/gwe-lwr.o \
+$(OBJDIR)/gwe-lhf.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o \

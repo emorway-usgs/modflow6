@@ -26,7 +26,6 @@
 ! SENSIBLE HEAT FLUX        idxbudshf     SENS HEAT             cd * rho_a * C_p_a * wspd * (t_air - t_feat)
 ! SHORTWAVE RADIATION       idxbudswr     SHORTWAVE             (1 - shd) * (1 - swrefl) * solr
 
-
 ! -- terms from a flow file that should be skipped
 ! CONSTANT                  none          none                  none
 ! AUXILIARY                 none          none                  none
@@ -51,9 +50,7 @@ module GweSfeModule
   use TspAptModule, only: TspAptType, apt_process_obsID, &
                           apt_process_obsID12
   use GweInputDataModule, only: GweInputDataType
-
   use AbcModule, only: AbcType, abc_cr
-
   use MatrixBaseModule
   use InputOutputModule, only: openfile
   !
@@ -84,7 +81,6 @@ module GweSfeModule
     real(DP), dimension(:), pointer, contiguous :: tempiflw => null() !< inflow temperature
     real(DP), dimension(:), pointer, contiguous :: ktf => null() !< thermal conductivity between the sfe and groundwater cell
     real(DP), dimension(:), pointer, contiguous :: rfeatthk => null() !< thickness of streambed material through which thermal conduction occurs
-
 
     type(AbcType), pointer :: abc => null() ! atmospheric boundary condition (abc) object
     
@@ -207,13 +203,11 @@ contains
     !
     found = .true.
     select case (option)
-
     case ('ABC6')
       !
       call this%parser%GetStringCaps(keyword)
       if (trim(adjustl(keyword)) /= 'FILEIN') then
         errmsg = 'ABC6 keyword must be followed by "FILEIN" '// &
-
                  'then by filename.'
         call store_error(errmsg)
         call this%parser%StoreErrorUnit()
@@ -797,7 +791,6 @@ contains
     call mem_allocate(this%idxbudroff, 'IDXBUDROFF', this%memoryPath)
     call mem_allocate(this%idxbudiflw, 'IDXBUDIFLW', this%memoryPath)
     call mem_allocate(this%idxbudoutf, 'IDXBUDOUTF', this%memoryPath)
-
     call mem_allocate(this%abc_active, 'ABC_ACTIVE', this%memoryPath)
     call mem_allocate(this%inabc, 'INABC', this%memoryPath)
     !
@@ -808,7 +801,6 @@ contains
     this%idxbudiflw = 0
     this%idxbudoutf = 0
     !
-
     this%abc_active = .false.
     this%inabc = 0
   end subroutine allocate_scalars
@@ -842,7 +834,6 @@ contains
     end do
     !
     ! -- Call sub-package(s) allocate arrays
-
     if (this%inabc /= 0) then
       call this%abc%abc_allocate_arrays()
     end if
@@ -858,7 +849,6 @@ contains
     ! -- dummy
     class(GweSfeType), intent(inout) :: this
     !
-
     ! -- call atmospheric boundary condition sub-package _rp() routine
     if (this%inabc /= 0) then
       call this%abc%rp()
@@ -1069,7 +1059,6 @@ contains
     if (present(rhsval)) rhsval = DZERO
     if (present(hcofval)) hcofval = ctherm
   end subroutine sfe_sbcd_term
-
 
   !> @brief Atmospheric Boundary Condition (ABC) term
   !<
