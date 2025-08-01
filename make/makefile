@@ -168,6 +168,7 @@ $(OBJDIR)/olf-dfwidm.o \
 $(OBJDIR)/olf-chdidm.o \
 $(OBJDIR)/olf-cdbidm.o \
 $(OBJDIR)/gwt-ssmidm.o \
+$(OBJDIR)/gwt-srcidm.o \
 $(OBJDIR)/gwt-namidm.o \
 $(OBJDIR)/gwt-mstidm.o \
 $(OBJDIR)/gwt-istidm.o \

@@ -204,6 +204,7 @@
 		<File RelativePath="..\src\Idm\gwt-istidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-mstidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-namidm.f90"/>
+		<File RelativePath="..\src\Idm\gwt-srcidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-ssmidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-cdbidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-chdidm.f90"/>

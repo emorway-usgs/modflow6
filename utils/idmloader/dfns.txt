@@ -34,6 +34,7 @@ gwt-cnc.dfn
 gwt-ic.dfn
 gwt-ist.dfn
 gwt-mst.dfn
+gwt-src.dfn
 gwt-ssm.dfn
 gwe-nam.dfn
 gwe-adv.dfn
