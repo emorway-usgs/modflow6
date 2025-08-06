@@ -360,8 +360,8 @@ contains
         end if
       end if
     end if
-    !!
-    !! -- The following is not callable from apt_ar, only reachable from sfe_ar
+    !
+    ! -- The following is not callable from apt_ar, only reachable from sfe_ar
     !call this%pbst_shf_ar()
   end subroutine apt_ar
 

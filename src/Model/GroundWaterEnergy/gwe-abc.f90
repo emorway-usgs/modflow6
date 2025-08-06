@@ -31,7 +31,7 @@ module AbcModule
   use NumericalPackageModule, only: NumericalPackageType
   use TimeSeriesManagerModule, only: TimeSeriesManagerType, tsmanager_cr
   use TableModule, only: TableType, table_cr
-  use BndExtModule, only: BndExtType
+  use BndModule, only: BndType
 
   implicit none
 
@@ -43,7 +43,7 @@ module AbcModule
   character(len=LENVARNAME) :: text = '          ABC'
 
   !type, extends(NumericalPackageType) :: AbcType
-  type, extends(BndExtType) :: AbcType
+  type, extends(BndType) :: AbcType
 
     integer(I4B), pointer :: ncv => null() !< number of control volumes
     !type(TimeSeriesManagerType), pointer :: tsmanager => null()
@@ -73,17 +73,16 @@ module AbcModule
     real(DP), dimension(:), pointer, contiguous :: shd => null() !< shade fraction
     real(DP), dimension(:), pointer, contiguous :: swrefl => null() !< shortwave reflectance of water surface
     
-    
   contains
 
     procedure :: da => abc_da
-    procedure :: init
+    !procedure :: init
     procedure :: ar
-    procedure :: rp
+    procedure, public :: abc_rp
     procedure :: abc_check_valid
-    !procedure, private :: read_options
+    procedure :: bnd_options => abc_read_options
     procedure :: read_option => abc_read_option ! reads stress period
-    procedure :: abc_options ! read options block
+    procedure :: abc_read_options ! read options block
     !procedure :: subpck_set_stressperiod => abc_set_stressperiod
     procedure :: abc_set_stressperiod
     procedure :: abc_allocate_arrays
@@ -97,8 +96,43 @@ module AbcModule
 
   end type AbcType
 
-    contains
+contains
     
+  !> @brief Create a new AbcType object
+  !!
+  !! Create a new atmospheric boundary condition (AbcType) object. Initially for use with
+  !! the SFE package.
+  !<
+  subroutine abc_cr(abc, name_model, inunit, iout, fname, ncv)
+    ! -- dummy
+    type(AbcType), pointer, intent(out) :: abc
+    character(len=*), intent(in) :: name_model
+    integer(I4B), intent(in) :: inunit
+    integer(I4B), intent(in) :: iout
+    character(len=LINELENGTH), intent(in) :: fname
+    integer(I4B), target, intent(in) :: ncv
+    !
+    ! -- Create the object
+    allocate (abc)
+    !
+    call abc%set_names(1, name_model, 'ABC', 'ABC')
+    !
+    !abc%text = text
+    !
+    ! -- allocate scalars
+    call abc%abc_allocate_scalars()
+    !
+    abc%inunit = inunit
+    abc%iout = iout
+    abc%inputFilename = fname
+    abc%ncv => ncv
+    call abc%parser%Initialize(abc%inunit, abc%iout)
+    !
+    ! -- initialize associated abc utilities
+    call shf_cr(abc%shf, name_model, inunit, iout, ncv)
+    call swr_cr(abc%swr, name_model, inunit, iout, ncv)
+  end subroutine abc_cr
+  
   !> @brief Allocate and read
   !!
   !!  Method to allocate and read static data for the SHF package
@@ -114,6 +148,11 @@ module AbcModule
     ! -- print a message identifying the apt package.
     write (this%iout, fmtapt) this%inunit
     !
+    ! -- Set pointers to other package variables
+    if (this%inshf) then
+      call this%shf%ar_set_pointers()
+    end if
+    !
     ! -- Allocate arrays
     !call this%pbst_allocate_arrays()
     !
@@ -125,32 +164,10 @@ module AbcModule
     ! -- Read options
     !call this%read_options()
   end subroutine ar
-  
-  !> @brief Initialize the AbcType object
-  !!
-  !! Allocate and initialize data members of the object.
+
+  !> @brief ABC read and prepare for setting stress period information
   !<
-  subroutine init(this, name_model, pakname, ftype, inunit, iout, ncv)
-    ! -- dummy
-    class(AbcType) :: this
-    character(len=*), intent(in) :: name_model
-    character(len=*), intent(in) :: pakname
-    character(len=*), intent(in) :: ftype
-    integer(I4B), intent(in) :: inunit
-    integer(I4B), intent(in) :: iout
-    integer(I4B), target, intent(in) :: ncv
-    !
-    call this%set_names(1, name_model, pakname, ftype)
-    call this%abc_allocate_scalars()
-    this%inunit = inunit
-    this%iout = iout
-    this%ncv => ncv
-    call this%parser%Initialize(this%inunit, this%iout)
-  end subroutine init
-  
-   !> @brief ABC read and prepare for setting stress period information
-  !<
-  subroutine rp(this)
+  subroutine abc_rp(this)
     ! -- module
     use TimeSeriesManagerModule, only: read_value_or_time_series_adv
     use TdisModule, only: kper, nper
@@ -254,40 +271,14 @@ module AbcModule
     if (ierr > 0) then
       call this%parser%StoreErrorUnit()
     end if
-  end subroutine rp
+  end subroutine abc_rp
 
-  
-  !> @brief Create a new AbcType object
-  !!
-  !! Create a new atmospheric boundary condition (AbcType) object. Initially for use with
-  !! the SFE package.
-  !<
-  subroutine abc_cr(abc, name_model, inunit, iout, ncv)
-    ! -- dummy
-    type(AbcType), pointer, intent(out) :: abc
-    character(len=*), intent(in) :: name_model
-    integer(I4B), intent(in) :: inunit
-    integer(I4B), intent(in) :: iout
-    integer(I4B), target, intent(in) :: ncv
-    !
-    ! -- Create the object
-    allocate (abc)
-    !
-    call abc%init(name_model, 'ABC', 'ABC', inunit, iout, ncv)
-    call shf_cr(abc%shf, name_model, inunit, iout, ncv)
-    call swr_cr(abc%swr, name_model, inunit, iout, ncv)
-    !
-    !abc%text = text
-    !
-    ! -- allocate scalars
-    call abc%abc_allocate_scalars()
-  end subroutine abc_cr
   
   !> @brief Set options specific to the AbcType
   !!
   !! This routine overrides TspAptType%gc_options
   !<
-  subroutine abc_options(this, option, found)
+  subroutine abc_read_options(this, option, found)
     ! -- modules
     use ConstantsModule, only: MAXCHARLEN, LGP
     use InputOutputModule, only: urword, getunit, assign_iounit, openfile
@@ -336,14 +327,14 @@ module AbcModule
         call this%parser%StoreErrorUnit()
       else
         write (this%iout, '(4x,a,1pg15.6)') &
-          "The heat capacity of the atmosphere has been set to: ", this%cpa
+          "The surface-atmosphere drag coefficient has been set to: ", this%cpa
       end if
     case default
       write (errmsg, '(a,a)') 'Unknown ABC option: ', trim(option)
       call store_error(errmsg)
       call this%parser%StoreErrorUnit()
     end select
-  end subroutine abc_options
+  end subroutine abc_read_options
 
   !> @brief Allocate scalars specific to the streamflow energy transport (SFE)
   !! package.
@@ -351,7 +342,7 @@ module AbcModule
   subroutine abc_allocate_scalars(this)
     ! -- modules
     use MemoryManagerModule, only: mem_allocate
-    use MemoryHelperModule, only: create_mem_path !! NEW KF 7/24 from npf pkg
+    !use MemoryHelperModule, only: create_mem_path !! NEW KF 7/24 from npf pkg
     ! -- dummy
     class(AbcType) :: this
     !
@@ -383,7 +374,7 @@ module AbcModule
     this%cd = 0.002 ! unitless
     !
     ! -- call standard NumericalPackageType allocate scalars
-    call this%NumericalPackageType%allocate_scalars()
+    call this%BndType%allocate_scalars()
     !
     ! -- allocate time series manager
     allocate (this%tsmanager) 
@@ -408,31 +399,16 @@ module AbcModule
        !call this%BndExtType%allocate_arrays(nodelist, auxvar)
        !
        ! -- set WSPD and TATM context pointer
-       call mem_setptr(this%wspd, 'WSPD', this%input_mempath)
-       call mem_setptr(this%tatm, 'TATM', this%input_mempath)
-       !
-       ! -- checkin WSPD and TATM input context pointer
-       call mem_checkin(this%wspd, 'WSPD', this%memoryPath, &
-           'WSPD', this%input_mempath)
-        call mem_checkin(this%tatm, 'TATM', this%memoryPath, &
-           'TATM', this%input_mempath)
-       
-        
-       !! -- time series
-       !call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
-       !call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
-       !! -- initialize
-       !do n = 1, this%ncv
-       !  this%wspd(n) = DZERO
-       !  this%tatm(n) = DZERO
-       !end do
+       call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
+       call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
+       ! -- initialize
+       do n = 1, this%ncv
+         this%wspd(n) = DZERO
+         this%tatm(n) = DZERO
+       end do
+       call this%shf%ar()
     end if
     if (this%inswr /= 0) then
-      !call this%swr%swr_allocate_arrays()
-        !
-        ! OR ???
-        !
-        ! -- time series
        call mem_allocate(this%solr, this%ncv, 'SOLR', this%memoryPath)
        call mem_allocate(this%shd, this%ncv, 'SHD', this%memoryPath)
        call mem_allocate(this%swrefl, this%ncv, 'SWREFL', this%memoryPath)
@@ -443,6 +419,7 @@ module AbcModule
          this%shd(n) = DZERO
          this%swrefl(n) = DZERO
        end do
+       call this%swr%ar()
     end if
     
     !! -- allocate character array for status
@@ -453,27 +430,7 @@ module AbcModule
     !  this%status(n) = 'ACTIVE'
     !end do
   end subroutine abc_allocate_arrays
-  
-  !> @brief Call Read and prepare routines for any active pbst subpackages
-  !!
-  !! Overrides ancil_rp() subroutine in tsp-apt.  The idea being that for a
-  !! GWE model with add-on packages (like sensible heat flux, for example)
-  !! they can only be accessed from abc and not apt.
-  !<
-  subroutine abc_rp(this)
-    ! -- dummy
-    class(AbcType), intent(inout) :: this
-    !
-    ! -- call atmospheric boundary condition sub-package _rp() routine
-    if (this%inshf /= 0) then
-      call this%shf%rp()
-    end if
-    ! -- call shortwave radiation heat flux sub-package _rp() routine
-    if (this%inswr /= 0) then
-      call this%swr%rp()
-    end if
-  end subroutine abc_rp
-  
+    
   !> @brief Deallocate memory
   !<
   subroutine abc_da(this)

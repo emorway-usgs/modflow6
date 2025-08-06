@@ -91,7 +91,7 @@ module GweSfeModule
     !procedure :: bnd_df => sfe_df
     procedure :: bnd_da => sfe_da
     !procedure :: bnd_ar => sfe_ar
-    !procedure :: ancil_rp => pbst_rp
+    procedure :: ancil_rp => utl_rp
     procedure :: allocate_scalars
     procedure :: apt_allocate_arrays => sfe_allocate_arrays
     procedure :: find_apt_package => find_sfe_package
@@ -222,8 +222,10 @@ contains
       !
       ! -- create atmospheric boundary condition object
       call openfile(this%inabc, this%iout, fname, 'ABC')
-      call abc_cr(this%abc, this%name_model, this%inabc, this%iout, this%ncv)
-      this%abc%inputFilename = fname
+      call abc_cr(this%abc, this%name_model, this%inabc, this%iout, fname, &
+                  this%ncv) !, this%mempath)
+      call this%abc%read_options()
+      !this%abc%inputFilename = fname
       !
       ! -- call _ar routine for abc sub-package
       !    note: this is the best place to call the sub-package (abc) for
@@ -233,7 +235,7 @@ contains
       !          natural point.  In other words, one place to call abc%ar
       !          would be from bnd_ar(), however, abc is only callable from
       !          sfe and not apt.
-      call this%abc%ar()
+      !call this%abc%ar()
     case default
       !
       ! -- No options found
@@ -357,6 +359,9 @@ contains
         '   MAX NO. OF ENTRIES = ', this%flowbudptr%budterm(ip)%maxlist
     end do
     write (this%iout, '(a, //)') 'DONE PROCESSING '//ftype//' INFORMATION'
+    !
+    ! -- Experiment
+    !call this%abc%ar()
   end subroutine find_sfe_package
 
   !> @brief Add matrix terms related to SFE
@@ -845,15 +850,15 @@ contains
   !! GWE model with add-on packages (like sensible heat flux, for example)
   !! they can only be accessed from sfe and not apt.
   !<
-  subroutine pbst_rp(this)
+  subroutine utl_rp(this)
     ! -- dummy
     class(GweSfeType), intent(inout) :: this
     !
     ! -- call atmospheric boundary condition sub-package _rp() routine
     if (this%inabc /= 0) then
-      call this%abc%rp()
+      call this%abc%abc_rp()
     end if
-  end subroutine pbst_rp
+  end subroutine utl_rp
 
   !> @brief Deallocate memory
   !<
