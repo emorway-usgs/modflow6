@@ -229,7 +229,7 @@ contains
     real(DP) :: shf_const
     !
     ! -- calculate sensible heat flux using HGS equation
-     shf_const = this%cd * this%cpa * this%rhoa
+    shf_const = this%cd * this%cpa * this%rhoa
     shflx = shf_const * this%wspd(ifno) * (this%tatm(ifno) - tstrm)
   end subroutine shf_cq
 
