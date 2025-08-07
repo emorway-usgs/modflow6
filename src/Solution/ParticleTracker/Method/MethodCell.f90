@@ -13,7 +13,7 @@ module MethodCellModule
 
   type, abstract, extends(MethodType) :: MethodCellType
   contains
-    procedure, public :: check
+    procedure, public :: assess
   end type MethodCellType
 
 contains
@@ -25,7 +25,7 @@ contains
   !! tracking the particle or terminate it, as well as whether to
   !! record any output data as per selected reporting conditions.
   !<
-  subroutine check(this, particle, cell_defn, tmax)
+  subroutine assess(this, particle, cell_defn, tmax)
     ! modules
     use TdisModule, only: endofsimulation, totimc, totim
     use ParticleModule, only: TERM_WEAKSINK, TERM_NO_EXITS, &
@@ -119,7 +119,6 @@ contains
       if (particle%idrymeth == 0) then
         ! drop to water table
         particle%z = cell_defn%top
-        call this%cellexit(particle)
       else if (particle%idrymeth == 1) then
         ! stop
         call this%terminate(particle, status=TERM_INACTIVE)
@@ -164,6 +163,6 @@ contains
       return
     end if
 
-  end subroutine check
+  end subroutine assess
 
 end module MethodCellModule

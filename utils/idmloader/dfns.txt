@@ -3,6 +3,7 @@ sim-tdis.dfn
 gwf-nam.dfn
 gwf-buy.dfn
 gwf-chd.dfn
+gwf-chdg.dfn
 gwf-csub.dfn
 gwf-dis.dfn
 gwf-disu.dfn
