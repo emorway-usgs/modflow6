@@ -1,17 +1,17 @@
 ! ** Do Not Modify! MODFLOW 6 system generated file. **
-module GwtSrcInputModule
+module GweEslInputModule
   use ConstantsModule, only: LENVARNAME
   use InputDefinitionModule, only: InputParamDefinitionType, &
                                    InputBlockDefinitionType
   private
-  public gwt_src_param_definitions
-  public gwt_src_aggregate_definitions
-  public gwt_src_block_definitions
-  public GwtSrcParamFoundType
-  public gwt_src_multi_package
-  public gwt_src_subpackages
+  public gwe_esl_param_definitions
+  public gwe_esl_aggregate_definitions
+  public gwe_esl_block_definitions
+  public GweEslParamFoundType
+  public gwe_esl_multi_package
+  public gwe_esl_subpackages
 
-  type GwtSrcParamFoundType
+  type GweEslParamFoundType
     logical :: auxiliary = .false.
     logical :: auxmultname = .false.
     logical :: boundnames = .false.
@@ -25,27 +25,26 @@ module GwtSrcInputModule
     logical :: obs_filerecord = .false.
     logical :: obs6 = .false.
     logical :: obs6_filename = .false.
-    logical :: highest_sat = .false.
     logical :: maxbound = .false.
     logical :: cellid = .false.
-    logical :: smassrate = .false.
+    logical :: senerrate = .false.
     logical :: auxvar = .false.
     logical :: boundname = .false.
-  end type GwtSrcParamFoundType
+  end type GweEslParamFoundType
 
-  logical :: gwt_src_multi_package = .true.
+  logical :: gwe_esl_multi_package = .true.
 
   character(len=16), parameter :: &
-    gwt_src_subpackages(*) = &
+    gwe_esl_subpackages(*) = &
     [ &
     '                ' &
     ]
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_auxiliary = InputParamDefinitionType &
+    gweesl_auxiliary = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'AUXILIARY', & ! tag name
     'AUXILIARY', & ! fortran variable
@@ -60,10 +59,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_auxmultname = InputParamDefinitionType &
+    gweesl_auxmultname = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'AUXMULTNAME', & ! tag name
     'AUXMULTNAME', & ! fortran variable
@@ -78,10 +77,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_boundnames = InputParamDefinitionType &
+    gweesl_boundnames = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'BOUNDNAMES', & ! tag name
     'BOUNDNAMES', & ! fortran variable
@@ -96,10 +95,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_iprpak = InputParamDefinitionType &
+    gweesl_iprpak = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'PRINT_INPUT', & ! tag name
     'IPRPAK', & ! fortran variable
@@ -114,10 +113,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_iprflow = InputParamDefinitionType &
+    gweesl_iprflow = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'PRINT_FLOWS', & ! tag name
     'IPRFLOW', & ! fortran variable
@@ -132,10 +131,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_ipakcb = InputParamDefinitionType &
+    gweesl_ipakcb = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'SAVE_FLOWS', & ! tag name
     'IPAKCB', & ! fortran variable
@@ -150,10 +149,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_ts_filerecord = InputParamDefinitionType &
+    gweesl_ts_filerecord = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'TS_FILERECORD', & ! tag name
     'TS_FILERECORD', & ! fortran variable
@@ -168,10 +167,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_ts6 = InputParamDefinitionType &
+    gweesl_ts6 = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'TS6', & ! tag name
     'TS6', & ! fortran variable
@@ -186,10 +185,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_filein = InputParamDefinitionType &
+    gweesl_filein = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'FILEIN', & ! tag name
     'FILEIN', & ! fortran variable
@@ -204,10 +203,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_ts6_filename = InputParamDefinitionType &
+    gweesl_ts6_filename = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'TS6_FILENAME', & ! tag name
     'TS6_FILENAME', & ! fortran variable
@@ -222,10 +221,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_obs_filerecord = InputParamDefinitionType &
+    gweesl_obs_filerecord = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'OBS_FILERECORD', & ! tag name
     'OBS_FILERECORD', & ! fortran variable
@@ -240,10 +239,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_obs6 = InputParamDefinitionType &
+    gweesl_obs6 = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'OBS6', & ! tag name
     'OBS6', & ! fortran variable
@@ -258,10 +257,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_obs6_filename = InputParamDefinitionType &
+    gweesl_obs6_filename = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'OPTIONS', & ! block
     'OBS6_FILENAME', & ! tag name
     'OBS6_FILENAME', & ! fortran variable
@@ -276,28 +275,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_highest_sat = InputParamDefinitionType &
+    gweesl_maxbound = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
-    'OPTIONS', & ! block
-    'HIGHEST_SATURATED', & ! tag name
-    'HIGHEST_SAT', & ! fortran variable
-    'KEYWORD', & ! type
-    '', & ! shape
-    'apply source to highest saturated cell', & ! longname
-    .false., & ! required
-    .false., & ! multi-record
-    .false., & ! preserve case
-    .false., & ! layered
-    .false. & ! timeseries
-    )
-
-  type(InputParamDefinitionType), parameter :: &
-    gwtsrc_maxbound = InputParamDefinitionType &
-    ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'DIMENSIONS', & ! block
     'MAXBOUND', & ! tag name
     'MAXBOUND', & ! fortran variable
@@ -312,10 +293,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_cellid = InputParamDefinitionType &
+    gweesl_cellid = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'PERIOD', & ! block
     'CELLID', & ! tag name
     'CELLID', & ! fortran variable
@@ -330,16 +311,16 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_smassrate = InputParamDefinitionType &
+    gweesl_senerrate = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'PERIOD', & ! block
-    'SMASSRATE', & ! tag name
-    'SMASSRATE', & ! fortran variable
+    'SENERRATE', & ! tag name
+    'SENERRATE', & ! fortran variable
     'DOUBLE', & ! type
     '', & ! shape
-    'mass source loading rate', & ! longname
+    'energy source loading rate', & ! longname
     .true., & ! required
     .true., & ! multi-record
     .false., & ! preserve case
@@ -348,10 +329,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_auxvar = InputParamDefinitionType &
+    gweesl_auxvar = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'PERIOD', & ! block
     'AUX', & ! tag name
     'AUXVAR', & ! fortran variable
@@ -366,10 +347,10 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_boundname = InputParamDefinitionType &
+    gweesl_boundname = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'PERIOD', & ! block
     'BOUNDNAME', & ! tag name
     'BOUNDNAME', & ! fortran variable
@@ -384,38 +365,37 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwt_src_param_definitions(*) = &
+    gwe_esl_param_definitions(*) = &
     [ &
-    gwtsrc_auxiliary, &
-    gwtsrc_auxmultname, &
-    gwtsrc_boundnames, &
-    gwtsrc_iprpak, &
-    gwtsrc_iprflow, &
-    gwtsrc_ipakcb, &
-    gwtsrc_ts_filerecord, &
-    gwtsrc_ts6, &
-    gwtsrc_filein, &
-    gwtsrc_ts6_filename, &
-    gwtsrc_obs_filerecord, &
-    gwtsrc_obs6, &
-    gwtsrc_obs6_filename, &
-    gwtsrc_highest_sat, &
-    gwtsrc_maxbound, &
-    gwtsrc_cellid, &
-    gwtsrc_smassrate, &
-    gwtsrc_auxvar, &
-    gwtsrc_boundname &
+    gweesl_auxiliary, &
+    gweesl_auxmultname, &
+    gweesl_boundnames, &
+    gweesl_iprpak, &
+    gweesl_iprflow, &
+    gweesl_ipakcb, &
+    gweesl_ts_filerecord, &
+    gweesl_ts6, &
+    gweesl_filein, &
+    gweesl_ts6_filename, &
+    gweesl_obs_filerecord, &
+    gweesl_obs6, &
+    gweesl_obs6_filename, &
+    gweesl_maxbound, &
+    gweesl_cellid, &
+    gweesl_senerrate, &
+    gweesl_auxvar, &
+    gweesl_boundname &
     ]
 
   type(InputParamDefinitionType), parameter :: &
-    gwtsrc_spd = InputParamDefinitionType &
+    gweesl_spd = InputParamDefinitionType &
     ( &
-    'GWT', & ! component
-    'SRC', & ! subcomponent
+    'GWE', & ! component
+    'ESL', & ! subcomponent
     'PERIOD', & ! block
     'STRESS_PERIOD_DATA', & ! tag name
     'SPD', & ! fortran variable
-    'RECARRAY CELLID SMASSRATE AUX BOUNDNAME', & ! type
+    'RECARRAY CELLID SENERRATE AUX BOUNDNAME', & ! type
     'MAXBOUND', & ! shape
     '', & ! longname
     .true., & ! required
@@ -426,13 +406,13 @@ module GwtSrcInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
-    gwt_src_aggregate_definitions(*) = &
+    gwe_esl_aggregate_definitions(*) = &
     [ &
-    gwtsrc_spd &
+    gweesl_spd &
     ]
 
   type(InputBlockDefinitionType), parameter :: &
-    gwt_src_block_definitions(*) = &
+    gwe_esl_block_definitions(*) = &
     [ &
     InputBlockDefinitionType( &
     'OPTIONS', & ! blockname
@@ -454,4 +434,4 @@ module GwtSrcInputModule
     ) &
     ]
 
-end module GwtSrcInputModule
+end module GweEslInputModule

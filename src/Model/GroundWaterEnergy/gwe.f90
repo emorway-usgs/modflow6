@@ -749,7 +749,7 @@ contains
                       pakname, this%depvartype, mempath)
     case ('ESL6')
       call esl_create(packobj, ipakid, ipaknum, inunit, iout, this%name, &
-                      pakname, this%gwecommon)
+                      pakname, this%gwecommon, mempath)
     case ('LKE6')
       call lke_create(packobj, ipakid, ipaknum, inunit, iout, this%name, &
                       pakname, this%fmi, this%eqnsclfac, this%gwecommon, &

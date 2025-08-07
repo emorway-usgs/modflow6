@@ -209,6 +209,7 @@ $(OBJDIR)/gwf-buyidm.o \
 $(OBJDIR)/gwe-ssmidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \
+$(OBJDIR)/gwe-eslidm.o \
 $(OBJDIR)/gwe-disvidm.o \
 $(OBJDIR)/gwe-disuidm.o \
 $(OBJDIR)/gwe-disidm.o \

@@ -33,6 +33,7 @@ name print_input
 type keyword
 reader urword
 optional true
+mf6internal iprpak
 longname print input to listing file
 description REPLACE print_input {'{#1}': 'mass source'}
 
@@ -41,6 +42,7 @@ name print_flows
 type keyword
 reader urword
 optional true
+mf6internal iprflow
 longname print calculated flows to listing file
 description REPLACE print_flows {'{#1}': 'mass source'}
 
@@ -49,6 +51,7 @@ name save_flows
 type keyword
 reader urword
 optional true
+mf6internal ipakcb
 longname save well flows to budget file
 description REPLACE save_flows {'{#1}': 'mass source'}
 
@@ -203,6 +206,7 @@ shape (naux)
 reader urword
 optional true
 time_series true
+mf6internal auxvar
 longname auxiliary variables
 description REPLACE aux {'{#1}': 'mass source'}
 
