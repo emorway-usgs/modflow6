@@ -45,8 +45,9 @@ module AbcModule
   !type, extends(NumericalPackageType) :: AbcType
   type, extends(BndType) :: AbcType
 
+    character(len=8), dimension(:), pointer, contiguous :: status => null() !< active, inactive, constant
     integer(I4B), pointer :: ncv => null() !< number of control volumes
-    !type(TimeSeriesManagerType), pointer :: tsmanager => null()
+    integer(I4B), dimension(:), pointer, contiguous :: iboundpbst => null() !< package ibound
     !character(len=LENPACKAGENAME) :: text = '' !< text string for package transport term
     character(len=LINELENGTH), pointer, public :: inputFilename => null() !< a particular abc input file name, could be for sensible heat flux or latent heat flux subpackages, for example
     logical, pointer, public :: active => null() !< logical indicating if a atmospheric boundary condition object is active
@@ -131,6 +132,11 @@ contains
     ! -- initialize associated abc utilities
     call shf_cr(abc%shf, name_model, inunit, iout, ncv)
     call swr_cr(abc%swr, name_model, inunit, iout, ncv)
+    !
+    ! -- Create time series manager
+    call tsmanager_cr(abc%tsmanager, abc%iout, &
+                      removeTsLinksOnCompletion=.true., &
+                      extendTsToEndOfSimulation=.true.)
   end subroutine abc_cr
   
   !> @brief Allocate and read
@@ -155,11 +161,6 @@ contains
     !
     ! -- Allocate arrays
     !call this%pbst_allocate_arrays()
-    !
-    ! -- Create time series manager
-    call tsmanager_cr(this%tsmanager, this%iout, &
-                      removeTsLinksOnCompletion=.true., &
-                      extendTsToEndOfSimulation=.true.)
     !
     ! -- Read options
     !call this%read_options()
@@ -393,6 +394,15 @@ contains
     ! -- local
     integer(I4B) :: n
     !
+    !
+    ! -- allocate character array for status
+    allocate (this%status(this%ncv))
+    !
+    ! -- initialize arrays
+    do n = 1, this%ncv
+      this%status(n) = 'ACTIVE'
+    end do
+    !
     ! -- Call sub-package(s) allocate arrays
     if (this%inshf /= 0) then
        ! -- allocate base arrays
@@ -451,6 +461,7 @@ contains
     end if
     !
     ! -- Deallocate scalars
+    call mem_deallocate(this%ncv)
     call mem_deallocate(this%shf_active)
     call mem_deallocate(this%swr_active)
     call mem_deallocate(this%inshf)
@@ -459,17 +470,20 @@ contains
     call mem_deallocate(this%cpa)
     call mem_deallocate(this%cd)
     !
-    ! -- Deallocate time series
+    ! -- Deallocate time series manager
+    deallocate (this%tsmanager)
+    !
+    ! -- Deallocate arrays
+    call mem_deallocate(this%status)
+    call mem_deallocate(this%iboundpbst)
     call mem_deallocate(this%wspd)
     call mem_deallocate(this%tatm)
     call mem_deallocate(this%shd)
     call mem_deallocate(this%swrefl)
     call mem_deallocate(this%solr)
     !
-    ! -- Deallocate arrays
-    !
     ! -- Deallocate scalars in TspAptType
-    !call this%NumericalPackageType%da() ! this may not work -- revisit and cleanup !!!
+    call this%NumericalPackageType%da() ! this may not work -- revisit and cleanup !!!
     
     ! -- Deallocate parent
     !call pbstbase_da(this)
@@ -490,26 +504,6 @@ contains
     ! -- There are no ABC-specific options, so just return false
     success = .false.
   end function abc_read_option
-  
-  !> @brief Process-based stream temperature transport (or utility) routine
-  !!
-  !! Determine if a valid feature number has been specified.
-  !<
-  function abc_check_valid(this, itemno) result(ierr)
-    ! -- return
-    integer(I4B) :: ierr
-    ! -- dummy
-    class(AbcType), intent(inout) :: this
-    integer(I4B), intent(in) :: itemno
-    ! -- formats
-    ierr = 0
-    if (itemno < 1 .or. itemno > this%ncv) then
-      write (errmsg, '(a,1x,i6,1x,a,1x,i6)') &
-        'Featureno ', itemno, 'must be > 0 and <= ', this%ncv
-      call store_error(errmsg)
-      ierr = 1
-    end if
-  end function abc_check_valid
   
   !> @brief Sensible Heat Flux (SHF) term
   !<
@@ -690,8 +684,27 @@ contains
     ! <swrefl> REFLECTANCE OF SHORTWAVE RADIATION OFF WATER SURFACE
     ! <solr> SOLAR RADIATION
     !
-    !found = .true.
+    ! -- read line
+    call this%parser%GetStringCaps(keyword)
     select case (keyword)
+    case ('STATUS')
+      ierr = this%abc_check_valid(itemno)
+      if (ierr /= 0) then
+        goto 999
+      end if
+      call this%parser%GetStringCaps(text)
+      this%status(itemno) = text(1:8)
+      if (text == 'CONSTANT') then
+        this%iboundpbst(itemno) = -1
+      else if (text == 'INACTIVE') then
+        this%iboundpbst(itemno) = 0
+      else if (text == 'ACTIVE') then
+        this%iboundpbst(itemno) = 1
+      else
+        write (errmsg, '(a,a)') &
+          'Unknown '//trim(this%text)//' status keyword: ', text//'.'
+        call store_error(errmsg)
+      end if
     case ('WSPD')
       ierr = this%abc_check_valid(itemno)
       if (ierr /= 0) then
@@ -755,5 +768,23 @@ contains
     !
 999 continue
   end subroutine abc_set_stressperiod
+
+  !> @brief Determine if a valid feature number has been specified.
+  !<
+  function abc_check_valid(this, itemno) result(ierr)
+    ! -- return
+    integer(I4B) :: ierr
+    ! -- dummy
+    class(AbcType), intent(inout) :: this
+    integer(I4B), intent(in) :: itemno
+    ! -- formats
+    ierr = 0
+    if (itemno < 1 .or. itemno > this%ncv) then
+      write (errmsg, '(a,1x,i6,1x,a,1x,i6)') &
+        'Featureno ', itemno, 'must be > 0 and <= ', this%ncv
+      call store_error(errmsg)
+      ierr = 1
+    end if
+  end function abc_check_valid
 
 end module AbcModule
