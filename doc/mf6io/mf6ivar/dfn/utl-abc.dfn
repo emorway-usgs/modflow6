@@ -1,5 +1,5 @@
-# --------------------- gwe shf options ---------------------
-# flopy subpackage shf_filerecord shf shf_perioddata perioddata
+# --------------------- gwe abc options ---------------------
+# flopy subpackage abc_filerecord abc abc_perioddata perioddata
 # flopy parent_name_type parent_package MFPackage
 
 block options
@@ -8,7 +8,7 @@ type keyword
 reader urword
 optional true
 longname print input to listing file
-description REPLACE print_input {'{#1}': 'sensible heat flux'}
+description REPLACE print_input {'{#1}': 'atmospheric boundary condition'}
 
 block options
 name ts_filerecord
@@ -83,7 +83,7 @@ description drag coefficient used by calculations related to sensible heat flux.
 default_value 0.0002
 mf6internal cd
 
-# --------------------- gwe shf period ---------------------
+# --------------------- gwe abc period ---------------------
 
 block period
 name iper
@@ -100,7 +100,7 @@ description REPLACE iper {}
 
 block period
 name reachperioddata
-type recarray rno shfsetting
+type recarray rno abcsetting
 shape
 reader urword
 longname
@@ -118,15 +118,15 @@ description integer value that defines the reach number associated with the spec
 numeric_index true
 
 block period
-name shfsetting
-type keystring wspd tatm
+name abcsetting
+type keystring wspd tatm solr shd swrefl
 auxiliaryrecord
 shape
 tagged false
 in_record true
 reader urword
 longname
-description line of information that is parsed into a parameter keyword and values.  Property name keywords that can be used to start the SHFSETTING string include: WSPD and TATM.  These settings are used to assign the wind speed and temperature of the atmosphere, respectively.  
+description line of information that is parsed into a parameter keyword and values.  Property name keywords that can be used to start the ABCSETTING string include: WSPD, TATM, SOLR, SHD, and SWREFL.  These settings are used to assign the wind speed, temperature of the atmosphere, shortwave solar radiation, channel shade, and shortwave reflectance of the water surface respectively.  
 
 block period
 name wspd
@@ -149,3 +149,36 @@ reader urword
 time_series true
 longname air temperature
 description is the temperature of the atmosphere above the stream reach. For an unrotated case this is the hydraulic conductivity in the y direction.  If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
+
+block period
+name solr
+type string
+shape
+tagged true
+in_record true
+reader urword
+time_series true
+longname shortwave solar radiation (E/T/L^2)
+description real or character value that defines the solar radiation above of each reach. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
+
+block period
+name shd
+type double precision
+shape
+tagged true
+in_record true
+reader urword
+time_series true
+longname riparian shade
+description is the shaded fraction of the wetted surface of the stream reach. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
+
+block period
+name swrefl
+type double precision
+shape
+tagged true
+in_record true
+reader urword
+time_series true
+longname reflectance of shortwave radiation of water surface
+description is the fraction of solar radiation reflected by water surface. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
