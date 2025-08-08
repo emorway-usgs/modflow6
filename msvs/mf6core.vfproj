@@ -169,6 +169,7 @@
 		<File RelativePath="..\src\Idm\gwe-disuidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-disvidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-eslidm.f90"/>
+		<File RelativePath="..\src\Idm\gwe-estidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-icidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-namidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-ssmidm.f90"/>

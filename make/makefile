@@ -36,23 +36,22 @@ SOURCEDIR29=../src/Timing
 SOURCEDIR30=../src/Utilities
 SOURCEDIR31=../src/Utilities/ArrayRead
 SOURCEDIR32=../src/Utilities/Export
-SOURCEDIR33=../src/Utilities/Export/tmp
-SOURCEDIR34=../src/Utilities/Idm
-SOURCEDIR35=../src/Utilities/Idm/mf6blockfile
-SOURCEDIR36=../src/Utilities/Idm/netcdf
-SOURCEDIR37=../src/Utilities/Libraries
-SOURCEDIR38=../src/Utilities/Libraries/blas
-SOURCEDIR39=../src/Utilities/Libraries/daglib
-SOURCEDIR40=../src/Utilities/Libraries/rcm
-SOURCEDIR41=../src/Utilities/Libraries/sparsekit
-SOURCEDIR42=../src/Utilities/Libraries/sparskit2
-SOURCEDIR43=../src/Utilities/Matrix
-SOURCEDIR44=../src/Utilities/Memory
-SOURCEDIR45=../src/Utilities/Observation
-SOURCEDIR46=../src/Utilities/OutputControl
-SOURCEDIR47=../src/Utilities/Performance
-SOURCEDIR48=../src/Utilities/TimeSeries
-SOURCEDIR49=../src/Utilities/Vector
+SOURCEDIR33=../src/Utilities/Idm
+SOURCEDIR34=../src/Utilities/Idm/mf6blockfile
+SOURCEDIR35=../src/Utilities/Idm/netcdf
+SOURCEDIR36=../src/Utilities/Libraries
+SOURCEDIR37=../src/Utilities/Libraries/blas
+SOURCEDIR38=../src/Utilities/Libraries/daglib
+SOURCEDIR39=../src/Utilities/Libraries/rcm
+SOURCEDIR40=../src/Utilities/Libraries/sparsekit
+SOURCEDIR41=../src/Utilities/Libraries/sparskit2
+SOURCEDIR42=../src/Utilities/Matrix
+SOURCEDIR43=../src/Utilities/Memory
+SOURCEDIR44=../src/Utilities/Observation
+SOURCEDIR45=../src/Utilities/OutputControl
+SOURCEDIR46=../src/Utilities/Performance
+SOURCEDIR47=../src/Utilities/TimeSeries
+SOURCEDIR48=../src/Utilities/Vector
 
 VPATH = \
 ${SOURCEDIR1} \
@@ -102,8 +101,7 @@ ${SOURCEDIR44} \
 ${SOURCEDIR45} \
 ${SOURCEDIR46} \
 ${SOURCEDIR47} \
-${SOURCEDIR48} \
-${SOURCEDIR49} 
+${SOURCEDIR48} 
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -209,6 +207,7 @@ $(OBJDIR)/gwf-buyidm.o \
 $(OBJDIR)/gwe-ssmidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \
+$(OBJDIR)/gwe-estidm.o \
 $(OBJDIR)/gwe-eslidm.o \
 $(OBJDIR)/gwe-disvidm.o \
 $(OBJDIR)/gwe-disuidm.o \
