@@ -13,7 +13,7 @@ module MethodModule
                                  TerminationEventType, &
                                  WeakSinkEventType, &
                                  UserTimeEventType, &
-                                 CellExitEventType
+                                 FeatExitEventType
   use BaseDisModule, only: DisBaseType
   use PrtFmiModule, only: PrtFmiType
   use CellModule, only: CellType
@@ -61,7 +61,6 @@ module MethodModule
     procedure :: try_pass
     ! Event firing methods
     procedure :: release
-    procedure :: cellexit
     procedure :: terminate
     procedure :: timestep
     procedure :: weaksink
@@ -187,16 +186,6 @@ contains
     allocate (ReleaseEventType :: event)
     call this%events%dispatch(particle, event)
   end subroutine release
-
-  !> @brief Particle exits a cell.
-  subroutine cellexit(this, particle)
-    class(MethodType), intent(inout) :: this
-    type(ParticleType), pointer, intent(inout) :: particle
-    class(ParticleEventType), pointer :: event
-
-    allocate (CellExitEventType :: event)
-    call this%events%dispatch(particle, event)
-  end subroutine cellexit
 
   !> @brief Particle terminates.
   subroutine terminate(this, particle, status)
