@@ -151,6 +151,7 @@ $(OBJDIR)/swf-chdidm.o \
 $(OBJDIR)/swf-cdbidm.o \
 $(OBJDIR)/sim-tdisidm.o \
 $(OBJDIR)/sim-namidm.o \
+$(OBJDIR)/prt-prpidm.o \
 $(OBJDIR)/prt-namidm.o \
 $(OBJDIR)/prt-mipidm.o \
 $(OBJDIR)/prt-disvidm.o \
@@ -519,6 +520,7 @@ $(OBJDIR)/NumericalSolution.o \
 $(OBJDIR)/MappedMemory.o \
 $(OBJDIR)/NCModel.o \
 $(OBJDIR)/Mf6FileStoInput.o \
+$(OBJDIR)/Mf6FileSetting.o \
 $(OBJDIR)/Mf6FileList.o \
 $(OBJDIR)/Mf6FileLayerArray.o \
 $(OBJDIR)/Mf6FileGridArray.o \

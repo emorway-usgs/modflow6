@@ -227,6 +227,7 @@
 		<File RelativePath="..\src\Idm\prt-disvidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-mipidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-namidm.f90"/>
+		<File RelativePath="..\src\Idm\prt-prpidm.f90"/>
 		<File RelativePath="..\src\Idm\sim-namidm.f90"/>
 		<File RelativePath="..\src\Idm\sim-tdisidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-cdbidm.f90"/>
@@ -546,6 +547,7 @@
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileGridArray.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileLayerArray.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileList.f90"/>
+		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileSetting.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\Mf6FileStoInput.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\StructArray.f90"/>
 		<File RelativePath="..\src\Utilities\Idm\mf6blockfile\StructVector.f90"/></Filter>
