@@ -1,6 +1,7 @@
 sim-nam.dfn
 sim-tdis.dfn
 gwf-nam.dfn
+gwf-api.dfn
 gwf-buy.dfn
 gwf-chd.dfn
 gwf-chdg.dfn
@@ -27,6 +28,7 @@ gwf-wel.dfn
 gwf-welg.dfn
 gwt-nam.dfn
 gwt-adv.dfn
+gwt-api.dfn
 gwt-dis.dfn
 gwt-disu.dfn
 gwt-disv.dfn
