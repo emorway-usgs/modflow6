@@ -13,6 +13,7 @@ module IdmGwtDfnSelectorModule
   use GwtDisvInputModule
   use GwtDspInputModule
   use GwtCncInputModule
+  use GwtFmiInputModule
   use GwtIcInputModule
   use GwtIstInputModule
   use GwtMstInputModule
@@ -69,6 +70,8 @@ contains
       call set_param_pointer(input_definition, gwt_dsp_param_definitions)
     case ('CNC')
       call set_param_pointer(input_definition, gwt_cnc_param_definitions)
+    case ('FMI')
+      call set_param_pointer(input_definition, gwt_fmi_param_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwt_ic_param_definitions)
     case ('IST')
@@ -105,6 +108,8 @@ contains
       call set_param_pointer(input_definition, gwt_dsp_aggregate_definitions)
     case ('CNC')
       call set_param_pointer(input_definition, gwt_cnc_aggregate_definitions)
+    case ('FMI')
+      call set_param_pointer(input_definition, gwt_fmi_aggregate_definitions)
     case ('IC')
       call set_param_pointer(input_definition, gwt_ic_aggregate_definitions)
     case ('IST')
@@ -141,6 +146,8 @@ contains
       call set_block_pointer(input_definition, gwt_dsp_block_definitions)
     case ('CNC')
       call set_block_pointer(input_definition, gwt_cnc_block_definitions)
+    case ('FMI')
+      call set_block_pointer(input_definition, gwt_fmi_block_definitions)
     case ('IC')
       call set_block_pointer(input_definition, gwt_ic_block_definitions)
     case ('IST')
@@ -176,6 +183,8 @@ contains
       multi_package = gwt_dsp_multi_package
     case ('CNC')
       multi_package = gwt_cnc_multi_package
+    case ('FMI')
+      multi_package = gwt_fmi_multi_package
     case ('IC')
       multi_package = gwt_ic_multi_package
     case ('IST')
@@ -214,6 +223,8 @@ contains
       call set_subpkg_pointer(subpackages, gwt_dsp_subpackages)
     case ('CNC')
       call set_subpkg_pointer(subpackages, gwt_cnc_subpackages)
+    case ('FMI')
+      call set_subpkg_pointer(subpackages, gwt_fmi_subpackages)
     case ('IC')
       call set_subpkg_pointer(subpackages, gwt_ic_subpackages)
     case ('IST')
@@ -249,6 +260,8 @@ contains
     case ('DSP')
       integrated = .true.
     case ('CNC')
+      integrated = .true.
+    case ('FMI')
       integrated = .true.
     case ('IC')
       integrated = .true.
