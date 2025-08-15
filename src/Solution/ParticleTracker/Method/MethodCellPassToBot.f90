@@ -64,10 +64,11 @@ contains
     type is (DisvType)
       nlay = dis%nlay
     end select
-    if (particle%ilay == nlay) &
+    if (particle%ilay == nlay) then
       call this%terminate(particle, status=TERM_NO_EXITS)
-
-    call this%cellexit(particle)
+    else
+      call this%cellexit(particle)
+    end if
   end subroutine apply_ptb
 
 end module MethodCellPassToBotModule

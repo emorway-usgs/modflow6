@@ -1,12 +1,14 @@
 module MethodCellModule
 
   use KindModule, only: DP, I4B, LGP
+  use ErrorUtilModule, only: pstop
   use ConstantsModule, only: DONE, DZERO
   use MethodModule, only: MethodType
-  use ParticleModule, only: ParticleType
+  use ParticleModule, only: ParticleType, TERM_NO_EXITS, TERM_BOUNDARY
   use ParticleEventModule, only: ParticleEventType
   use CellExitEventModule, only: CellExitEventType
   use CellDefnModule, only: CellDefnType
+  use IteratorModule, only: IteratorType
   implicit none
 
   private
@@ -16,6 +18,8 @@ module MethodCellModule
   contains
     procedure, public :: assess
     procedure, public :: cellexit
+    procedure, public :: forms_cycle
+    procedure, public :: store_event
   end type MethodCellType
 
 contains
@@ -32,8 +36,7 @@ contains
     use TdisModule, only: endofsimulation, totimc, totim
     use ParticleModule, only: TERM_WEAKSINK, TERM_NO_EXITS, &
                               TERM_STOPZONE, TERM_INACTIVE
-    use ParticleEventModule, only: FEATEXIT, TERMINATE, &
-                                   TIMESTEP, WEAKSINK, USERTIME
+    use ParticleEventModule, only: TERMINATE, TIMESTEP, WEAKSINK, USERTIME
     ! dummy
     class(MethodCellType), intent(inout) :: this
     type(ParticleType), pointer, intent(inout) :: particle
@@ -172,6 +175,9 @@ contains
     class(MethodCellType), intent(inout) :: this
     type(ParticleType), pointer, intent(inout) :: particle
     class(ParticleEventType), pointer :: event
+    ! local
+    integer(I4B) :: i, nhist
+    class(*), pointer :: prev
 
     allocate (CellExitEventType :: event)
     select type (event)
@@ -179,6 +185,77 @@ contains
       event%exit_face = particle%iboundary(2)
     end select
     call this%events%dispatch(particle, event)
+    if (particle%icycwin == 0) then
+      deallocate (event)
+      return
+    end if
+    if (this%forms_cycle(particle, event)) then
+      ! print event history
+      print *, "Cyclic pathline detected"
+      nhist = particle%history%Count()
+      do i = 1, nhist
+        prev => particle%history%GetItem(i)
+        select type (prev)
+        class is (ParticleEventType)
+          print *, "Back ", nhist - i + 1, ": ", prev%get_text()
+        end select
+      end do
+      print *, "Current :", event%get_text()
+      call pstop(1, 'Cyclic pathline detected, aborting')
+    else
+      call this%store_event(particle, event)
+    end if
   end subroutine cellexit
+
+  !> @brief Check if the event forms a cycle in the particle path.
+  function forms_cycle(this, particle, event) result(found_cycle)
+    ! dummy
+    class(MethodCellType), intent(inout) :: this
+    type(ParticleType), pointer, intent(inout) :: particle
+    class(ParticleEventType), pointer, intent(in) :: event
+    ! local
+    class(IteratorType), allocatable :: itr
+    logical(LGP) :: found_cycle
+
+    found_cycle = .false.
+    select type (event)
+    type is (CellExitEventType)
+      itr = particle%history%Iterator()
+      do while (itr%has_next())
+        call itr%next()
+        select type (prev => itr%value())
+        class is (CellExitEventType)
+          if (event%icu == prev%icu .and. &
+              event%ilay == prev%ilay .and. &
+              event%izone == prev%izone .and. &
+              event%exit_face == prev%exit_face .and. &
+              event%exit_face /= 0) then
+            found_cycle = .true.
+            exit
+          end if
+        end select
+      end do
+    end select
+  end function forms_cycle
+
+  !> @brief Save the event in the particle's history.
+  !! Acts like a queue, the oldest event is removed
+  !! when the event count exceeds the maximum size.
+  subroutine store_event(this, particle, event)
+    ! dummy
+    class(MethodCellType), intent(inout) :: this
+    type(ParticleType), pointer, intent(inout) :: particle
+    class(ParticleEventType), pointer, intent(in) :: event
+    ! local
+    class(*), pointer :: p
+
+    select type (event)
+    type is (CellExitEventType)
+      p => event
+      call particle%history%Add(p)
+      if (particle%history%Count() > particle%icycwin) &
+        call particle%history%RemoveNode(1, .true.)
+    end select
+  end subroutine store_event
 
 end module MethodCellModule
