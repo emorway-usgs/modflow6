@@ -3,7 +3,7 @@ module MethodCellModule
   use KindModule, only: DP, I4B, LGP
   use ErrorUtilModule, only: pstop
   use ConstantsModule, only: DONE, DZERO
-  use MethodModule, only: MethodType
+  use MethodModule, only: MethodType, LEVEL_FEATURE
   use ParticleModule, only: ParticleType, TERM_NO_EXITS, TERM_BOUNDARY
   use ParticleEventModule, only: ParticleEventType
   use CellExitEventModule, only: CellExitEventType
@@ -20,6 +20,7 @@ module MethodCellModule
     procedure, public :: cellexit
     procedure, public :: forms_cycle
     procedure, public :: store_event
+    procedure, public :: get_level
   end type MethodCellType
 
 contains
@@ -182,7 +183,7 @@ contains
     allocate (CellExitEventType :: event)
     select type (event)
     type is (CellExitEventType)
-      event%exit_face = particle%iboundary(2)
+      event%exit_face = particle%iboundary(LEVEL_FEATURE)
     end select
     call this%events%dispatch(particle, event)
     if (particle%icycwin == 0) then
@@ -257,5 +258,12 @@ contains
         call particle%history%RemoveNode(1, .true.)
     end select
   end subroutine store_event
+
+  !> @brief Get the cell method's level.
+  function get_level(this) result(level)
+    class(MethodCellType), intent(in) :: this
+    integer(I4B) :: level
+    level = LEVEL_FEATURE
+  end function get_level
 
 end module MethodCellModule
