@@ -24,6 +24,7 @@ module AbcModule
   use PbstBaseModule, only: PbstBaseType, pbstbase_da
   use SensHeatModule, only: ShfType, shf_cr
   use ShortwaveModule, only: SwrType, swr_cr
+  use LatHeatModule, only: LhfType, lhf_cr
   !use BndModule, only: BndType, AddBndToList, GetBndFromList
   !use TspAptModule, only: TspAptType
   use ObserveModule
@@ -32,6 +33,7 @@ module AbcModule
   use TimeSeriesManagerModule, only: TimeSeriesManagerType, tsmanager_cr
   use TableModule, only: TableType, table_cr
   use BndModule, only: BndType
+  use GweInputDataModule, only: GweInputDataType
 
   implicit none
 
@@ -44,6 +46,8 @@ module AbcModule
 
   !type, extends(NumericalPackageType) :: AbcType
   type, extends(BndType) :: AbcType
+      
+    type(GweInputDataType), pointer :: gwecommon => null() !< pointer to shared gwe data used by multiple packages but set in est    
 
     character(len=8), dimension(:), pointer, contiguous :: status => null() !< active, inactive, constant
     integer(I4B), pointer :: ncv => null() !< number of control volumes
@@ -56,23 +60,30 @@ module AbcModule
   
     logical, pointer, public :: shf_active => null() !< logical indicating if a sensible heat flux object is active
     logical, pointer, public :: swr_active => null() !< logical indicating if a shortwave radition heat flux object is active
+    logical, pointer, public :: lhf_active => null() !< logical indicating if a latent heat flux object is active
 
     type(ShfType), pointer :: shf => null() ! sensible heat flux (shf) object
     type(SwrType), pointer :: swr => null() ! shortwave radiation heat flux (swr) object
+    type(LhfType), pointer :: lhf => null() ! latent heat flux (lhf) object
     ! -- abc budget object
     type(BudgetObjectType), pointer :: budobj => null() !< ABC budget object
  
     integer(I4B), pointer :: inshf => null() ! SHF (sensible heat flux utility) unit number (0 if unused)
     integer(I4B), pointer :: inswr => null() ! SWR (shortwave radiation heat flux utility) unit number (0 if unused)
+    integer(I4B), pointer :: inlhf => null() ! LHF (latent heat flux utility) unit number (0 if unused)
 
     real(DP), pointer :: rhoa => null() !< desity of air
     real(DP), pointer :: cpa => null() !< heat capacity of air
     real(DP), pointer :: cd => null() !< drag coefficient
+    real(DP), pointer :: wfslope => null() !< wind function slope
+    real(DP), pointer :: wfint => null() !< wind function intercept
+    
     real(DP), dimension(:), pointer, contiguous :: wspd => null() !< wind speed
     real(DP), dimension(:), pointer, contiguous :: tatm => null() !< temperature of the atmosphere
     real(DP), dimension(:), pointer, contiguous :: solr => null() !< solar radiation
     real(DP), dimension(:), pointer, contiguous :: shd => null() !< shade fraction
     real(DP), dimension(:), pointer, contiguous :: swrefl => null() !< shortwave reflectance of water surface
+    real(DP), dimension(:), pointer, contiguous :: rh => null() !< relative humidity
     
   contains
 
@@ -91,6 +102,7 @@ module AbcModule
     procedure, public :: abc_cq
     procedure, private :: abc_shf_term
     procedure, private :: abc_swr_term
+    procedure, private :: abc_lhf_term
     ! -- budget
     !procedure, private :: abc_setup_shfobj
     !procedure, private :: abc_setup_swrobj
@@ -104,7 +116,7 @@ contains
   !! Create a new atmospheric boundary condition (AbcType) object. Initially for use with
   !! the SFE package.
   !<
-  subroutine abc_cr(abc, name_model, inunit, iout, fname, ncv)
+  subroutine abc_cr(abc, name_model, inunit, iout, fname, ncv, gwecommon)
     ! -- dummy
     type(AbcType), pointer, intent(out) :: abc
     character(len=*), intent(in) :: name_model
@@ -112,6 +124,7 @@ contains
     integer(I4B), intent(in) :: iout
     character(len=LINELENGTH), intent(in) :: fname
     integer(I4B), target, intent(in) :: ncv
+    type(GweInputDataType), intent(in), target :: gwecommon !< shared data container for use by multiple GWE packages
     !
     ! -- Create the object
     allocate (abc)
@@ -132,16 +145,21 @@ contains
     ! -- initialize associated abc utilities
     call shf_cr(abc%shf, name_model, inunit, iout, ncv)
     call swr_cr(abc%swr, name_model, inunit, iout, ncv)
+    call lhf_cr(abc%lhf, name_model, inunit, iout, ncv)
     !
     ! -- Create time series manager
     call tsmanager_cr(abc%tsmanager, abc%iout, &
                       removeTsLinksOnCompletion=.true., &
                       extendTsToEndOfSimulation=.true.)
+    !
+    ! -- Store pointer to shared data module for accessing cpw, rhow
+    !    for the heat flux calculations
+    abc%gwecommon => gwecommon
   end subroutine abc_cr
   
   !> @brief Allocate and read
   !!
-  !!  Method to allocate and read static data for the SHF package
+  !!  Method to allocate and read static data for the SHF, SWR, and LHF sub-utilities
   !<
   subroutine ar(this)
     ! -- dummy
@@ -154,9 +172,13 @@ contains
     ! -- print a message identifying the apt package.
     write (this%iout, fmtapt) this%inunit
     !
-    ! -- Set pointers to other package variables
+    ! -- Set pointers to SHF package variables
     if (this%inshf) then
       call this%shf%ar_set_pointers()
+    end if
+    ! -- Set pointers to LHF package variables
+    if (this%inlhf) then
+      call this%lhf%ar_set_pointers()
     end if
     !
     ! -- Allocate arrays
@@ -321,14 +343,36 @@ contains
       end if
     case ('DRAG_COEFFICIENT')
       this%cd = this%parser%GetDouble()
-      if (this%cd <= 0.0) then
-        write (errmsg, '(a)') 'Specified value for the drag coefficient &
+      !if (this%cd <= 0.0) then
+      !  write (errmsg, '(a)') 'Specified value for the drag coefficient &
+      !    &must be greater than 0.0.'
+      !  call store_error(errmsg)
+      !  call this%parser%StoreErrorUnit()
+      !else
+        write (this%iout, '(4x,a,1pg15.6)') &
+          "The surface-atmosphere drag coefficient has been set to: ", this%cd
+      !end if
+    case ('WIND_FUNC_SLOPE')
+      this%wfslope = this%parser%GetDouble()
+      if (this%wfslope <= 0.0) then
+        write (errmsg, '(a)') 'Specified value for the wind function slope &
           &must be greater than 0.0.'
         call store_error(errmsg)
         call this%parser%StoreErrorUnit()
       else
         write (this%iout, '(4x,a,1pg15.6)') &
-          "The surface-atmosphere drag coefficient has been set to: ", this%cpa
+          "The evaporation wind function slope has been set to: ", this%wfslope
+      end if
+    case ('WIND_FUNC_INT')
+      this%wfint = this%parser%GetDouble()
+      if (this%wfint <= 0.0) then
+        write (errmsg, '(a)') 'Specified value for the wind function intercept &
+          &must be greater than 0.0.'
+        call store_error(errmsg)
+        call this%parser%StoreErrorUnit()
+      else
+        write (this%iout, '(4x,a,1pg15.6)') &
+          "The evaporation wind function intercept has been set to: ", this%wfint
       end if
     case default
       write (errmsg, '(a,a)') 'Unknown ABC option: ', trim(option)
@@ -357,22 +401,33 @@ contains
     ! -- allocate
     call mem_allocate(this%shf_active, 'SHF_ACTIVE', this%memoryPath)
     call mem_allocate(this%swr_active, 'SWR_ACTIVE', this%memoryPath)
+    call mem_allocate(this%lhf_active, 'LHF_ACTIVE', this%memoryPath)
+    
     call mem_allocate(this%inshf, 'INSHF', this%memoryPath)
     call mem_allocate(this%inswr, 'INSWR', this%memoryPath)
+    call mem_allocate(this%inlhf, 'INLHF', this%memoryPath)
     ! -- allocate SHF specific
     call mem_allocate(this%rhoa, 'RHOA', this%memoryPath)
     call mem_allocate(this%cpa, 'CPA', this%memoryPath)
     call mem_allocate(this%cd, 'CD', this%memoryPath)
+    ! -- allocate LHF specific
+    call mem_allocate(this%wfslope, 'WFSLOPE', this%memoryPath)
+    call mem_allocate(this%wfint, 'WFINT', this%memoryPath)
     !
     ! -- initialize to default values
     this%shf_active = .false.
     this%swr_active = .false.
+    this%lhf_active = .false.
     this%inshf = 1 ! Initialize to one for 'on'
     this%inswr = 1
+    this%inlhf = 1
     ! -- initalize to SHF specific default values
     this%rhoa = 1.225 ! kg/m3
     this%cpa = 717.0 ! J/kg/C
     this%cd = 0.002 ! unitless
+    ! -- initalize to LHF specific default values
+    this%wfslope = 1.383e-01 ! 1/mbar Fogg 2023 (change!)
+    this%wfint = 3.445e-09 ! m/s Fogg 2023 (change!)
     !
     ! -- call standard NumericalPackageType allocate scalars
     call this%BndType%allocate_scalars()
@@ -431,6 +486,19 @@ contains
        end do
        call this%swr%ar()
     end if
+    if (this%inlhf /= 0) then
+       call mem_allocate(this%wspd, this%ncv, 'WSPD', this%memoryPath)
+       call mem_allocate(this%tatm, this%ncv, 'TATM', this%memoryPath)
+       call mem_allocate(this%rh, this%ncv, 'RH', this%memoryPath)
+       !
+       ! -- initialize
+       do n = 1, this%ncv
+         this%wspd(n) = DZERO
+         this%tatm(n) = DZERO
+         this%rh(n) = DZERO
+       end do
+       call this%lhf%ar()
+    end if
     
     !! -- allocate character array for status
     !allocate (this%status(this%ncv))
@@ -459,16 +527,25 @@ contains
       call this%swr%da()
       deallocate (this%swr)
     end if
+    ! -- LHF (latent heat flux)
+    if (this%inlhf /= 0) then
+      call this%lhf%da()
+      deallocate (this%lhf)
+    end if
     !
     ! -- Deallocate scalars
     call mem_deallocate(this%ncv)
     call mem_deallocate(this%shf_active)
     call mem_deallocate(this%swr_active)
+    call mem_deallocate(this%lhf_active)
     call mem_deallocate(this%inshf)
     call mem_deallocate(this%inswr)
+    call mem_deallocate(this%inlhf)
     call mem_deallocate(this%rhoa)
     call mem_deallocate(this%cpa)
     call mem_deallocate(this%cd)
+    call mem_deallocate(this%wfslope)
+    call mem_deallocate(this%wfint)
     !
     ! -- Deallocate time series manager
     deallocate (this%tsmanager)
@@ -481,6 +558,7 @@ contains
     call mem_deallocate(this%shd)
     call mem_deallocate(this%swrefl)
     call mem_deallocate(this%solr)
+    call mem_deallocate(this%rh)
     !
     ! -- Deallocate scalars in TspAptType
     call this%NumericalPackageType%da() ! this may not work -- revisit and cleanup !!!
@@ -492,7 +570,7 @@ contains
    !> @brief Read a ABC-specific option from the OPTIONS block
   !!
   !! Process a single ABC-specific option. Used when reading the OPTIONS block
-  !! of the SHF package input file.
+  !! of the ABC package input file.
   !<
   function abc_read_option(this, keyword) result(success)
     ! -- dummy
@@ -565,6 +643,25 @@ contains
     !if (present(hcofval)) hcofval = DZERO
   end subroutine abc_swr_term
   
+  !> @brief Latent Heat Flux (LHF) term
+  !<
+  subroutine abc_lhf_term(this, ientry, n1, n2, rrate, rhsval, hcofval)
+    ! -- dummy
+    class(AbcType) :: this
+    integer(I4B), intent(in) :: ientry
+    integer(I4B), intent(inout) :: n1
+    integer(I4B), intent(inout) :: n2
+    real(DP), intent(inout), optional :: rrate
+    real(DP), intent(inout), optional :: rhsval
+    real(DP), intent(inout), optional :: hcofval
+    ! -- local
+    real(DP) :: latheat
+    real(DP) :: strmtemp
+    integer(I4B) :: auxpos
+    real(DP) :: sa !< surface area of stream reach, different than wetted area
+    !
+  end subroutine abc_lhf_term
+  
    !> @brief Observations
   !!
   !! Store the observation type supported by the APT package and override
@@ -604,6 +701,8 @@ contains
     case ('SHF')
 !      call this%rp_obs_byfeature(obsrv)
     case ('SWR')
+!      call this%rp_obs_byfeature(obsrv)
+    case ('LHF')
 !      call this%rp_obs_byfeature(obsrv)
     case default
       found = .false.
@@ -650,14 +749,18 @@ contains
     ! -- local
     real(DP) :: shflx
     real(DP) :: swrflx
+    real(DP) :: lhflx
     !
     ! -- calculate sensible heat flux using HGS equation
     call this%shf%shf_cq(ifno, tstrm, shflx)
     !
     ! -- calculate shortwave radiation using HGS equation
     call this%swr%swr_cq(ifno, swrflx)
+    !
+    ! -- calculate latent heat flux using Dalton-like mass transfer equation
+    call this%lhf%lhf_cq(ifno, tstrm, this%gwecommon%gwerhow, lhflx)
     
-    abcflx = shflx + swrflx
+    abcflx = shflx + swrflx + lhflx
   end subroutine abc_cq
 
   !> @brief Set the stress period attributes based on the keyword
@@ -760,6 +863,17 @@ contains
       call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
                                          this%packName, 'BND', this%tsManager, &
                                          this%iprpak, 'SOLR')
+    case ('RH')
+      ierr = this%abc_check_valid(itemno)
+      if (ierr /= 0) then
+        goto 999
+      end if
+      call this%parser%GetString(text)
+      jj = 1
+      bndElem => this%rh(itemno)
+      call read_value_or_time_series_adv(text, itemno, jj, bndElem, &
+                                         this%packName, 'BND', this%tsManager, &
+                                         this%iprpak, 'RH')
     case default
       !
       ! -- Keyword not recognized so return to caller with found = .false.

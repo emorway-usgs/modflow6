@@ -223,7 +223,7 @@ contains
       ! -- create atmospheric boundary condition object
       call openfile(this%inabc, this%iout, fname, 'ABC')
       call abc_cr(this%abc, this%name_model, this%inabc, this%iout, fname, &
-                  this%ncv) !, this%mempath)
+                  this%ncv, this%gwecommon) !, this%mempath)
       call this%abc%read_options()
       !this%abc%inputFilename = fname
       !
