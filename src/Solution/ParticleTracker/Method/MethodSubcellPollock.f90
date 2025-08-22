@@ -1,6 +1,7 @@
 module MethodSubcellPollockModule
   use KindModule, only: DP, I4B, LGP
   use ErrorUtilModule, only: pstop
+  use MethodModule, only: LEVEL_SUBFEATURE
   use MethodSubcellModule, only: MethodSubcellType
   use SubcellRectModule, only: SubcellRectType, create_subcell_rect
   use ParticleModule, only: ParticleType
@@ -86,7 +87,7 @@ contains
   subroutine track_subcell(this, subcell, particle, tmax)
     use TdisModule, only: endofsimulation
     use ParticleModule, only: ACTIVE, TERM_NO_EXITS_SUB, TERM_TIMEOUT
-    use ParticleEventModule, only: TIMESTEP, CELLEXIT
+    use ParticleEventModule, only: TIMESTEP, FEATEXIT
     ! dummy
     class(MethodSubcellPollockType), intent(inout) :: this
     class(SubcellRectType), intent(in) :: subcell
@@ -263,7 +264,7 @@ contains
         print *, "programmer error, invalid exit face", exitFace
         call pstop(1)
       end if
-      event_code = CELLEXIT
+      event_code = FEATEXIT
     end if
 
     ! Set final particle location in local (unscaled) subcell coordinates,
@@ -272,13 +273,13 @@ contains
     particle%y = y * subcell%dy
     particle%z = z * subcell%dz
     particle%ttrack = t
-    particle%iboundary(3) = exitFace
+    particle%iboundary(LEVEL_SUBFEATURE) = exitFace
 
     ! Save particle track record
     if (event_code == TIMESTEP) then
       call this%timestep(particle)
-    else if (event_code == CELLEXIT) then
-      call this%cellexit(particle)
+    else if (event_code == FEATEXIT) then
+      call this%subcellexit(particle)
     end if
 
   end subroutine track_subcell
