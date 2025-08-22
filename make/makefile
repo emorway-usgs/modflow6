@@ -1,4 +1,4 @@
-# makefile created by pymake for the 'mf6' executable.
+# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
 
 
 include ./makedefaults
@@ -28,12 +28,12 @@ SOURCEDIR21=../src/Model/TransportModel/InterpolationScheme
 SOURCEDIR22=../src/Model/TransportModel/Isotherm
 SOURCEDIR23=../src/Solution
 SOURCEDIR24=../src/Solution/LinearMethods
-SOURCEDIR25=../src/Solution/PETSc
-SOURCEDIR26=../src/Solution/ParticleTracker
-SOURCEDIR27=../src/Solution/ParticleTracker/Domain
-SOURCEDIR28=../src/Solution/ParticleTracker/Method
-SOURCEDIR29=../src/Solution/ParticleTracker/Particle
-SOURCEDIR30=../src/Solution/ParticleTracker/Particle/Events
+SOURCEDIR25=../src/Solution/ParticleTracker
+SOURCEDIR26=../src/Solution/ParticleTracker/Domain
+SOURCEDIR27=../src/Solution/ParticleTracker/Method
+SOURCEDIR28=../src/Solution/ParticleTracker/Particle
+SOURCEDIR29=../src/Solution/ParticleTracker/Particle/Events
+SOURCEDIR30=../src/Solution/PETSc
 SOURCEDIR31=../src/Timing
 SOURCEDIR32=../src/Utilities
 SOURCEDIR33=../src/Utilities/ArrayRead
@@ -41,20 +41,19 @@ SOURCEDIR34=../src/Utilities/Export
 SOURCEDIR35=../src/Utilities/Idm
 SOURCEDIR36=../src/Utilities/Idm/mf6blockfile
 SOURCEDIR37=../src/Utilities/Idm/netcdf
-SOURCEDIR38=../src/Utilities/InterpolationScheme
-SOURCEDIR39=../src/Utilities/Libraries
-SOURCEDIR40=../src/Utilities/Libraries/blas
-SOURCEDIR41=../src/Utilities/Libraries/daglib
-SOURCEDIR42=../src/Utilities/Libraries/rcm
-SOURCEDIR43=../src/Utilities/Libraries/sparsekit
-SOURCEDIR44=../src/Utilities/Libraries/sparskit2
-SOURCEDIR45=../src/Utilities/Matrix
-SOURCEDIR46=../src/Utilities/Memory
-SOURCEDIR47=../src/Utilities/Observation
-SOURCEDIR48=../src/Utilities/OutputControl
-SOURCEDIR49=../src/Utilities/Performance
-SOURCEDIR50=../src/Utilities/TimeSeries
-SOURCEDIR51=../src/Utilities/Vector
+SOURCEDIR38=../src/Utilities/Libraries
+SOURCEDIR39=../src/Utilities/Libraries/blas
+SOURCEDIR40=../src/Utilities/Libraries/daglib
+SOURCEDIR41=../src/Utilities/Libraries/rcm
+SOURCEDIR42=../src/Utilities/Libraries/sparsekit
+SOURCEDIR43=../src/Utilities/Libraries/sparskit2
+SOURCEDIR44=../src/Utilities/Matrix
+SOURCEDIR45=../src/Utilities/Memory
+SOURCEDIR46=../src/Utilities/Observation
+SOURCEDIR47=../src/Utilities/OutputControl
+SOURCEDIR48=../src/Utilities/Performance
+SOURCEDIR49=../src/Utilities/TimeSeries
+SOURCEDIR50=../src/Utilities/Vector
 
 VPATH = \
 ${SOURCEDIR1} \
@@ -106,8 +105,7 @@ ${SOURCEDIR46} \
 ${SOURCEDIR47} \
 ${SOURCEDIR48} \
 ${SOURCEDIR49} \
-${SOURCEDIR50} \
-${SOURCEDIR51} 
+${SOURCEDIR50} 
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -392,6 +390,7 @@ $(OBJDIR)/gwf-lak.o \
 $(OBJDIR)/GwfVscInputData.o \
 $(OBJDIR)/gwf-ghb.o \
 $(OBJDIR)/gwf-drn.o \
+$(OBJDIR)/PbstBase.o \
 $(OBJDIR)/MethodModel.o \
 $(OBJDIR)/MethodCellPool.o \
 $(OBJDIR)/CellUtil.o \
@@ -419,6 +418,8 @@ $(OBJDIR)/HGeoUtil.o \
 $(OBJDIR)/gwf-vsc.o \
 $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
+$(OBJDIR)/gwe-swr.o \
+$(OBJDIR)/gwe-shf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
 $(OBJDIR)/MethodDisv.o \
@@ -449,6 +450,7 @@ $(OBJDIR)/GwfMvrPeriodData.o \
 $(OBJDIR)/ImsLinearMisc.o \
 $(OBJDIR)/gwf-npf.o \
 $(OBJDIR)/GwfBuyInputData.o \
+$(OBJDIR)/gwe-abc.o \
 $(OBJDIR)/GweCndOptions.o \
 $(OBJDIR)/VirtualBase.o \
 $(OBJDIR)/STLVecInt.o \
