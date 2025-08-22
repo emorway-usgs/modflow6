@@ -1,4 +1,4 @@
-# makefile created by pymake for the 'mf6' executable.
+# makefile created by pymake (version 1.2.10.dev0) for the 'mf6' executable.
 
 
 include ./makedefaults
@@ -27,12 +27,12 @@ SOURCEDIR20=../src/Model/TransportModel/Gradient
 SOURCEDIR21=../src/Model/TransportModel/InterpolationScheme
 SOURCEDIR22=../src/Solution
 SOURCEDIR23=../src/Solution/LinearMethods
-SOURCEDIR24=../src/Solution/PETSc
-SOURCEDIR25=../src/Solution/ParticleTracker
-SOURCEDIR26=../src/Solution/ParticleTracker/Domain
-SOURCEDIR27=../src/Solution/ParticleTracker/Method
-SOURCEDIR28=../src/Solution/ParticleTracker/Particle
-SOURCEDIR29=../src/Solution/ParticleTracker/Particle/Events
+SOURCEDIR24=../src/Solution/ParticleTracker
+SOURCEDIR25=../src/Solution/ParticleTracker/Domain
+SOURCEDIR26=../src/Solution/ParticleTracker/Method
+SOURCEDIR27=../src/Solution/ParticleTracker/Particle
+SOURCEDIR28=../src/Solution/ParticleTracker/Particle/Events
+SOURCEDIR29=../src/Solution/PETSc
 SOURCEDIR30=../src/Timing
 SOURCEDIR31=../src/Utilities
 SOURCEDIR32=../src/Utilities/ArrayRead
@@ -376,6 +376,7 @@ $(OBJDIR)/gwf-lak.o \
 $(OBJDIR)/GwfVscInputData.o \
 $(OBJDIR)/gwf-ghb.o \
 $(OBJDIR)/gwf-drn.o \
+$(OBJDIR)/PbstBase.o \
 $(OBJDIR)/MethodModel.o \
 $(OBJDIR)/MethodCellPool.o \
 $(OBJDIR)/CellUtil.o \
@@ -402,6 +403,8 @@ $(OBJDIR)/HGeoUtil.o \
 $(OBJDIR)/gwf-vsc.o \
 $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
+$(OBJDIR)/gwe-swr.o \
+$(OBJDIR)/gwe-shf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
 $(OBJDIR)/MethodDisv.o \
@@ -422,8 +425,8 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
-$(OBJDIR)/tsp-apt.o \
-$(OBJDIR)/gwt-mst.o \
+$(OBJDIR)/tsp-apt_weird_chngs.o \
+$(OBJDIR)/gwt-mst_updates.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -432,6 +435,7 @@ $(OBJDIR)/GwfMvrPeriodData.o \
 $(OBJDIR)/ImsLinearMisc.o \
 $(OBJDIR)/gwf-npf.o \
 $(OBJDIR)/GwfBuyInputData.o \
+$(OBJDIR)/gwe-abc.o \
 $(OBJDIR)/GweCndOptions.o \
 $(OBJDIR)/VirtualBase.o \
 $(OBJDIR)/STLVecInt.o \
@@ -583,10 +587,14 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
+$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
+$(OBJDIR)/gwt-mst_orig.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
+$(OBJDIR)/gwe-lwr.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o
