@@ -83,6 +83,26 @@ description drag coefficient used by calculations related to sensible heat flux.
 default_value 0.0002
 mf6internal cd
 
+block options
+name wind_func_slope
+type double precision
+reader urword
+optional true
+longname wind function slope
+description wind function slope used by calculations related to the latent heat flux.  This value is set to 1.383E-08 (1/mbar) if no overriding value is specified.  A user-specified value should be provided for models that require a value other than the default.
+default_value 1.383E-08
+mf6internal wf_slope
+
+block options
+name wind_func_int
+type double precision
+reader urword
+optional true
+longname wind function intercept
+description wind function intercept used by calculations related to the latent heat flux.  This value is set to 3.445E-09 (m/s) if no overriding value is specified.  A user-specified value should be provided for models that require a value other than the default.
+default_value 3.445E-09
+mf6internal wf_int
+
 # --------------------- gwe abc period ---------------------
 
 block period
@@ -119,14 +139,14 @@ numeric_index true
 
 block period
 name abcsetting
-type keystring wspd tatm solr shd swrefl
+type keystring wspd tatm solr shd swrefl rh
 auxiliaryrecord
 shape
 tagged false
 in_record true
 reader urword
 longname
-description line of information that is parsed into a parameter keyword and values.  Property name keywords that can be used to start the ABCSETTING string include: WSPD, TATM, SOLR, SHD, and SWREFL.  These settings are used to assign the wind speed, temperature of the atmosphere, shortwave solar radiation, channel shade, and shortwave reflectance of the water surface respectively.  
+description line of information that is parsed into a parameter keyword and values.  Property name keywords that can be used to start the ABCSETTING string include: WSPD, TATM, SOLR, SHD, SWREFL, and RH.  These settings are used to assign the wind speed, temperature of the atmosphere, shortwave solar radiation, channel shade, shortwave reflectance of the water surface, and relative humidity, respectively.  
 
 block period
 name wspd
@@ -181,4 +201,15 @@ in_record true
 reader urword
 time_series true
 longname reflectance of shortwave radiation of water surface
-description is the fraction of solar radiation reflected by water surface. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
+description the fraction of solar radiation reflected by water surface. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
+
+block period
+name rh
+type double precision
+shape
+tagged true
+in_record true
+reader urword
+time_series true
+longname relative humidity of the atmosphere
+description the relative humidity of the atmosphere. If the Options block includes a TIMESERIESFILE entry (see the ``Time-Variable Input'' section), values can be obtained from a time series by entering the time-series name in place of a numeric value.
