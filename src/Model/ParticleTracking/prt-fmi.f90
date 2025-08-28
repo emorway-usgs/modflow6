@@ -7,7 +7,6 @@ module PrtFmiModule
   use FlowModelInterfaceModule, only: FlowModelInterfaceType
   use BaseDisModule, only: DisBaseType
   use BudgetObjectModule, only: BudgetObjectType
-  use CellModule, only: MAX_POLY_VERTS
 
   implicit none
   private
@@ -18,6 +17,7 @@ module PrtFmiModule
 
   type, extends(FlowModelInterfaceType) :: PrtFmiType
 
+    integer(I4B) :: max_faces !< maximum number of faces for grid cell polygons
     double precision, allocatable, public :: SourceFlows(:) ! cell source flows array
     double precision, allocatable, public :: SinkFlows(:) ! cell sink flows array
     double precision, allocatable, public :: StorageFlows(:) ! cell storage flows array
@@ -145,10 +145,11 @@ contains
     call this%FlowModelInterfaceType%fmi_df(dis, idryinactive)
     !
     ! Allocate arrays
+    this%max_faces = this%dis%get_max_npolyverts() + 2
     allocate (this%StorageFlows(this%dis%nodes))
     allocate (this%SourceFlows(this%dis%nodes))
     allocate (this%SinkFlows(this%dis%nodes))
-    allocate (this%BoundaryFlows(this%dis%nodes * MAX_POLY_VERTS))
+    allocate (this%BoundaryFlows(this%dis%nodes * this%max_faces))
 
   end subroutine prtfmi_df
 
@@ -163,7 +164,7 @@ contains
     real(DP) :: qbnd
     character(len=LENAUXNAME) :: auxname
     integer(I4B) :: naux
-    !
+
     this%StorageFlows = DZERO
     if (this%igwfstrgss /= 0) &
       this%StorageFlows = this%StorageFlows + &
@@ -196,11 +197,11 @@ contains
         iflowface = 0
         if (iauxiflowface > 0) then
           iflowface = NINT(this%gwfpackages(ip)%auxvar(iauxiflowface, ib))
-          ! maps bot -2 -> MAX_POLY_VERTS - 1, top -1 -> MAX_POLY_VERTS
-          if (iflowface < 0) iflowface = iflowface + MAX_POLY_VERTS + 1
+          ! maps bot -2 -> max_faces - 1, top -1 -> max_faces
+          if (iflowface < 0) iflowface = iflowface + this%max_faces + 1
         end if
         if (iflowface .gt. 0) then
-          ioffset = (i - 1) * MAX_POLY_VERTS
+          ioffset = (i - 1) * this%max_faces
           this%BoundaryFlows(ioffset + iflowface) = &
             this%BoundaryFlows(ioffset + iflowface) + qbnd
         else if (qbnd .gt. DZERO) then
