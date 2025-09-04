@@ -424,6 +424,8 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
+$(OBJDIR)/tsp-apt_weird_chngs.o \
+$(OBJDIR)/gwt-mst_updates.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
