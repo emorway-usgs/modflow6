@@ -101,7 +101,11 @@ ${SOURCEDIR44} \
 ${SOURCEDIR45} \
 ${SOURCEDIR46} \
 ${SOURCEDIR47} \
+<<<<<<< HEAD
+${SOURCEDIR48} 
+=======
 ${SOURCEDIR48}
+>>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -418,6 +422,11 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
+<<<<<<< HEAD
+$(OBJDIR)/tsp-apt_weird_chngs.o \
+$(OBJDIR)/gwt-mst_updates.o \
+=======
+>>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -579,6 +588,10 @@ $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
 $(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
+<<<<<<< HEAD
+$(OBJDIR)/gwt-mst_orig.o \
+=======
+>>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 $(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
