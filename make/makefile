@@ -31,27 +31,28 @@ SOURCEDIR24=../src/Solution/ParticleTracker
 SOURCEDIR25=../src/Solution/ParticleTracker/Domain
 SOURCEDIR26=../src/Solution/ParticleTracker/Method
 SOURCEDIR27=../src/Solution/ParticleTracker/Particle
-SOURCEDIR28=../src/Solution/PETSc
-SOURCEDIR29=../src/Timing
-SOURCEDIR30=../src/Utilities
-SOURCEDIR31=../src/Utilities/ArrayRead
-SOURCEDIR32=../src/Utilities/Export
-SOURCEDIR33=../src/Utilities/Idm
-SOURCEDIR34=../src/Utilities/Idm/mf6blockfile
-SOURCEDIR35=../src/Utilities/Idm/netcdf
-SOURCEDIR36=../src/Utilities/Libraries
-SOURCEDIR37=../src/Utilities/Libraries/blas
-SOURCEDIR38=../src/Utilities/Libraries/daglib
-SOURCEDIR39=../src/Utilities/Libraries/rcm
-SOURCEDIR40=../src/Utilities/Libraries/sparsekit
-SOURCEDIR41=../src/Utilities/Libraries/sparskit2
-SOURCEDIR42=../src/Utilities/Matrix
-SOURCEDIR43=../src/Utilities/Memory
-SOURCEDIR44=../src/Utilities/Observation
-SOURCEDIR45=../src/Utilities/OutputControl
-SOURCEDIR46=../src/Utilities/Performance
-SOURCEDIR47=../src/Utilities/TimeSeries
-SOURCEDIR48=../src/Utilities/Vector
+SOURCEDIR28=../src/Solution/ParticleTracker/Particle/Events
+SOURCEDIR29=../src/Solution/PETSc
+SOURCEDIR30=../src/Timing
+SOURCEDIR31=../src/Utilities
+SOURCEDIR32=../src/Utilities/ArrayRead
+SOURCEDIR33=../src/Utilities/Export
+SOURCEDIR34=../src/Utilities/Idm
+SOURCEDIR35=../src/Utilities/Idm/mf6blockfile
+SOURCEDIR36=../src/Utilities/Idm/netcdf
+SOURCEDIR37=../src/Utilities/Libraries
+SOURCEDIR38=../src/Utilities/Libraries/blas
+SOURCEDIR39=../src/Utilities/Libraries/daglib
+SOURCEDIR40=../src/Utilities/Libraries/rcm
+SOURCEDIR41=../src/Utilities/Libraries/sparsekit
+SOURCEDIR42=../src/Utilities/Libraries/sparskit2
+SOURCEDIR43=../src/Utilities/Matrix
+SOURCEDIR44=../src/Utilities/Memory
+SOURCEDIR45=../src/Utilities/Observation
+SOURCEDIR46=../src/Utilities/OutputControl
+SOURCEDIR47=../src/Utilities/Performance
+SOURCEDIR48=../src/Utilities/TimeSeries
+SOURCEDIR49=../src/Utilities/Vector
 
 VPATH = \
 ${SOURCEDIR1} \
@@ -101,11 +102,8 @@ ${SOURCEDIR44} \
 ${SOURCEDIR45} \
 ${SOURCEDIR46} \
 ${SOURCEDIR47} \
-<<<<<<< HEAD
-${SOURCEDIR48} 
-=======
-${SOURCEDIR48}
->>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
+${SOURCEDIR48} \
+${SOURCEDIR49} 
 
 .SUFFIXES: .f90 .F90 .o
 
@@ -155,8 +153,10 @@ $(OBJDIR)/swf-chdidm.o \
 $(OBJDIR)/swf-cdbidm.o \
 $(OBJDIR)/sim-tdisidm.o \
 $(OBJDIR)/sim-namidm.o \
+$(OBJDIR)/prt-prpidm.o \
 $(OBJDIR)/prt-namidm.o \
 $(OBJDIR)/prt-mipidm.o \
+$(OBJDIR)/prt-fmiidm.o \
 $(OBJDIR)/prt-disvidm.o \
 $(OBJDIR)/prt-disidm.o \
 $(OBJDIR)/olf-zdgidm.o \
@@ -177,11 +177,13 @@ $(OBJDIR)/gwt-namidm.o \
 $(OBJDIR)/gwt-mstidm.o \
 $(OBJDIR)/gwt-istidm.o \
 $(OBJDIR)/gwt-icidm.o \
+$(OBJDIR)/gwt-fmiidm.o \
 $(OBJDIR)/gwt-dspidm.o \
 $(OBJDIR)/gwt-disvidm.o \
 $(OBJDIR)/gwt-disuidm.o \
 $(OBJDIR)/gwt-disidm.o \
 $(OBJDIR)/gwt-cncidm.o \
+$(OBJDIR)/gwt-apiidm.o \
 $(OBJDIR)/gwt-advidm.o \
 $(OBJDIR)/gwf-welidm.o \
 $(OBJDIR)/gwf-welgidm.o \
@@ -208,9 +210,13 @@ $(OBJDIR)/gwf-csubidm.o \
 $(OBJDIR)/gwf-chdidm.o \
 $(OBJDIR)/gwf-chdgidm.o \
 $(OBJDIR)/gwf-buyidm.o \
+$(OBJDIR)/gwf-apiidm.o \
 $(OBJDIR)/gwe-ssmidm.o \
 $(OBJDIR)/gwe-namidm.o \
 $(OBJDIR)/gwe-icidm.o \
+$(OBJDIR)/gwe-fmiidm.o \
+$(OBJDIR)/gwe-estidm.o \
+$(OBJDIR)/gwe-eslidm.o \
 $(OBJDIR)/gwe-disvidm.o \
 $(OBJDIR)/gwe-disuidm.o \
 $(OBJDIR)/gwe-disidm.o \
@@ -292,6 +298,7 @@ $(OBJDIR)/TimeArraySeriesManager.o \
 $(OBJDIR)/PackageMover.o \
 $(OBJDIR)/Obs.o \
 $(OBJDIR)/NumericalPackage.o \
+$(OBJDIR)/Particle.o \
 $(OBJDIR)/PackageBudget.o \
 $(OBJDIR)/HeadFileReader.o \
 $(OBJDIR)/GridFileReader.o \
@@ -303,17 +310,25 @@ $(OBJDIR)/Dis.o \
 $(OBJDIR)/Dis2d.o \
 $(OBJDIR)/BudgetObject.o \
 $(OBJDIR)/BoundaryPackage.o \
-$(OBJDIR)/CellDefn.o \
-$(OBJDIR)/Particle.o \
-$(OBJDIR)/sort.o \
-$(OBJDIR)/FlowModelInterface.o \
-$(OBJDIR)/Cell.o \
 $(OBJDIR)/ParticleEvent.o \
+$(OBJDIR)/sort.o \
+$(OBJDIR)/CellDefn.o \
+$(OBJDIR)/FlowModelInterface.o \
+$(OBJDIR)/WeakSinkEvent.o \
+$(OBJDIR)/UserTimeEvent.o \
+$(OBJDIR)/TimeStepEvent.o \
 $(OBJDIR)/TimeSelect.o \
+$(OBJDIR)/TerminationEvent.o \
 $(OBJDIR)/Subcell.o \
+$(OBJDIR)/ReleaseEvent.o \
 $(OBJDIR)/prt-fmi.o \
 $(OBJDIR)/ParticleEvents.o \
+$(OBJDIR)/FeatExitEvent.o \
+$(OBJDIR)/Cell.o \
 $(OBJDIR)/Method.o \
+$(OBJDIR)/CellExitEvent.o \
+$(OBJDIR)/SubcellExitEvent.o \
+$(OBJDIR)/MethodCell.o \
 $(OBJDIR)/TernarySolveUtils.o \
 $(OBJDIR)/SubcellTri.o \
 $(OBJDIR)/MethodSubcell.o \
@@ -324,7 +339,6 @@ $(OBJDIR)/TimeStepSelect.o \
 $(OBJDIR)/LinearAlgebraUtils.o \
 $(OBJDIR)/SfrCrossSectionUtils.o \
 $(OBJDIR)/MethodSubcellPool.o \
-$(OBJDIR)/MethodCell.o \
 $(OBJDIR)/CellPoly.o \
 $(OBJDIR)/CellRectQuad.o \
 $(OBJDIR)/CellRect.o \
@@ -388,6 +402,7 @@ $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
 $(OBJDIR)/gwe-swr.o \
 $(OBJDIR)/gwe-shf.o \
+$(OBJDIR)/gwe-lhf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
 $(OBJDIR)/MethodDisv.o \
@@ -402,31 +417,14 @@ $(OBJDIR)/swf-evp.o \
 $(OBJDIR)/swf-cdb.o \
 $(OBJDIR)/NumericalModel.o \
 $(OBJDIR)/gwf-chd.o \
-$(OBJDIR)/PbstBase.o \
-$(OBJDIR)/InterfaceMap.o \
-$(OBJDIR)/SeqVector.o \
-$(OBJDIR)/ImsLinearSettings.o \
-$(OBJDIR)/ConvergenceSummary.o \
-$(OBJDIR)/Integer2dReader.o \
-$(OBJDIR)/MethodCellTernary.o \
-$(OBJDIR)/MethodCellPollockQuad.o \
-$(OBJDIR)/MethodCellPollock.o \
-$(OBJDIR)/MethodCellPassToBot.o \
-$(OBJDIR)/VectorInterpolation.o \
-$(OBJDIR)/swf-cxs.o \
-$(OBJDIR)/CellWithNbrs.o \
-$(OBJDIR)/NumericalExchange.o \
 $(OBJDIR)/tsp-ssm.o \
 $(OBJDIR)/tsp-oc.o \
 $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
-<<<<<<< HEAD
 $(OBJDIR)/tsp-apt_weird_chngs.o \
 $(OBJDIR)/gwt-mst_updates.o \
-=======
->>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -544,6 +542,7 @@ $(OBJDIR)/NumericalSolution.o \
 $(OBJDIR)/MappedMemory.o \
 $(OBJDIR)/NCModel.o \
 $(OBJDIR)/Mf6FileStoInput.o \
+$(OBJDIR)/Mf6FileSetting.o \
 $(OBJDIR)/Mf6FileList.o \
 $(OBJDIR)/Mf6FileLayerArray.o \
 $(OBJDIR)/Mf6FileGridArray.o \
@@ -588,16 +587,12 @@ $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
 $(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
-<<<<<<< HEAD
 $(OBJDIR)/gwt-mst_orig.o \
-=======
->>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 $(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
 $(OBJDIR)/gwe-lwr.o \
-$(OBJDIR)/gwe-lhf.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o \
