@@ -382,6 +382,7 @@
 		<File RelativePath="..\src\Model\SurfaceWaterFlow\swf.f90"/></Filter>
 		<Filter Name="TransportModel">
 		<Filter Name="Gradient">
+		<File RelativePath="..\src\Model\TransportModel\Gradient\CachedGradient.f90"/>
 		<File RelativePath="..\src\Model\TransportModel\Gradient\IGradient.f90"/>
 		<File RelativePath="..\src\Model\TransportModel\Gradient\LeastSquaresGradient.f90"/></Filter>
 		<Filter Name="InterpolationScheme">
@@ -476,18 +477,11 @@
 			<FileConfiguration Name="Debug|x64" ExcludedFromBuild="true"/>
 			<FileConfiguration Name="Release|Win32" ExcludedFromBuild="true"/></File>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Particle.f90"/>
-<<<<<<< HEAD
-		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleEvent.f90"/>
-		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleEvents.f90"/>
-		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleReleaseSchedule.f90"/>
-		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleTracks.f90"/>
-=======
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\ParticleEvent.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\ParticleEvents.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleReleaseSchedule.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\ParticleTracks.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\ReleaseEvent.f90"/>
->>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 		<File RelativePath="..\src\Solution\SolutionFactory.F90">
 			<FileConfiguration Name="Debug|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
@@ -497,16 +491,13 @@
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
 			<FileConfiguration Name="Release|Win32">
 				<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
-<<<<<<< HEAD
 		<File RelativePath="..\src\Solution\SolutionGroup.f90"/></Filter>
-=======
 		<File RelativePath="..\src\Solution\SolutionGroup.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\SubcellExitEvent.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\TerminationEvent.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\TimeStepEvent.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\UserTimeEvent.f90"/>
 		<File RelativePath="..\src\Solution\ParticleTracker\Particle\Events\WeakSinkEvent.f90"/></Filter>
->>>>>>> fb5c86afbb9431d37c715f77f3f871ed2a9211ef
 		<Filter Name="Timing">
 		<File RelativePath="..\src\Timing\ats.f90"/>
 		<File RelativePath="..\src\Timing\tdis.f90"/></Filter>
@@ -702,6 +693,7 @@
 		<File RelativePath="..\src\Utilities\ListIterator.f90"/>
 		<File RelativePath="..\src\Utilities\ListNode.f90"/>
 		<File RelativePath="..\src\Utilities\ListReader.f90"/>
+		<File RelativePath="..\src\Utilities\LocalCellExtrema.f90"/>
 		<File RelativePath="..\src\Utilities\LongLineReader.f90"/>
 		<File RelativePath="..\src\Utilities\MathUtil.f90"/>
 		<File RelativePath="..\src\Utilities\Message.f90"/>
