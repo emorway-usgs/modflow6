@@ -412,6 +412,7 @@ $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
 $(OBJDIR)/gwe-swr.o \
 $(OBJDIR)/gwe-shf.o \
+$(OBJDIR)/gwe-lhf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
 $(OBJDIR)/MethodDisv.o \
@@ -432,8 +433,8 @@ $(OBJDIR)/tsp-obs.o \
 $(OBJDIR)/tsp-mvt.o \
 $(OBJDIR)/tsp-adv.o \
 $(OBJDIR)/gwf-uzf.o \
-$(OBJDIR)/tsp-apt_weird_chngs.o \
-$(OBJDIR)/gwt-mst_updates.o \
+$(OBJDIR)/tsp-apt.o \
+$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/GwtDspOptions.o \
 $(OBJDIR)/gwf-tvs.o \
 $(OBJDIR)/GwfStorageUtils.o \
@@ -594,14 +595,10 @@ $(OBJDIR)/sparsekit.o \
 $(OBJDIR)/rcm.o \
 $(OBJDIR)/blas1_d.o \
 $(OBJDIR)/Iunit.o \
-$(OBJDIR)/tsp-apt.o \
 $(OBJDIR)/GwfSfrCommon.o \
-$(OBJDIR)/gwt-mst_orig.o \
-$(OBJDIR)/gwt-mst.o \
 $(OBJDIR)/gwf-sfr-transient.o \
 $(OBJDIR)/gwf-sfr-steady.o \
 $(OBJDIR)/gwf-sfr-constant.o \
-$(OBJDIR)/gwe-lwr.o \
 $(OBJDIR)/RectangularGeometry.o \
 $(OBJDIR)/CircularGeometry.o \
 $(OBJDIR)/ExplicitModel.o
