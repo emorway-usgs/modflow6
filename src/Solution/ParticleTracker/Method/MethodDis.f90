@@ -276,17 +276,16 @@ contains
     ! local
     type(CellRectType), pointer :: cell
     integer(I4B) :: iface
-    logical(LGP) :: at_bnd_face, no_neighbors
+    logical(LGP) :: no_neighbors
 
     select type (c => this%cell)
     type is (CellRectType)
       cell => c
       iface = particle%iboundary(LEVEL_FEATURE)
       no_neighbors = cell%defn%facenbr(iface) == 0
-      at_bnd_face = this%fmi%is_net_out_boundary_face(cell%defn%icell, iface)
 
       ! todo AMP: reconsider when multiple models supported
-      if (no_neighbors .or. at_bnd_face) then
+      if (no_neighbors) then
         call this%terminate(particle, status=TERM_BOUNDARY)
         return
       end if
@@ -325,19 +324,14 @@ contains
     integer(I4B), intent(in) :: ic
     type(CellDefnType), pointer, intent(inout) :: defn
 
-    ! Load basic cell properties
     call this%load_properties(ic, defn)
-
-    ! Load cell polygon vertices
     call this%fmi%dis%get_polyverts( &
       defn%icell, &
       defn%polyvert, &
       closed=.true.)
     call this%load_neighbors(defn)
-
-    ! Load 180 degree face indicators
+    call this%load_saturation_status(defn)
     defn%ispv180(1:defn%npolyverts + 1) = .false.
-
     call this%load_flows(defn)
 
   end subroutine load_celldefn
@@ -370,6 +364,7 @@ contains
     defn%izone = this%izone(ic)
     defn%can_be_rect = .true.
     defn%can_be_quad = .false.
+
   end subroutine load_properties
 
   !> @brief Loads face neighbors to cell definition from the grid.
@@ -445,16 +440,17 @@ contains
   !! Assumes cell index and number of vertices are already loaded.
   subroutine load_flows(this, defn)
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
 
     ! Load face flows, including boundary flows. As with cell verts,
     ! the face flow array wraps around. Top and bottom flows make up
     ! the last two elements, respectively, for size npolyverts + 3.
     ! If there is no flow through any face, set a no-exit-face flag.
     defn%faceflow = DZERO
-    defn%inoexitface = 1
     call this%load_boundary_flows_to_defn(defn)
     call this%load_face_flows_to_defn(defn)
+    call this%cap_wt_flow(defn)
+    call this%load_no_exit_face(defn)
 
     ! Add up net distributed flow
     defn%distflow = this%fmi%SourceFlows(defn%icell) + &
@@ -472,7 +468,7 @@ contains
   subroutine load_face_flows_to_defn(this, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
     integer(I4B) :: m, n, nfaces
     real(DP) :: q
@@ -484,7 +480,6 @@ contains
         q = this%fmi%gwfflowja(this%fmi%dis%con%ia(defn%icell) + n)
         defn%faceflow(m) = defn%faceflow(m) + q
       end if
-      if (defn%faceflow(m) < DZERO) defn%inoexitface = 0
     end do
   end subroutine load_face_flows_to_defn
 
@@ -493,13 +488,11 @@ contains
   subroutine load_boundary_flows_to_defn(this, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
-    integer(I4B) :: max_faces
     integer(I4B) :: ioffset
 
-    max_faces = this%fmi%max_faces
-    ioffset = (defn%icell - 1) * max_faces
+    ioffset = (defn%icell - 1) * this%fmi%max_faces
     defn%faceflow(1) = defn%faceflow(1) + &
                        this%fmi%BoundaryFlows(ioffset + 1)
     defn%faceflow(2) = defn%faceflow(2) + &
@@ -510,9 +503,9 @@ contains
                        this%fmi%BoundaryFlows(ioffset + 4)
     defn%faceflow(5) = defn%faceflow(1)
     defn%faceflow(6) = defn%faceflow(6) + &
-                       this%fmi%BoundaryFlows(ioffset + max_faces - 1)
+                       this%fmi%BoundaryFlows(ioffset + this%fmi%max_faces - 1)
     defn%faceflow(7) = defn%faceflow(7) + &
-                       this%fmi%BoundaryFlows(ioffset + max_faces)
+                       this%fmi%BoundaryFlows(ioffset + this%fmi%max_faces)
   end subroutine load_boundary_flows_to_defn
 
 end module MethodDisModule

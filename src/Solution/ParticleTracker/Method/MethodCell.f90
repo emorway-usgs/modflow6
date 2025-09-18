@@ -7,7 +7,7 @@ module MethodCellModule
   use ParticleModule, only: ParticleType, ACTIVE, TERM_NO_EXITS, TERM_BOUNDARY
   use ParticleEventModule, only: ParticleEventType
   use CellExitEventModule, only: CellExitEventType
-  use CellDefnModule, only: CellDefnType
+  use CellDefnModule, only: CellDefnType, SATURATION_DRY
   use IteratorModule, only: IteratorType
   implicit none
 
@@ -49,10 +49,12 @@ contains
 
     call this%pass(particle)
 
-    ! not on a cell boundary? nothing to do
+    ! TODO: name iface variables to reflect the face numbering scheme
     iface = particle%iboundary(LEVEL_FEATURE)
-    nfaces = this%cell%defn%npolyverts + 2
-    if (iface >= nfaces) iface = iface - 1
+    nfaces = this%cell%defn%npolyverts + 2 ! total 3d faces
+    if (iface >= nfaces) &
+      ! uncompress and drop wraparound index
+      iface = iface + (this%fmi%max_faces - nfaces) - 1
     if (iface <= 0) return
 
     ! on a cell face, done advancing. raise an exit event
@@ -62,13 +64,6 @@ contains
     ! assigned boundary face with net outflow? terminate
     ic = particle%itrdomain(LEVEL_FEATURE)
     if (this%fmi%is_net_out_boundary_face(ic, iface)) then
-      call this%terminate(particle, status=TERM_BOUNDARY)
-      return
-    end if
-
-    ! top face of a partly saturated cell? stay there
-    if (iface == nfaces .and. &
-        this%fmi%gwfsat(this%cell%defn%icell) < DONE) then
       call this%terminate(particle, status=TERM_BOUNDARY)
       return
     end if
@@ -98,7 +93,7 @@ contains
     integer(I4B) :: i
     real(DP) :: t, ttrackmax
 
-    dry_cell = this%fmi%ibdgwfsat0(cell_defn%icell) == 0
+    dry_cell = cell_defn%isatstat == SATURATION_DRY
     dry_particle = particle%z > cell_defn%top
     no_exit_face = cell_defn%inoexitface > 0
     stop_zone = cell_defn%izone > 0 .and. particle%istopzone == cell_defn%izone

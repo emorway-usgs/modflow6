@@ -214,17 +214,16 @@ contains
     ! local
     type(CellPolyType), pointer :: cell
     integer(I4B) :: iface
-    logical(LGP) :: at_bnd_face, no_neighbors
+    logical(LGP) :: no_neighbors
 
     select type (c => this%cell)
     type is (CellPolyType)
       cell => c
       iface = particle%iboundary(LEVEL_FEATURE)
       no_neighbors = cell%defn%facenbr(iface) == 0
-      at_bnd_face = this%fmi%is_net_out_boundary_face(cell%defn%icell, iface)
 
       ! todo AMP: reconsider when multiple models supported
-      if (no_neighbors .or. at_bnd_face) then
+      if (no_neighbors) then
         call this%terminate(particle, status=TERM_BOUNDARY)
         return
       end if
@@ -319,6 +318,7 @@ contains
     call this%load_properties(ic, defn)
     call this%load_polygon(defn)
     call this%load_neighbors(defn)
+    call this%load_saturation_status(defn)
     call this%load_indicators(defn)
     call this%load_flows(defn)
   end subroutine load_cell_defn
@@ -354,6 +354,7 @@ contains
       call get_jk(icu, dis%ncpl, dis%nlay, icpl, ilay)
       defn%ilay = ilay
     end select
+
   end subroutine load_properties
 
   subroutine load_polygon(this, defn)
@@ -447,7 +448,7 @@ contains
   subroutine load_flows(this, defn)
     ! dummy
     class(MethodDisvType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
     integer(I4B) :: nfaces, nslots
 
@@ -461,9 +462,10 @@ contains
     ! the last two elements, respectively, for size npolyverts + 3.
     ! If there is no flow through any face, set a no-exit-face flag.
     defn%faceflow = DZERO
-    defn%inoexitface = 1
     call this%load_boundary_flows_to_defn_poly(defn)
     call this%load_face_flows_to_defn_poly(defn)
+    call this%cap_wt_flow(defn)
+    call this%load_no_exit_face(defn)
 
     ! Add up net distributed flow
     defn%distflow = this%fmi%SourceFlows(defn%icell) + &
@@ -481,7 +483,7 @@ contains
   subroutine load_face_flows_to_defn_poly(this, defn)
     ! dummy
     class(MethodDisvType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
     integer(I4B) :: m, n, nfaces
     real(DP) :: q
@@ -493,7 +495,6 @@ contains
         q = this%fmi%gwfflowja(this%fmi%dis%con%ia(defn%icell) + n)
         defn%faceflow(m) = defn%faceflow(m) + q
       end if
-      if (defn%faceflow(m) < DZERO) defn%inoexitface = 0
     end do
   end subroutine load_face_flows_to_defn_poly
 
@@ -502,7 +503,7 @@ contains
   subroutine load_boundary_flows_to_defn_poly(this, defn)
     ! dummy
     class(MethodDisvType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
 
     ! local
     integer(I4B) :: ic, iv, ioffset, npolyverts, max_faces
