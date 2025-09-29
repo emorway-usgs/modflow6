@@ -94,6 +94,8 @@ module BaseDisModule
     procedure :: get_ncpl
     procedure :: get_cell_volume
     procedure :: get_polyverts
+    procedure :: get_npolyverts
+    procedure :: get_max_npolyverts
     procedure :: write_grb
     !
     procedure :: read_int_array
@@ -114,6 +116,7 @@ module BaseDisModule
     generic, public :: record_mf6_list_entry => record_srcdst_list_entry
     procedure, public :: nlarray_to_nodelist
     procedure, public :: highest_active
+    procedure, public :: highest_saturated
     procedure, public :: get_area
     procedure, public :: get_area_factor
     procedure, public :: get_flow_width
@@ -674,8 +677,8 @@ contains
     get_cell_volume = this%area(n) * thick
   end function get_cell_volume
 
-  !> @brief Get a 2D array of polygon vertices, listed in
-  !! clockwise order beginning with the lower left corner.
+  !> @brief Get a 2D array of cell polygon vertices, in
+  !! clockwise order starting with the lower left corner.
   subroutine get_polyverts(this, ic, polyverts, closed)
     class(DisBaseType), intent(inout) :: this
     integer(I4B), intent(in) :: ic !< cell number (reduced)
@@ -684,7 +687,28 @@ contains
 
     errmsg = 'Programmer error: get_polyverts must be overridden'
     call store_error(errmsg, terminate=.true.)
-  end subroutine
+  end subroutine get_polyverts
+
+  !> @brief Get the number of cell polygon vertices.
+  function get_npolyverts(this, ic, closed) result(npolyverts)
+    class(DisBaseType), intent(inout) :: this
+    integer(I4B), intent(in) :: ic !< cell number (reduced)
+    logical(LGP), intent(in), optional :: closed !< whether to close the polygon, duplicating a vertex
+    integer(I4B) :: npolyverts
+    npolyverts = 0 ! suppress compiler warning
+    errmsg = 'Programmer error: get_npolyverts must be overridden'
+    call store_error(errmsg, terminate=.true.)
+  end function get_npolyverts
+
+  !> @brief Get the maximum number of cell polygon vertices.
+  function get_max_npolyverts(this, closed) result(max_npolyverts)
+    class(DisBaseType), intent(inout) :: this
+    logical(LGP), intent(in), optional :: closed !< whether to close the polygon, duplicating a vertex
+    integer(I4B) :: max_npolyverts
+    max_npolyverts = 0 ! suppress compiler warning
+    errmsg = 'Programmer error: get_max_npolyverts must be overridden'
+    call store_error(errmsg, terminate=.true.)
+  end function get_max_npolyverts
 
   !> @brief Read an integer array
   subroutine read_int_array(this, line, lloc, istart, istop, iout, in, &
@@ -1110,6 +1134,44 @@ contains
       if (bottomcell) done = .true.
     end do
   end subroutine highest_active
+
+  !> @brief Find the first saturated cell beneath cell n
+  subroutine highest_saturated(this, n, sat)
+    ! -- dummy
+    class(DisBaseType) :: this
+    integer(I4B), intent(inout) :: n
+    real(DP), dimension(:), intent(in) :: sat
+    ! -- locals
+    integer(I4B) :: m, ii, iis
+    logical(LGP) :: is_done, bottomcell
+    !
+    ! -- Loop through connected cells until the highest saturated one (including a
+    !    constant head cell) is found.  Return that cell as n.
+    is_done = .false.
+    do while (.not. is_done)
+      bottomcell = .true.
+      cloop: do ii = this%con%ia(n) + 1, this%con%ia(n + 1) - 1
+        m = this%con%ja(ii)
+        iis = this%con%jas(ii)
+        if (this%con%ihc(iis) == 0 .and. m > n) then
+          !
+          ! -- this cannot be a bottom cell
+          bottomcell = .false.
+          !
+          ! -- vertical down
+          if (sat(m) > DZERO) then
+            n = m
+            is_done = .true.
+            exit cloop
+          else
+            n = m
+            exit cloop
+          end if
+        end if
+      end do cloop
+      if (bottomcell) is_done = .true.
+    end do
+  end subroutine highest_saturated
 
   !> @brief Return the cell area for the given node
   function get_area(this, node) result(area)

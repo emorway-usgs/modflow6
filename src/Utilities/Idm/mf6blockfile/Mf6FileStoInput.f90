@@ -9,7 +9,7 @@ module Mf6FileStoInputModule
   use ConstantsModule, only: LINELENGTH
   use InputDefinitionModule, only: InputParamDefinitionType
   use MemoryManagerModule, only: mem_setptr, mem_allocate
-  use ModflowInputModule, only: ModflowInputType, getModflowInput
+  use ModflowInputModule, only: ModflowInputType
   use AsciiInputLoadTypeModule, only: AsciiDynamicPkgLoadBaseType
 
   implicit none
@@ -31,7 +31,6 @@ contains
 
   subroutine sto_init(this, mf6_input, component_name, component_input_name, &
                       input_name, iperblock, parser, iout)
-    use MemoryManagerExtModule, only: mem_set_value
     use BlockParserModule, only: BlockParserType
     use LoadMf6FileModule, only: LoadMf6FileType
     class(StoInputType), intent(inout) :: this

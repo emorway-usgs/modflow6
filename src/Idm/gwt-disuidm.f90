@@ -23,6 +23,7 @@ module GwtDisuInputModule
     logical :: angrot = .false.
     logical :: voffsettol = .false.
     logical :: export_ascii = .false.
+    logical :: crs = .false.
     logical :: nodes = .false.
     logical :: nja = .false.
     logical :: nvert = .false.
@@ -66,6 +67,7 @@ module GwtDisuInputModule
     '', & ! shape
     'model length units', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -84,6 +86,7 @@ module GwtDisuInputModule
     '', & ! shape
     'do not write binary grid file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -102,6 +105,7 @@ module GwtDisuInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -120,6 +124,7 @@ module GwtDisuInputModule
     '', & ! shape
     'grb keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -138,6 +143,7 @@ module GwtDisuInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -156,6 +162,7 @@ module GwtDisuInputModule
     '', & ! shape
     'file name of GRB information', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -174,6 +181,7 @@ module GwtDisuInputModule
     '', & ! shape
     'x-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -192,6 +200,7 @@ module GwtDisuInputModule
     '', & ! shape
     'y-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -210,6 +219,7 @@ module GwtDisuInputModule
     '', & ! shape
     'rotation angle', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -228,6 +238,7 @@ module GwtDisuInputModule
     '', & ! shape
     'vertical length dimension for top and bottom checking', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -246,8 +257,28 @@ module GwtDisuInputModule
     '', & ! shape
     'export array variables to layered ascii files.', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
+    .false., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    gwtdisu_crs = InputParamDefinitionType &
+    ( &
+    'GWT', & ! component
+    'DISU', & ! subcomponent
+    'OPTIONS', & ! block
+    'CRS', & ! tag name
+    'CRS', & ! fortran variable
+    'STRING', & ! type
+    'LENBIGLINE', & ! shape
+    'CRS user input string', & ! longname
+    .false., & ! required
+    .true., & ! prerelease
+    .false., & ! multi-record
+    .true., & ! preserve case
     .false., & ! layered
     .false. & ! timeseries
     )
@@ -264,6 +295,7 @@ module GwtDisuInputModule
     '', & ! shape
     'number of layers', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -282,6 +314,7 @@ module GwtDisuInputModule
     '', & ! shape
     'number of columns', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -300,6 +333,7 @@ module GwtDisuInputModule
     '', & ! shape
     'number of vertices', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -318,6 +352,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'cell top elevation', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -336,6 +371,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'cell bottom elevation', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -354,6 +390,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'cell surface area', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -372,6 +409,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'idomain existence array', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -390,6 +428,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'number of cell connections', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -408,6 +447,7 @@ module GwtDisuInputModule
     'NJA', & ! shape
     'grid connectivity', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -426,6 +466,7 @@ module GwtDisuInputModule
     'NJA', & ! shape
     'connection type', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -444,6 +485,7 @@ module GwtDisuInputModule
     'NJA', & ! shape
     'connection lengths', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -462,6 +504,7 @@ module GwtDisuInputModule
     'NJA', & ! shape
     'connection lengths', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -480,6 +523,7 @@ module GwtDisuInputModule
     'NJA', & ! shape
     'angle of face normal to connection', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -498,6 +542,7 @@ module GwtDisuInputModule
     '', & ! shape
     'vertex number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -516,6 +561,7 @@ module GwtDisuInputModule
     '', & ! shape
     'x-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -534,6 +580,7 @@ module GwtDisuInputModule
     '', & ! shape
     'y-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -552,6 +599,7 @@ module GwtDisuInputModule
     '', & ! shape
     'cell2d number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -570,6 +618,7 @@ module GwtDisuInputModule
     '', & ! shape
     'x-coordinate for cell center', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -588,6 +637,7 @@ module GwtDisuInputModule
     '', & ! shape
     'y-coordinate for cell center', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -606,6 +656,7 @@ module GwtDisuInputModule
     '', & ! shape
     'number of cell vertices', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -624,6 +675,7 @@ module GwtDisuInputModule
     'NCVERT', & ! shape
     'array of vertex numbers', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -644,6 +696,7 @@ module GwtDisuInputModule
     gwtdisu_angrot, &
     gwtdisu_voffsettol, &
     gwtdisu_export_ascii, &
+    gwtdisu_crs, &
     gwtdisu_nodes, &
     gwtdisu_nja, &
     gwtdisu_nvert, &
@@ -679,6 +732,7 @@ module GwtDisuInputModule
     'NVERT', & ! shape
     'vertices data', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -697,6 +751,7 @@ module GwtDisuInputModule
     'NODES', & ! shape
     'cell2d data', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered

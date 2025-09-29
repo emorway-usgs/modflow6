@@ -38,20 +38,20 @@ wkt = (
 )
 
 
-def build_models(idx, test, export, gridded_input):
+def build_models(idx, test, gridded_input):
     from test_gwf_disv import build_models as build
 
     sim, dummy = build(idx, test)
     sim.tdis.start_date_time = "2041-01-01T00:00:00-05:00"
     gwf = sim.gwf[0]
     gwf.disv.export_array_netcdf = True
+    gwf.disv.crs = wkt
     gwf.ic.export_array_netcdf = True
     gwf.npf.export_array_netcdf = True
 
     name = cases[idx]
 
-    if export == "ugrid":
-        gwf.name_file.nc_mesh2d_filerecord = f"{name}.nc"
+    gwf.name_file.nc_mesh2d_filerecord = f"{name}.nc"
 
     # netcdf config
     ncf = flopy.mf6.ModflowUtlncf(
@@ -76,10 +76,16 @@ def build_models(idx, test, export, gridded_input):
     return sim, dummy
 
 
-def check_output(idx, test, export, gridded_input):
+def check_output(idx, test, gridded_input):
     from test_gwf_disv import check_output as check
 
     name = test.name
+
+    # verify crs data string in grb version 2 file
+    fname = os.path.join(test.workspace, "disv.grb")
+    grbobj = flopy.mf6.utils.MfGrdFile(fname)
+    crs = grbobj._datadict["CRS"]
+    assert crs == wkt
 
     # verify format of generated netcdf file
     with nc.Dataset(test.workspace / f"{name}.nc") as ds:
@@ -94,16 +100,15 @@ def check_output(idx, test, export, gridded_input):
     if gridded_input == "netcdf":
         # re-run the simulation with model netcdf input
         input_fname = f"{name}.nc"
-        nc_fname = f"{name}.{export}.nc"
+        nc_fname = f"{name}.ugrid.nc"
         os.rename(test.workspace / input_fname, test.workspace / nc_fname)
 
-        if export == "ugrid":
-            fileout_tag = "NETCDF_MESH2D"
+        fileout_tag = "NETCDF_MESH2D"
 
         with open(test.workspace / f"{name}.nam", "w") as f:
             f.write("BEGIN options\n")
             f.write(f"  {fileout_tag}  FILEOUT  {name}.nc\n")
-            f.write(f"  NETCDF  FILEIN {name}.{export}.nc\n")
+            f.write(f"  NETCDF  FILEIN {name}.ugrid.nc\n")
             f.write("END options\n\n")
             f.write("BEGIN packages\n")
             f.write(f"  DISV6  {name}.disv  disv\n")
@@ -237,15 +242,14 @@ def check_output(idx, test, export, gridded_input):
 
 @pytest.mark.netcdf
 @pytest.mark.parametrize("idx, name", enumerate(cases))
-@pytest.mark.parametrize("export", ["ugrid"])
 @pytest.mark.parametrize("gridded_input", ["ascii", "netcdf"])
-def test_mf6model(idx, name, function_tmpdir, targets, export, gridded_input):
+def test_mf6model(idx, name, function_tmpdir, targets, gridded_input):
     test = TestFramework(
         name=name,
         workspace=function_tmpdir,
         targets=targets,
-        build=lambda t: build_models(idx, t, export, gridded_input),
-        check=lambda t: check_output(idx, t, export, gridded_input),
+        build=lambda t: build_models(idx, t, gridded_input),
+        check=lambda t: check_output(idx, t, gridded_input),
         compare=None,
     )
     test.run()

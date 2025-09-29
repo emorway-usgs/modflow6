@@ -274,6 +274,7 @@ class Dfn2F90:
             self._param_str += "    '', & ! shape\n"
             self._param_str += "    '', & ! longname\n"
             self._param_str += "    .false., & ! required\n"
+            self._param_str += "    .false., & ! prerelease\n"
             self._param_str += "    .false., & ! multi-record\n"
             self._param_str += "    .false., & ! preserve case\n"
             self._param_str += "    .false., & ! layered\n"
@@ -292,6 +293,7 @@ class Dfn2F90:
             self._aggregate_str += "    '', & ! shape\n"
             self._aggregate_str += "    '', & ! longname\n"
             self._aggregate_str += "    .false., & ! required\n"
+            self._aggregate_str += "    .false., & ! prerelease\n"
             self._aggregate_str += "    .false., & ! multi-record\n"
             self._aggregate_str += "    .false., & ! preserve case\n"
             self._aggregate_str += "    .false., & ! layered\n"
@@ -366,13 +368,13 @@ class Dfn2F90:
                 shape = shape.replace(")", "")
                 shape = shape.replace(",", "")
                 shape = shape.upper()
-                if shape == "NCOL*NROW; NCPL":
-                    # grid array input syntax
-                    if mf6vn == "AUXVAR":
-                        # for grid, set AUX as DOUBLE2D
+                if mf6vn == "AUXVAR":
+                    if shape == "NCOL*NROW; NCPL":
                         shape = "NAUX NCPL"
-                    else:
-                        shape = "NCPL"
+                    elif shape == "NODES":
+                        shape = "NAUX NODES"
+                elif shape == "NCOL*NROW; NCPL":
+                    shape = "NCPL"
                 shapelist = shape.strip().split()
             ndim = len(shapelist)
 
@@ -383,7 +385,14 @@ class Dfn2F90:
 
             longname = ""
             if "longname" in v:
-                longname = v["longname"].replace("'", "")
+                llist = textwrap.wrap(v["longname"].replace("'", ""), 70)
+                if len(llist) == 1:
+                    longname = llist[0]
+                elif len(llist) > 1:
+                    longname = f"{llist[0]}&\n"
+                    for l in llist[1:-1]:
+                        longname += f"     & {l}&\n"
+                    longname += f"     & {llist[len(llist) - 1]}"
 
             inrec = ".false."
             if "in_record" in v:
@@ -398,6 +407,11 @@ class Dfn2F90:
                     r = ".false."
                 else:
                     r = ".true."
+
+            prerelease = ".false."
+            if "prerelease" in v:
+                if v["prerelease"] == "true":
+                    prerelease = ".true."
 
             preserve_case = ".false."
             if "preserve_case" in v:
@@ -432,6 +446,7 @@ class Dfn2F90:
                 (shape, "shape"),
                 (longname, "longname"),
                 (r, "required"),
+                (prerelease, "prerelease"),
                 (inrec, "multi-record"),
                 (preserve_case, "preserve case"),
                 (layered, "layered"),
@@ -994,7 +1009,7 @@ if __name__ == "__main__":
     verbose = args.verbose
 
     if isinstance(dfn, list):
-        dfn = [Path(p) for p in dfn]
+        dfn = [Path(str(p).strip()) for p in dfn]
     elif isinstance(dfn, (str, Path)):
         dfn = [Path(dfn)]
     else:

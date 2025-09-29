@@ -23,6 +23,7 @@ module GweDisvInputModule
     logical :: angrot = .false.
     logical :: export_ascii = .false.
     logical :: export_nc = .false.
+    logical :: crs = .false.
     logical :: ncf_filerecord = .false.
     logical :: ncf6 = .false.
     logical :: filein = .false.
@@ -63,6 +64,7 @@ module GweDisvInputModule
     '', & ! shape
     'model length units', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -81,6 +83,7 @@ module GweDisvInputModule
     '', & ! shape
     'do not write binary grid file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -99,6 +102,7 @@ module GweDisvInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -117,6 +121,7 @@ module GweDisvInputModule
     '', & ! shape
     'grb keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -135,6 +140,7 @@ module GweDisvInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -153,6 +159,7 @@ module GweDisvInputModule
     '', & ! shape
     'file name of GRB information', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -171,6 +178,7 @@ module GweDisvInputModule
     '', & ! shape
     'x-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -189,6 +197,7 @@ module GweDisvInputModule
     '', & ! shape
     'y-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -207,6 +216,7 @@ module GweDisvInputModule
     '', & ! shape
     'rotation angle', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -225,6 +235,7 @@ module GweDisvInputModule
     '', & ! shape
     'export array variables to layered ascii files.', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -243,8 +254,28 @@ module GweDisvInputModule
     '', & ! shape
     'export array variables to netcdf output files.', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
+    .false., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    gwedisv_crs = InputParamDefinitionType &
+    ( &
+    'GWE', & ! component
+    'DISV', & ! subcomponent
+    'OPTIONS', & ! block
+    'CRS', & ! tag name
+    'CRS', & ! fortran variable
+    'STRING', & ! type
+    'LENBIGLINE', & ! shape
+    'CRS user input string', & ! longname
+    .false., & ! required
+    .true., & ! prerelease
+    .false., & ! multi-record
+    .true., & ! preserve case
     .false., & ! layered
     .false. & ! timeseries
     )
@@ -261,6 +292,7 @@ module GweDisvInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -279,6 +311,7 @@ module GweDisvInputModule
     '', & ! shape
     'ncf keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -297,6 +330,7 @@ module GweDisvInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -315,6 +349,7 @@ module GweDisvInputModule
     '', & ! shape
     'file name of NCF information', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -333,6 +368,7 @@ module GweDisvInputModule
     '', & ! shape
     'number of layers', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -351,6 +387,7 @@ module GweDisvInputModule
     '', & ! shape
     'number of cells per layer', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -369,6 +406,7 @@ module GweDisvInputModule
     '', & ! shape
     'number of columns', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -387,6 +425,7 @@ module GweDisvInputModule
     'NCPL', & ! shape
     'model top elevation', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -405,6 +444,7 @@ module GweDisvInputModule
     'NCPL NLAY', & ! shape
     'model bottom elevation', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .true., & ! layered
@@ -423,6 +463,7 @@ module GweDisvInputModule
     'NCPL NLAY', & ! shape
     'idomain existence array', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .true., & ! layered
@@ -441,6 +482,7 @@ module GweDisvInputModule
     '', & ! shape
     'vertex number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -459,6 +501,7 @@ module GweDisvInputModule
     '', & ! shape
     'x-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -477,6 +520,7 @@ module GweDisvInputModule
     '', & ! shape
     'y-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -495,6 +539,7 @@ module GweDisvInputModule
     '', & ! shape
     'cell2d number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -513,6 +558,7 @@ module GweDisvInputModule
     '', & ! shape
     'x-coordinate for cell center', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -531,6 +577,7 @@ module GweDisvInputModule
     '', & ! shape
     'y-coordinate for cell center', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -549,6 +596,7 @@ module GweDisvInputModule
     '', & ! shape
     'number of cell vertices', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -567,6 +615,7 @@ module GweDisvInputModule
     'NCVERT', & ! shape
     'array of vertex numbers', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -587,6 +636,7 @@ module GweDisvInputModule
     gwedisv_angrot, &
     gwedisv_export_ascii, &
     gwedisv_export_nc, &
+    gwedisv_crs, &
     gwedisv_ncf_filerecord, &
     gwedisv_ncf6, &
     gwedisv_filein, &
@@ -619,6 +669,7 @@ module GweDisvInputModule
     'NVERT', & ! shape
     'vertices data', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -637,6 +688,7 @@ module GweDisvInputModule
     'NCPL', & ! shape
     'cell2d data', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered

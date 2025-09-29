@@ -18,12 +18,14 @@ module PrtModule
   use PrtOcModule, only: PrtOcType
   use BudgetModule, only: BudgetType
   use ListModule, only: ListType
-  use ParticleModule, only: ParticleType, create_particle
-  use TrackFileModule, only: TrackFileType
-  use TrackControlModule, only: TrackControlType
+  use ParticleModule, only: ParticleType, create_particle, TERM_UNRELEASED
+  use ParticleEventsModule, only: ParticleEventDispatcherType, &
+                                  ParticleEventConsumerType
+  use ParticleTracksModule, only: ParticleTracksType, &
+                                  ParticleTrackFileType
   use SimModule, only: count_errors, store_error, store_error_filename
   use MemoryManagerModule, only: mem_allocate
-  use MethodModule, only: MethodType
+  use MethodModule, only: MethodType, LEVEL_FEATURE
 
   implicit none
 
@@ -44,7 +46,8 @@ module PrtModule
     type(PrtOcType), pointer :: oc => null() ! output control package
     type(BudgetType), pointer :: budget => null() ! budget object
     class(MethodType), pointer :: method => null() ! tracking method
-    type(TrackControlType), pointer :: trackctl ! track control
+    type(ParticleEventDispatcherType), pointer :: events => null() ! event dispatcher
+    class(ParticleTracksType), pointer :: tracks ! track output manager
     integer(I4B), pointer :: infmi => null() ! unit number FMI
     integer(I4B), pointer :: inmip => null() ! unit number MIP
     integer(I4B), pointer :: inmvt => null() ! unit number MVT
@@ -125,7 +128,7 @@ contains
     use MemoryHelperModule, only: create_mem_path
     use MemoryManagerExtModule, only: mem_set_value
     use SimVariablesModule, only: idm_context
-    use GwfNamInputModule, only: GwfNamParamFoundType
+    use PrtNamInputModule, only: PrtNamParamFoundType
     ! dummy
     character(len=*), intent(in) :: filename
     integer(I4B), intent(in) :: id
@@ -135,7 +138,7 @@ contains
     class(BaseModelType), pointer :: model
     character(len=LENMEMPATH) :: input_mempath
     character(len=LINELENGTH) :: lst_fname
-    type(GwfNamParamFoundType) :: found
+    type(PrtNamParamFoundType) :: found
 
     ! Allocate a new PRT Model (this)
     allocate (this)
@@ -143,8 +146,9 @@ contains
     ! Set this before any allocs in the memory manager can be done
     this%memoryPath = create_mem_path(modelname)
 
-    ! Allocate track control object
-    allocate (this%trackctl)
+    ! Allocate event system and track output manager
+    allocate (this%events)
+    allocate (this%tracks)
 
     ! Allocate scalars and add model to basemodellist
     call this%allocate_scalars(modelname)
@@ -177,13 +181,14 @@ contains
       this%ipakcb = -1
     end if
 
+    ! Create model packages
+    call this%create_packages()
+
     ! Log options
     if (this%iout > 0) then
       call this%log_namfile_options(found)
     end if
 
-    ! Create model packages
-    call this%create_packages()
   end subroutine prt_cr
 
   !> @brief Define packages
@@ -233,35 +238,66 @@ contains
     ! dummy
     class(PrtModelType) :: this
     ! locals
-    integer(I4B) :: ip
+    integer(I4B) :: ip, nprp
     class(BndType), pointer :: packobj
 
-    ! Allocate and read modules attached to model
+    ! Set up basic packages
     call this%fmi%fmi_ar(this%ibound)
     if (this%inmip > 0) call this%mip%mip_ar()
 
-    ! set up output control
+    ! Set up output control and budget
     call this%oc%oc_ar(this%dis, DHNOFLO)
     call this%budget%set_ibudcsv(this%oc%ibudcsv)
 
-    ! Package input files now open, so allocate and read
+    ! Select tracking events
+    call this%tracks%select_events( &
+      this%oc%trackrelease, &
+      this%oc%trackfeatexit, &
+      this%oc%tracktimestep, &
+      this%oc%trackterminate, &
+      this%oc%trackweaksink, &
+      this%oc%trackusertime, &
+      this%oc%tracksubfexit, &
+      this%oc%trackdropped)
+
+    ! Set up boundary pkgs and pkg-scoped track files
+    nprp = 0
     do ip = 1, this%bndlist%Count()
       packobj => GetBndFromList(this%bndlist, ip)
       select type (packobj)
       type is (PrtPrpType)
-        call packobj%prp_set_pointers(this%ibound, this%mip%izone, &
-                                      this%trackctl)
+        nprp = nprp + 1
+        call packobj%prp_set_pointers(this%ibound, this%mip%izone)
+        call packobj%bnd_ar()
+        call packobj%bnd_ar()
+        if (packobj%itrkout > 0) then
+          call this%tracks%init_file( &
+            packobj%itrkout, &
+            iprp=nprp)
+        end if
+        if (packobj%itrkcsv > 0) then
+          call this%tracks%init_file( &
+            packobj%itrkcsv, &
+            csv=.true., &
+            iprp=nprp)
+        end if
+      class default
+        call packobj%bnd_ar()
       end select
-      ! Read and allocate package
-      call packobj%bnd_ar()
     end do
 
-    ! Initialize tracking method
+    ! Set up model-scoped track files
+    if (this%oc%itrkout > 0) &
+      call this%tracks%init_file(this%oc%itrkout)
+    if (this%oc%itrkcsv > 0) &
+      call this%tracks%init_file(this%oc%itrkcsv, csv=.true.)
+
+    ! Set up the tracking method
     select type (dis => this%dis)
     type is (DisType)
       call method_dis%init( &
         fmi=this%fmi, &
-        trackctl=this%trackctl, &
+        events=this%events, &
         izone=this%mip%izone, &
         flowja=this%flowja, &
         porosity=this%mip%porosity, &
@@ -271,7 +307,7 @@ contains
     type is (DisvType)
       call method_disv%init( &
         fmi=this%fmi, &
-        trackctl=this%trackctl, &
+        events=this%events, &
         izone=this%mip%izone, &
         flowja=this%flowja, &
         porosity=this%mip%porosity, &
@@ -280,18 +316,11 @@ contains
       this%method => method_disv
     end select
 
-    ! Initialize track output files and reporting options
-    if (this%oc%itrkout > 0) &
-      call this%trackctl%init_track_file(this%oc%itrkout)
-    if (this%oc%itrkcsv > 0) &
-      call this%trackctl%init_track_file(this%oc%itrkcsv, csv=.true.)
-    call this%trackctl%set_track_events( &
-      this%oc%trackrelease, &
-      this%oc%trackexit, &
-      this%oc%tracktimestep, &
-      this%oc%trackterminate, &
-      this%oc%trackweaksink, &
-      this%oc%trackusertime)
+    ! Subscribe track output manager to events
+    call this%events%subscribe(this%tracks)
+
+    ! Set verbose tracing if requested
+    if (this%oc%dump_event_trace) this%tracks%iout = 0
   end subroutine prt_ar
 
   !> @brief Read and prepare (calls package read and prepare routines)
@@ -435,8 +464,8 @@ contains
         do np = 1, packobj%nparticles
           istatus = packobj%particles%istatus(np)
           ! this may need to change if istatus flags change
-          if ((istatus > 0) .and. (istatus /= 8)) then
-            n = packobj%particles%idomain(np, 2)
+          if ((istatus > 0) .and. (istatus /= TERM_UNRELEASED)) then
+            n = packobj%particles%itrdomain(np, LEVEL_FEATURE)
             ! Each particle currently assigned unit mass
             this%masssto(n) = this%masssto(n) + DONE
           end if
@@ -742,7 +771,9 @@ contains
     call mem_deallocate(this%massstoold)
     call mem_deallocate(this%ratesto)
 
-    deallocate (this%trackctl)
+    call this%tracks%destroy()
+    deallocate (this%events)
+    deallocate (this%tracks)
 
     call this%NumericalModelType%model_da()
   end subroutine prt_da
@@ -833,10 +864,10 @@ contains
     select case (filtyp)
     case ('PRP6')
       call prp_create(packobj, ipakid, ipaknum, inunit, iout, &
-                      this%name, pakname, this%fmi)
+                      this%name, pakname, mempath, this%fmi)
     case ('API6')
       call api_create(packobj, ipakid, ipaknum, inunit, iout, &
-                      this%name, pakname)
+                      this%name, pakname, mempath)
     case default
       write (errmsg, *) 'Invalid package type: ', filtyp
       call store_error(errmsg, terminate=.TRUE.)
@@ -885,109 +916,77 @@ contains
 
   !> @brief Solve the model
   subroutine prt_solve(this)
-    ! modules
-    use TdisModule, only: kper, kstp, totimc, delt, endofsimulation
+    use TdisModule, only: totimc, delt, endofsimulation
     use PrtPrpModule, only: PrtPrpType
     use ParticleModule, only: ACTIVE, TERM_UNRELEASED, TERM_TIMEOUT
-    ! dummy variables
+    use ParticleEventModule, only: RELEASE, TERMINATE
+    ! dummy
     class(PrtModelType) :: this
-    ! local variables
+    ! local
     integer(I4B) :: np, ip
     class(BndType), pointer :: packobj
     type(ParticleType), pointer :: particle
     real(DP) :: tmax
     integer(I4B) :: iprp
 
+    ! A single particle is reused in the tracking loops
+    ! to avoid allocating and deallocating it each time.
+    ! get() and put() retrieve and store particle state.
     call create_particle(particle)
-
-    ! Apply tracking solution to PRP packages
+    ! Loop over PRP packages and particles within them.
     iprp = 0
     do ip = 1, this%bndlist%Count()
       packobj => GetBndFromList(this%bndlist, ip)
       select type (packobj)
       type is (PrtPrpType)
-        ! Update PRP index
         iprp = iprp + 1
-
-        ! Initialize PRP track files
-        if (kper == 1 .and. kstp == 1) then
-          if (packobj%itrkout > 0) then
-            call this%trackctl%init_track_file( &
-              packobj%itrkout, &
-              iprp=iprp)
-          end if
-          if (packobj%itrkcsv > 0) then
-            call this%trackctl%init_track_file( &
-              packobj%itrkcsv, &
-              csv=.true., &
-              iprp=iprp)
-          end if
-        end if
-
-        ! Track particles
         do np = 1, packobj%nparticles
-          ! Load particle from storage
+          ! Get the particle from the store
           call packobj%particles%get(particle, this%id, iprp, np)
-
           ! If particle is permanently unreleased, cycle.
-          ! Save a termination record if we haven't yet.
+          ! Raise a termination event if we haven't yet.
           ! TODO: when we have generic dynamic vectors,
           ! consider terminating permanently unreleased
           ! in PRP instead of here. For now, status -8
           ! indicates the permanently unreleased event
           ! is not yet recorded, status 8 it has been.
           if (particle%istatus == (-1 * TERM_UNRELEASED)) then
-            particle%istatus = TERM_UNRELEASED
-            call this%method%save(particle, reason=3)
+            call this%method%terminate(particle, status=TERM_UNRELEASED)
             call packobj%particles%put(particle, np)
           end if
-
-          ! Skip terminated particles
-          if (particle%istatus > ACTIVE) cycle
-
-          ! If particle was released this time step, record release
-          particle%istatus = ACTIVE
-          if (particle%trelease >= totimc) &
-            call this%method%save(particle, reason=0)
-
+          if (particle%istatus > ACTIVE) cycle ! Skip terminated particles
+          particle%istatus = ACTIVE ! Set active status in case of release
+          ! If the particle was released this time step, emit a release event
+          if (particle%trelease >= totimc) call this%method%release(particle)
           ! Maximum time is the end of the time step or the particle
           ! stop time, whichever comes first, unless it's the final
           ! time step and the extend option is on, in which case
           ! it's just the particle stop time.
-          if (endofsimulation .and. particle%iextend > 0) then
+          if (endofsimulation .and. particle%extend) then
             tmax = particle%tstop
           else
             tmax = min(totimc + delt, particle%tstop)
           end if
-
-          ! Get and apply the tracking method
+          ! Apply the tracking method until the maximum time.
           call this%method%apply(particle, tmax)
-
-          ! Reset previous cell and zone numbers
-          particle%icp = 0
-          particle%izp = 0
-
           ! If the particle timed out, terminate it.
-          ! "Timeout" means it remains active, but
+          ! "Timed out" means it's still active but
           !   - it reached its stop time, or
-          !   - the simulation is over and no extending.
+          !   - the simulation is over and not extended.
           ! We can't detect timeout within the tracking
           ! method because the method just receives the
           ! maximum time with no context on what it is.
           ! TODO maybe think about changing that?
           if (particle%istatus <= ACTIVE .and. &
               (particle%ttrack == particle%tstop .or. &
-               (endofsimulation .and. particle%iextend == 0))) then
-            particle%istatus = TERM_TIMEOUT
-            call this%method%save(particle, reason=3)
-          end if
-
-          ! Update particle storage
+               (endofsimulation .and. .not. particle%extend))) &
+            call this%method%terminate(particle, status=TERM_TIMEOUT)
+          ! Return the particle to the store
           call packobj%particles%put(particle, np)
         end do
       end select
     end do
-
+    call particle%destroy()
     deallocate (particle)
   end subroutine prt_solve
 
@@ -1017,28 +1016,26 @@ contains
     integer(I4B) :: n
 
     if (allocated(bndpkgs)) then
-      !
       ! create stress packages
       ipakid = 1
       bndptype = ''
       do n = 1, size(bndpkgs)
-        !
         pkgtype = pkgtypes(bndpkgs(n))
         pkgname = pkgnames(bndpkgs(n))
         mempath = mempaths(bndpkgs(n))
         inunit => inunits(bndpkgs(n))
-        !
+
         if (bndptype /= pkgtype) then
           ipaknum = 1
           bndptype = pkgtype
         end if
-        !
+
         call this%package_create(pkgtype, ipakid, ipaknum, pkgname, mempath, &
                                  inunit, this%iout)
         ipakid = ipakid + 1
         ipaknum = ipaknum + 1
       end do
-      !
+
       ! cleanup
       deallocate (bndpkgs)
     end if
@@ -1081,6 +1078,7 @@ contains
     integer(I4B) :: n
     integer(I4B) :: indis = 0 ! DIS enabled flag
     character(len=LENMEMPATH) :: mempathmip = ''
+    character(len=LENMEMPATH) :: mempathfmi = ''
 
     ! set input memory paths, input/model and input/model/namfile
     model_mempath = create_mem_path(component=this%name, context=idm_context)
@@ -1113,7 +1111,8 @@ contains
         this%inmip = 1
         mempathmip = mempath
       case ('FMI6')
-        this%infmi = inunit
+        this%infmi = 1
+        mempathfmi = mempath
       case ('OC6')
         this%inoc = inunit
       case ('PRP6')
@@ -1134,7 +1133,7 @@ contains
 
     ! Create packages that are tied directly to model
     call mip_cr(this%mip, this%name, mempathmip, this%inmip, this%iout, this%dis)
-    call fmi_cr(this%fmi, this%name, this%infmi, this%iout)
+    call fmi_cr(this%fmi, this%name, mempathfmi, this%infmi, this%iout)
     call oc_cr(this%oc, this%name, this%inoc, this%iout)
 
     ! Check to make sure that required ftype's have been specified
@@ -1146,21 +1145,11 @@ contains
 
   !> @brief Write model namfile options to list file
   subroutine log_namfile_options(this, found)
-    use GwfNamInputModule, only: GwfNamParamFoundType
+    use PrtNamInputModule, only: PrtNamParamFoundType
     class(PrtModelType) :: this
-    type(GwfNamParamFoundType), intent(in) :: found
+    type(PrtNamParamFoundType), intent(in) :: found
 
     write (this%iout, '(1x,a)') 'NAMEFILE OPTIONS:'
-
-    if (found%newton) then
-      write (this%iout, '(4x,a)') &
-        'NEWTON-RAPHSON method enabled for the model.'
-      if (found%under_relaxation) then
-        write (this%iout, '(4x,a,a)') &
-          'NEWTON-RAPHSON UNDER-RELAXATION based on the bottom ', &
-          'elevation of the model will be applied to the model.'
-      end if
-    end if
 
     if (found%print_input) then
       write (this%iout, '(4x,a)') 'STRESS PACKAGE INPUT WILL BE PRINTED '// &

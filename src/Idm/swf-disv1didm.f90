@@ -22,6 +22,7 @@ module SwfDisv1DInputModule
     logical :: yorigin = .false.
     logical :: angrot = .false.
     logical :: export_ascii = .false.
+    logical :: crs = .false.
     logical :: nodes = .false.
     logical :: nvert = .false.
     logical :: width = .false.
@@ -56,6 +57,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'model length units', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -74,6 +76,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'do not write binary grid file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -92,6 +95,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -110,6 +114,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'grb keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -128,6 +133,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -146,6 +152,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'file name of GRB information', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -164,6 +171,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'x-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -182,6 +190,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'y-position origin of the model grid coordinate system', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -200,6 +209,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'rotation angle', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -218,8 +228,28 @@ module SwfDisv1DInputModule
     '', & ! shape
     'export array variables to layered ascii files.', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
+    .false., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    swfdisv1d_crs = InputParamDefinitionType &
+    ( &
+    'SWF', & ! component
+    'DISV1D', & ! subcomponent
+    'OPTIONS', & ! block
+    'CRS', & ! tag name
+    'CRS', & ! fortran variable
+    'STRING', & ! type
+    'LENBIGLINE', & ! shape
+    'CRS user input string', & ! longname
+    .false., & ! required
+    .true., & ! prerelease
+    .false., & ! multi-record
+    .true., & ! preserve case
     .false., & ! layered
     .false. & ! timeseries
     )
@@ -236,6 +266,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'number of linear features', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -254,6 +285,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'number of columns', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -272,6 +304,7 @@ module SwfDisv1DInputModule
     'NODES', & ! shape
     'width', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -290,6 +323,7 @@ module SwfDisv1DInputModule
     'NODES', & ! shape
     'bottom elevation for the one-dimensional cell', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -308,6 +342,7 @@ module SwfDisv1DInputModule
     'NODES', & ! shape
     'idomain existence array', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -326,6 +361,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'vertex number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -344,6 +380,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'x-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -362,6 +399,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'y-coordinate for vertex', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -380,6 +418,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'cell1d number', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -398,6 +437,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'fractional distance to the cell center', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -416,6 +456,7 @@ module SwfDisv1DInputModule
     '', & ! shape
     'number of cell vertices', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -434,6 +475,7 @@ module SwfDisv1DInputModule
     'NCVERT', & ! shape
     'number of cell vertices', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -453,6 +495,7 @@ module SwfDisv1DInputModule
     swfdisv1d_yorigin, &
     swfdisv1d_angrot, &
     swfdisv1d_export_ascii, &
+    swfdisv1d_crs, &
     swfdisv1d_nodes, &
     swfdisv1d_nvert, &
     swfdisv1d_width, &
@@ -479,6 +522,7 @@ module SwfDisv1DInputModule
     'NVERT', & ! shape
     'vertices data', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -497,6 +541,7 @@ module SwfDisv1DInputModule
     'NODES', & ! shape
     'cell1d data', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered

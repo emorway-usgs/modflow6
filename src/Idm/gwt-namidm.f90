@@ -16,6 +16,7 @@ module GwtNamInputModule
     logical :: print_input = .false.
     logical :: print_flows = .false.
     logical :: save_flows = .false.
+    logical :: idv_scale = .false.
     logical :: ncmesh2drec = .false.
     logical :: netcdf_mesh2d = .false.
     logical :: ncstructrec = .false.
@@ -52,6 +53,7 @@ module GwtNamInputModule
     '', & ! shape
     'name of listing file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -70,6 +72,7 @@ module GwtNamInputModule
     '', & ! shape
     'print input to listing file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -88,6 +91,7 @@ module GwtNamInputModule
     '', & ! shape
     'print calculated flows to listing file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -106,6 +110,26 @@ module GwtNamInputModule
     '', & ! shape
     'save flows for all packages to budget file', & ! longname
     .false., & ! required
+    .false., & ! prerelease
+    .false., & ! multi-record
+    .false., & ! preserve case
+    .false., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    gwtnam_idv_scale = InputParamDefinitionType &
+    ( &
+    'GWT', & ! component
+    'NAM', & ! subcomponent
+    'OPTIONS', & ! block
+    'DEPENDENT_VARIABLE_SCALING', & ! tag name
+    'IDV_SCALE', & ! fortran variable
+    'KEYWORD', & ! type
+    '', & ! shape
+    'flag to scale X and RHS', & ! longname
+    .false., & ! required
+    .true., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -124,6 +148,7 @@ module GwtNamInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -142,6 +167,7 @@ module GwtNamInputModule
     '', & ! shape
     'budget keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -160,6 +186,7 @@ module GwtNamInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -178,6 +205,7 @@ module GwtNamInputModule
     '', & ! shape
     'budget keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -196,6 +224,7 @@ module GwtNamInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -214,6 +243,7 @@ module GwtNamInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -232,6 +262,7 @@ module GwtNamInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -250,6 +281,7 @@ module GwtNamInputModule
     '', & ! shape
     '', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -268,6 +300,7 @@ module GwtNamInputModule
     '', & ! shape
     'netcdf keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -286,6 +319,7 @@ module GwtNamInputModule
     '', & ! shape
     'file keyword', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -304,6 +338,7 @@ module GwtNamInputModule
     '', & ! shape
     'netcdf input filename', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -322,6 +357,7 @@ module GwtNamInputModule
     '', & ! shape
     'package type', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -340,6 +376,7 @@ module GwtNamInputModule
     '', & ! shape
     'file name', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .true., & ! preserve case
     .false., & ! layered
@@ -358,6 +395,7 @@ module GwtNamInputModule
     '', & ! shape
     'user name for package', & ! longname
     .false., & ! required
+    .false., & ! prerelease
     .true., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered
@@ -371,6 +409,7 @@ module GwtNamInputModule
     gwtnam_print_input, &
     gwtnam_print_flows, &
     gwtnam_save_flows, &
+    gwtnam_idv_scale, &
     gwtnam_ncmesh2drec, &
     gwtnam_netcdf_mesh2d, &
     gwtnam_ncstructrec, &
@@ -399,6 +438,7 @@ module GwtNamInputModule
     '', & ! shape
     'package list', & ! longname
     .true., & ! required
+    .false., & ! prerelease
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered

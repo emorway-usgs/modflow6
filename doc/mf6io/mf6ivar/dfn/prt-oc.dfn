@@ -156,8 +156,16 @@ name track_exit
 type keyword
 reader urword
 optional true
-longname track transitions
-description keyword to indicate that particle tracking output is to be written when a particle exits a feature (a model, cell, or subcell)
+longname track domain exits
+description keyword to indicate that particle tracking output is to be written when a particle exits a grid feature (e.g. model, cell)
+
+block options
+name track_subfeature_exit
+type keyword
+reader urword
+optional true
+longname track cell exits
+description keyword to indicate that particle tracking output is to be written when a particle exits a sub-grid-scale feature. Such features are considered implementation details of the tracking algorithm employed for particular grid types, and reporting for exit events from such features is disabled by default.
 
 block options
 name track_timestep
@@ -188,8 +196,16 @@ name track_usertime
 type keyword
 reader urword
 optional true
-longname track usertime
+longname track user-specified times
 description keyword to indicate that particle tracking output is to be written at user-specified times, provided as double precision values in the TRACKTIMES block.
+
+block options
+name track_dropped
+type keyword
+reader urword
+optional true
+longname track drops to water table
+description keyword to indicate that particle tracking output is to be written when a particle is dropped to the water table via DRY\_TRACKING\_METHOD DROP.
 
 block options
 name track_timesrecord
@@ -200,7 +216,7 @@ tagged true
 optional true
 longname
 description
-removed 6.6.1
+removed 6.6.0
 
 block options
 name track_times
@@ -211,19 +227,19 @@ tagged true
 shape
 longname
 description keyword indicating tracking times will follow
-removed 6.6.1
+removed 6.6.0
 
 block options
 name times
 type double precision
-shape (unknown)
+shape (any1d)
 reader urword
 in_record true
 tagged false
 repeating true
 longname tracking times
 description times to track, relative to the beginning of the simulation.
-removed 6.6.1
+removed 6.6.0
 
 block options
 name track_timesfilerecord
@@ -234,7 +250,7 @@ tagged true
 optional true
 longname
 description
-removed 6.6.1
+removed 6.6.0
 
 block options
 name track_timesfile
@@ -245,7 +261,7 @@ tagged true
 shape
 longname
 description keyword indicating tracking times file name will follow
-removed 6.6.1
+removed 6.6.0
 
 block options
 name timesfile
@@ -258,7 +274,15 @@ tagged false
 optional false
 longname file keyword
 description name of the tracking times file
-removed 6.6.1
+removed 6.6.0
+
+block options
+name dev_dump_event_trace
+type keyword
+reader urword
+optional true
+longname print particle tracking events
+description print a verbose particle tracking event trace to standard output
 
 # --------------------- prt oc dimensions ------------------
 
@@ -295,7 +319,7 @@ description real value that defines the tracking time with respect to the simula
 block period
 name iper
 type integer
-block_variable True
+block_variable true
 in_record true
 tagged false
 shape

@@ -51,6 +51,11 @@ on:
         description: 'Models to include in the release documentation'
         required: false
         type: string
+      patch:
+        description: 'Create a patch release. If true, only bug fixes will be included in generated documentation.'
+        required: false
+        type: boolean
+        default: false
     outputs:
       version:
         description: 'Version number used for release'
@@ -101,14 +106,28 @@ jobs:
       distname: ${{ steps.set_version.outputs.distname }}
     steps:
       - name: Checkout modflow6
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/modflow6
           path: modflow6
           ref: ${{ inputs.branch }}
 
+      - name: Checkout modflow6-testmodels
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        uses: actions/checkout@v5
+        with:
+          repository: MODFLOW-ORG/modflow6-testmodels
+          path: modflow6-testmodels
+
+      - name: Checkout modflow6-examples
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        uses: actions/checkout@v5
+        with:
+          repository: MODFLOW-ORG/modflow6-examples
+          path: modflow6-examples
+
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.8.8
+        uses: prefix-dev/setup-pixi@v0.9.1
         with:
           pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
@@ -120,16 +139,6 @@ jobs:
       - name: Install additional netcdf testing packages
         working-directory: modflow6
         run: pixi run pip install xugrid xarray netcdf4
-
-      - name: Setup Micromamba
-        uses: mamba-org/setup-micromamba@v1
-        with:
-          environment-file: modflow6/environment.yml
-          cache-downloads: true
-          cache-environment: true
-          init-shell: >-
-            bash
-            powershell
 
       - name: Setup ${{ matrix.compiler }} ${{ matrix.version }}
         if: (!(runner.os == 'Windows' && matrix.extended))
@@ -153,10 +162,10 @@ jobs:
 
       - name: Update version
         id: update_version
-        working-directory: modflow6/distribution
+        working-directory: modflow6
         run: |
           ver="${{ steps.set_version.outputs.version }}"
-          cmd="python update_version.py -v $ver"
+          cmd="pixi run update-version -v $ver"
           if [[ "${{ inputs.approve }}" == "true" ]]; then
             cmd="$cmd --approve"
           fi
@@ -165,14 +174,46 @@ jobs:
           fi
           eval "$cmd"
 
-      - name: Get OS tag
-        id: ostag
+      - name: Update flopy
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6
         run: |
-          ostag=$(python -c "from modflow_devtools.ostags import get_ostag; print(get_ostag())")
+          cmd="pixi run update-flopy"
+          if [[ "${{ inputs.developmode }}" == "false" ]]; then
+            cmd="$cmd --releasemode"
+          fi
+          eval "$cmd"
+
+      - name: Set OS tag
+        id: ostag
+        working-directory: modflow6
+        run: |
+          ostag=$(pixi run python -c "from modflow_devtools.ostags import get_ostag; print(get_ostag())")
           if [[ "${{ matrix.extended }}" == "true" ]]; then
             ostag="${ostag}ext"
           fi
           echo "ostag=$ostag" >> $GITHUB_OUTPUT
+
+      - name: Set markers
+        if: inputs.run_tests == true
+        id: set_markers
+        run: |
+          markers="not large"
+          if [[ "${{ inputs.developmode }}" == "false" ]]; then
+            markers="$markers and not developmode"
+          fi
+          echo "markers=$markers" >> $GITHUB_OUTPUT
+
+      - name: Set filters
+        if: inputs.run_tests == true
+        id: set_filters
+        run: |
+          filters=""
+          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+            # comparison fails on macos-14 with optimization=1
+            filters="not test028_sfr_rewet"
+          fi
+          echo "filters=$filters" >> $GITHUB_OUTPUT
 
       # for statically linked gfortran ARM mac build
       - name: Hide dylibs (macOS)
@@ -192,20 +233,33 @@ jobs:
             echo "LDFLAGS=$ldflags" >> $GITHUB_ENV
           fi
 
+      - name: Get executables
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: pixi run get-exes -s
+
       - name: Build binaries
         if: (!(runner.os == 'Windows' && matrix.extended))
         working-directory: modflow6
         run: |
-          meson setup builddir --prefix=$(pwd) --libdir=bin -Doptimization=${{ matrix.optimization }}
-          meson install -C builddir
-          meson test --verbose --no-rebuild -C builddir
+          pixi run setup builddir -Doptimization=${{ matrix.optimization }}
+          pixi run build builddir
+          # skip tests on arm mac, test-drive seems to collect results incorrectly
+          arch=$(uname -m || echo "unknown")
+          if [[ "${{ runner.os }}" == "macOS" ]] && [[ "$arch" == "arm64" ]]; then
+            echo "Skipping unit tests on ARM mac"
+          else
+            pixi run test builddir
+          fi
 
       - name: Build mf5to6 converter
         if: (!(runner.os == 'Windows' && matrix.extended))
-        working-directory: modflow6/utils/mf5to6
+        working-directory: modflow6
         run: |
-          meson setup builddir --prefix=$(pwd)/../../ --libdir=bin -Doptimization=${{ matrix.optimization }}
-          meson install -C builddir
+          pixi run setup-mf5to6 builddir -Doptimization=${{ matrix.optimization }}
+          pixi run build-mf5to6 builddir
 
       - name: Check architecture (macOS)
         working-directory: modflow6/bin
@@ -219,14 +273,11 @@ jobs:
         uses: ./modflow6/.github/actions/build-extended-win
 
       - name: Build and test binaries (Windows)
-        if: runner.os == 'Windows' && matrix.extended && inputs.run_tests && inputs.developmode
-        uses: ./modflow6/.github/actions/test-extended-win
-
-      - name: Build and test binaries (Windows)
-        if: runner.os == 'Windows' && matrix.extended && inputs.run_tests && !inputs.developmode
+        if: runner.os == 'Windows' && matrix.extended && inputs.run_tests
         uses: ./modflow6/.github/actions/test-extended-win
         env:
-          MARKERS: not developmode
+          MARKERS: ${{ steps.set_markers.outputs.markers }}
+          FILTERS: ${{ steps.set_filters.outputs.filters }}
 
       - name: Copy deps to bin dir
         if: runner.os == 'Windows' && matrix.extended
@@ -255,12 +306,12 @@ jobs:
           copy "C:\Program Files (x86)\Intel\oneAPI\mpi\latest\bin\hydra_pmi_proxy.exe" .
           copy "C:\Program Files (x86)\Intel\oneAPI\mpi\latest\bin\hydra_service.exe" .
           copy "%GITHUB_WORKSPACE%\petsc\arch-mswin-c-opt\lib\libpetsc.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.2-NC4-64\bin\hdf5.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.2-NC4-64\bin\hdf5_hl.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.2-NC4-64\bin\libcurl.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.2-NC4-64\bin\netcdf.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.2-NC4-64\bin\zlib1.dll" .
-          copy "%GITHUB_WORKSPACE%\netcdf\netcdf-fortran-4.6.1\build\fortran\netcdff.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.3-NC4-64\bin\hdf5.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.3-NC4-64\bin\hdf5_hl.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.3-NC4-64\bin\libcurl.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.3-NC4-64\bin\netcdf.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netCDF4.9.3-NC4-64\bin\zlib1.dll" .
+          copy "%GITHUB_WORKSPACE%\netcdf\netcdf-fortran-4.6.2\build\fortran\netcdff.dll" .
 
           :: remove rebuilt and downloaded dirs
           if exist rebuilt rd /s /q rebuilt
@@ -271,45 +322,28 @@ jobs:
         with:
           name: bin-${{ steps.ostag.outputs.ostag }}
           path: modflow6/bin
-
-      - name: Checkout modflow6-examples
+      
+      - name: Test MF6
         if: inputs.run_tests == true && runner.os != 'Windows'
-        uses: actions/checkout@v4
-        with:
-          repository: MODFLOW-ORG/modflow6-examples
-          path: modflow6-examples
-
-      - name: Update flopy
-        if: inputs.run_tests == true && runner.os != 'Windows'
-        working-directory: modflow6/autotest
-        run: python update_flopy.py
-
-      - name: Get executables
-        if: inputs.run_tests == true && runner.os != 'Windows'
-        working-directory: modflow6/autotest
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: pytest -v --durations 0 get_exes.py
-
-      - name: Test modflow6
-        if: inputs.run_tests == true && runner.os != 'Windows'
-        working-directory: modflow6/autotest
+        working-directory: modflow6
         env:
           REPOS_PATH: ${{ github.workspace }}
-        run: |
-          markers="not large"
-          if [[ "${{ inputs.developmode }}" == "false" ]]; then
-            markers="$markers and not developmode"
-          fi
+        run: pixi run autotest -m "${{ steps.set_markers.outputs.markers }} and not external" -k "${{ steps.set_filters.outputs.filters }}"
 
-          filters=""
-          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            # comparison fails on macos-14 with optimization=1
-            filters="not test028_sfr_rewet"
-          fi
+      - name: Test MF6 models
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6
+        env:
+          REPOS_PATH: ${{ github.workspace }}
+        run: pixi run autotest -m "${{ steps.set_markers.outputs.markers }} and external" -k "${{ steps.set_filters.outputs.filters }}" --models-path ../../modflow6-testmodels/mf6
 
-          pytest -v -n auto --durations 0 -m "$markers" -k "$filters"
-      
+      - name: Test converter models
+        if: inputs.run_tests == true && runner.os != 'Windows'
+        working-directory: modflow6
+        env:
+          REPOS_PATH: ${{ github.workspace }}
+        run: pixi run autotest -m "${{ steps.set_markers.outputs.markers }} and external" -k "${{ steps.set_filters.outputs.filters }}" --models-path ../../modflow6-testmodels/mf5to6 --namefile-pattern "*.nam"
+
       - name: Upload failed test output
         if: failure()
         uses: actions/upload-artifact@v4
@@ -321,7 +355,7 @@ jobs:
       # compiling binaries, building documentation
       - name: Checkout usgslatex
         if: ${{ runner.os == 'Linux' && inputs.run_tests == true }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MODFLOW-ORG/usgslatex
           path: usgslatex
@@ -343,10 +377,10 @@ jobs:
 
       - name: Test distribution scripts
         if: ${{ inputs.run_tests == true && runner.os != 'Windows' }}
-        working-directory: modflow6/distribution
+        working-directory: modflow6
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: pytest -v --durations 0
+        run: pixi run test-dist-scripts
 
   docs:
     name: Build docs
@@ -358,20 +392,20 @@ jobs:
     steps:
 
       - name: Checkout modflow6
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/modflow6
           path: modflow6
           ref: ${{ inputs.branch }}
 
       - name: Checkout modflow6-examples
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MODFLOW-ORG/modflow6-examples
           path: modflow6-examples
 
       - name: Checkout usgslatex
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MODFLOW-ORG/usgslatex
           path: usgslatex
@@ -416,9 +450,14 @@ jobs:
           fi
           eval "$cmd"
 
-      - name: Update FloPy classes
-        working-directory: modflow6/autotest
-        run: python update_flopy.py
+      - name: Update flopy
+        working-directory: modflow6
+        run: |
+          cmd="python -m flopy.mf6.utils.generate_classes --dfnpath doc/mf6io/mf6ivar/dfn"
+          if [[ "${{ inputs.developmode }}" == "false" ]]; then
+            cmd="$cmd --releasemode"
+          fi
+          eval "$cmd"
 
       - name: Get OS tag
         id: ostag
@@ -427,7 +466,7 @@ jobs:
           echo "ostag=$ostag" >> $GITHUB_OUTPUT
 
       - name: Download pre-built binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: bin-${{ steps.ostag.outputs.ostag }}
           path: bin
@@ -471,7 +510,12 @@ jobs:
 
       - name: Build MF6IO files from DFNs
         working-directory: modflow6/doc/mf6io/mf6ivar
-        run: python mf6ivar.py
+        run: |
+          cmd="python mf6ivar.py"
+          if [[ "${{ inputs.developmode }}" == "false" ]]; then
+            cmd="$cmd --releasemode"
+          fi
+          eval "$cmd"
 
       - name: Build documentation
         env:
@@ -481,13 +525,19 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           mkdir -p "${{ needs.build.outputs.distname }}/doc"
-          cmd="python modflow6/distribution/build_docs.py -b bin -o doc"
+          cmd="python modflow6/distribution/build_docs.py -b bin -o doc --force"
           models="${{ inputs.models }}"
           if [ -n "$models" ]; then
             cmd="$cmd -m ${models//,/ -m }"
           fi
           if [[ "${{ inputs.full }}" == "true" ]]; then
             cmd="$cmd --full"
+          fi
+          if [[ "${{ inputs.developmode }}" == "false" ]]; then
+            cmd="$cmd --releasemode"
+          fi
+          if [[ "${{ inputs.patch }}" == "true" ]]; then
+            cmd="$cmd --patch"
           fi
           eval "$cmd"
           mv "doc/ReleaseNotes.pdf" "doc/release.pdf"
@@ -520,14 +570,14 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout modflow6
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: ${{ github.repository_owner }}/modflow6
           path: modflow6
           ref: ${{ inputs.branch }}
 
       - name: Checkout modflow6-examples
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: MODFLOW-ORG/modflow6-examples
           path: modflow6-examples
@@ -572,7 +622,7 @@ jobs:
           echo "ostag=$ostag" >> $GITHUB_OUTPUT
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: ${{ needs.build.outputs.distname }}_${{ steps.ostag.outputs.ostag }}
       

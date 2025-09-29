@@ -1,5 +1,5 @@
 module ghbmodule
-  use KindModule, only: DP, I4B
+  use KindModule, only: DP, I4B, LGP
   use ConstantsModule, only: DZERO, LENFTYPE, LENPACKAGENAME
   use SimVariablesModule, only: errmsg
   use SimModule, only: count_errors, store_error, store_error_filename
@@ -100,36 +100,34 @@ contains
     ! -- modules
     use MemoryManagerExtModule, only: mem_set_value
     use CharacterStringModule, only: CharacterStringType
-    use GwfGhbInputModule, only: GwfGhbParamFoundType
     ! -- dummy
     class(GhbType), intent(inout) :: this
     ! -- local
-    type(GwfGhbParamFoundType) :: found
+    logical(LGP) :: found_mover
     !
     ! -- source base class options
     call this%BndExtType%source_options()
     !
     ! -- source options from input context
-    call mem_set_value(this%imover, 'MOVER', this%input_mempath, found%mover)
+    call mem_set_value(this%imover, 'MOVER', this%input_mempath, found_mover)
     !
     ! -- log ghb specific options
-    call this%log_ghb_options(found)
+    call this%log_ghb_options(found_mover)
   end subroutine ghb_options
 
   !> @brief Log options specific to GhbType
   !<
-  subroutine log_ghb_options(this, found)
+  subroutine log_ghb_options(this, found_mover)
     ! -- modules
-    use GwfGhbInputModule, only: GwfGhbParamFoundType
     ! -- dummy
     class(GhbType), intent(inout) :: this !< BndExtType object
-    type(GwfGhbParamFoundType), intent(in) :: found
+    logical(LGP), intent(in) :: found_mover
     !
     ! -- log found options
     write (this%iout, '(/1x,a)') 'PROCESSING '//trim(adjustl(this%text)) &
       //' OPTIONS'
     !
-    if (found%mover) then
+    if (found_mover) then
       write (this%iout, '(4x,A)') 'MOVER OPTION ENABLED'
     end if
     !
@@ -213,6 +211,7 @@ contains
     ! -- check stress period data
     do i = 1, this%nbound
       node = this%nodelist(i)
+      if (node == 0) cycle
       bt = this%dis%bot(node)
       ! -- accumulate errors
       if (this%bhead(i) < bt .and. this%icelltype(node) /= 0) then
@@ -254,6 +253,7 @@ contains
     ! -- Calculate hcof and rhs for each ghb entry
     do i = 1, this%nbound
       node = this%nodelist(i)
+      if (node == 0) cycle
       if (this%ibound(node) .le. 0) then
         this%hcof(i) = DZERO
         this%rhs(i) = DZERO
@@ -285,6 +285,7 @@ contains
     ! -- Copy package rhs and hcof into solution rhs and amat
     do i = 1, this%nbound
       n = this%nodelist(i)
+      if (n == 0) cycle
       rhs(n) = rhs(n) + this%rhs(i)
       ipos = ia(n)
       call matrix_sln%add_value_pos(idxglo(ipos), this%hcof(i))

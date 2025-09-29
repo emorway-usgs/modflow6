@@ -48,6 +48,8 @@ module Disv2dModule
     procedure :: connection_normal
     procedure :: connection_vector
     procedure :: get_polyverts
+    procedure :: get_npolyverts
+    procedure :: get_max_npolyverts
     ! -- private
     procedure :: source_options
     procedure :: source_dimensions
@@ -661,22 +663,34 @@ contains
   subroutine write_grb(this, icelltype)
     ! -- modules
     use OpenSpecModule, only: access, form
+    use ConstantsModule, only: LENBIGLINE
     ! -- dummy
     class(Disv2dType) :: this
     integer(I4B), dimension(:), intent(in) :: icelltype
     ! -- local
-    integer(I4B) :: iunit, i, ntxt
+    integer(I4B) :: iunit, i, ntxt, version
     integer(I4B), parameter :: lentxt = 100
     character(len=50) :: txthdr
     character(len=lentxt) :: txt
     character(len=LINELENGTH) :: fname
+    character(len=LENBIGLINE) :: crs
+    logical(LGP) :: found_crs
     ! -- formats
     character(len=*), parameter :: fmtgrdsave = &
       "(4X,'BINARY GRID INFORMATION WILL BE WRITTEN TO:', &
        &/,6X,'UNIT NUMBER: ', I0,/,6X, 'FILE NAME: ', A)"
     !
     ! -- Initialize
+    version = 1
     ntxt = 18
+    !
+    call mem_set_value(crs, 'CRS', this%input_mempath, found_crs)
+    !
+    ! -- set version
+    if (found_crs) then
+      ntxt = ntxt + 1
+      version = 2
+    end if
     !
     ! -- Open the file
     fname = trim(this%output_fname)
@@ -757,6 +771,16 @@ contains
     txt(lentxt:lentxt) = new_line('a')
     write (iunit) txt
     !
+    ! -- if version 2 write character array headers
+    if (version == 2) then
+      if (found_crs) then
+        write (txt, '(3a, i0)') 'CRS ', 'CHARACTER ', 'NDIM 1 ', &
+          len_trim(crs)
+        txt(lentxt:lentxt) = new_line('a')
+        write (iunit) txt
+      end if
+    end if
+    !
     ! -- write data
     write (iunit) this%nodesuser ! ncells
     write (iunit) this%nodes ! nodes
@@ -776,6 +800,11 @@ contains
     write (iunit) this%con%jausr ! jausr
     write (iunit) this%idomain ! idomain
     write (iunit) icelltype ! icelltype
+    !
+    ! -- if version 2 write character array data
+    if (version == 2) then
+      if (found_crs) write (iunit) trim(crs) ! crs user input
+    end if
     !
     ! -- Close the file
     close (iunit)
@@ -1237,7 +1266,6 @@ contains
     icu = this%get_nodeuser(ic)
     icu2d = icu - ((icu - 1) / this%nodes) * this%nodes
     nverts = this%iavert(icu2d + 1) - this%iavert(icu2d) - 1
-    if (nverts .le. 0) nverts = nverts + size(this%javert)
     !
     ! check closed option
     if (.not. (present(closed))) then
@@ -1265,6 +1293,38 @@ contains
       polyverts(:, nverts + 1) = polyverts(:, 1)
     !
   end subroutine
+
+  !> @brief Get the number of cell polygon vertices.
+  function get_npolyverts(this, ic, closed) result(npolyverts)
+    class(Disv2dType), intent(inout) :: this
+    integer(I4B), intent(in) :: ic
+    logical(LGP), intent(in), optional :: closed !< whether to close the polygon, duplicating a vertex
+    integer(I4B) :: npolyverts
+    ! local
+    integer(I4B) :: icu, icu2d, nverts
+
+    npolyverts = 0
+    icu = this%get_nodeuser(ic)
+    icu2d = icu - ((icu - 1) / this%nodes) * this%nodes
+    nverts = this%iavert(icu2d + 1) - this%iavert(icu2d) - 1
+    if (present(closed)) then
+      if (closed) npolyverts = npolyverts + 1
+    end if
+  end function get_npolyverts
+
+  !> @brief Get the maximum number of cell polygon vertices.
+  function get_max_npolyverts(this, closed) result(max_npolyverts)
+    class(Disv2dType), intent(inout) :: this
+    logical(LGP), intent(in), optional :: closed !< whether to close the polygon, duplicating a vertex
+    integer(I4B) :: max_npolyverts
+    ! local
+    integer(I4B) :: ic
+
+    max_npolyverts = 0
+    do ic = 1, this%nodes
+      max_npolyverts = max(max_npolyverts, this%get_npolyverts(ic, closed))
+    end do
+  end function get_max_npolyverts
 
   !> @brief Record a double precision array
   !!
