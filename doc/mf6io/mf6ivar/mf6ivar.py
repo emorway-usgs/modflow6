@@ -124,6 +124,9 @@ import textwrap
 from argparse import ArgumentParser, RawDescriptionHelpFormatter
 from collections import OrderedDict
 from pathlib import Path
+from typing import get_args
+
+from modflow_devtools.dfn import FieldType
 
 
 def parse_mf6var_file(fname):
@@ -183,18 +186,8 @@ RTD_DOC_DIR_PATH = Path(__file__).parents[3] / ".build_rtd_docs" / "_mf6io"
 COMMON_DFN_PATH = parse_mf6var_file(DFNS_DIR_PATH / "common.dfn")
 COMMON_DIR_PATH = MF6IVAR_DIR_PATH.parent.parent / "Common"
 DEFAULT_MODELS = ["gwf", "gwt", "gwe", "prt"]
-DEVELOP_MODELS = ["chf", "olf"]
-if (MF6IO_DIR_PATH / "develop.version").is_file():
-    DEFAULT_MODELS += DEVELOP_MODELS
-VALID_TYPES = [
-    "integer",
-    "double precision",
-    "string",
-    "keystring",
-    "keyword",
-    "recarray",
-    "record",
-]
+DEVELOP_MODELS = ["chf", "olf", "swf"]
+VALID_TYPES = list(get_args(FieldType))
 
 MD_DIR_PATH.mkdir(exist_ok=True)
 TEX_DIR_PATH.mkdir(exist_ok=True)
@@ -316,7 +309,7 @@ def write_block(
             if (
                 v.get("deprecated", "") != ""
                 or v.get("removed", "") != ""
-                or (not developmode and v.get("prerelease", "") == "true")
+                or (not developmode and v.get("developmode", "") == "true")
             ):
                 addv = False
             if addv:
@@ -366,7 +359,7 @@ def write_desc(vardict, block, blk_var_list, varexcludeprefix=None, developmode=
                 addv = False
             if v.get("removed", "") != "":
                 addv = False
-            if not developmode and v.get("prerelease", "") != "":
+            if not developmode and v.get("developmode", "") != "":
                 addv = False
             if addv:
                 if v["type"] == "keyword":
@@ -414,7 +407,8 @@ def write_desc(vardict, block, blk_var_list, varexcludeprefix=None, developmode=
                             or "deprecated" in vardict[(vn, block)]
                             or (
                                 not developmode
-                                and vardict[(vn, block)].get("prerelease", "") == "true"
+                                and vardict[(vn, block)].get("developmode", "")
+                                == "true"
                             )
                         ):
                             continue
@@ -449,7 +443,7 @@ def write_desc_md(
                 addv = False
             if v.get("removed", "") != "":
                 addv = False
-            if not developmode and v.get("prerelease", "") == "true":
+            if not developmode and v.get("developmode", "") == "true":
                 addv = False
             if addv:
                 if v["type"] == "keyword":
@@ -884,14 +878,12 @@ def write_variables(developmode=True):
                         s += "\n\n"
                         f.write(s)
 
-            # write markdown
             write_md(fmd, vardict, component, package)
 
     return allblocks
 
 
 if __name__ == "__main__":
-    # parse arguments
     parser = ArgumentParser(
         prog="Generate MF6 IO documentation files from DFN files",
         formatter_class=RawDescriptionHelpFormatter,
@@ -905,11 +897,12 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
-        "-m",
-        "--model",
+        "-r",
+        "--releasemode",
         required=False,
-        action="append",
-        help="Filter models to include",
+        action="store_true",
+        help="Omit developmode variables from documentation "
+        "(defaults to false for development distributions)",
     )
     parser.add_argument(
         "-v",
@@ -919,29 +912,23 @@ if __name__ == "__main__":
         action="store_true",
         help="Whether to show verbose output",
     )
-    parser.add_argument(
-        "-r",
-        "--releasemode",
-        required=False,
-        action="store_true",
-        help="Omit prerelease variables from documentation "
-        "(defaults to false for development distributions)",
-    )
-    args = parser.parse_args()
-    models = args.model if args.model else DEFAULT_MODELS
-    verbose = args.verbose
-    developmode = not args.releasemode
 
-    # clean/recreate docdir
+    args = parser.parse_args()
+    developmode = not args.releasemode
+    verbose = args.verbose
+
     if os.path.isdir(RTD_DOC_DIR_PATH):
         shutil.rmtree(RTD_DOC_DIR_PATH)
-    os.makedirs(RTD_DOC_DIR_PATH)
+    RTD_DOC_DIR_PATH.mkdir(parents=True)
 
-    # filter dfn files corresponding to the selected set of models
-    # and write variables and appendix to markdown and latex files
+    models = DEFAULT_MODELS
+    if developmode:
+        models.extend(DEVELOP_MODELS)
+
     dfns = get_dfn_files(models)
     blocks = write_variables(developmode=developmode)
     write_appendix(blocks)
+
     if verbose:
         for block in blocks:
             print(block)
