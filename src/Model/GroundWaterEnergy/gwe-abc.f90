@@ -94,6 +94,7 @@ module AbcModule
     real(DP), dimension(:), pointer, contiguous :: swrefl => null() !< shortwave reflectance of water surface
     real(DP), dimension(:), pointer, contiguous :: rh => null() !< relative humidity
     real(DP), dimension(:), pointer, contiguous :: atmc => null() !< atmospheric composition adjustment
+
   contains
 
     procedure :: da => abc_da
@@ -452,7 +453,6 @@ contains
     call mem_allocate(this%lhf_active, 'LHF_ACTIVE', this%memoryPath)
     call mem_allocate(this%lwr_active, 'LWR_ACTIVE', this%memoryPath)
     
-    
     call mem_allocate(this%inshf, 'INSHF', this%memoryPath)
     call mem_allocate(this%inswr, 'INSWR', this%memoryPath)
     call mem_allocate(this%inlhf, 'INLHF', this%memoryPath)
@@ -604,7 +604,7 @@ contains
        end do
        call this%lwr%ar()
     end if
-    
+   
     !! -- allocate character array for status
     !allocate (this%status(this%ncv))
     !!
@@ -683,7 +683,7 @@ contains
     !call pbstbase_da(this)
   end subroutine abc_da
   
-   !> @brief Read a ABC-specific option from the OPTIONS block
+  !> @brief Read a ABC-specific option from the OPTIONS block
   !!
   !! Process a single ABC-specific option. Used when reading the OPTIONS block
   !! of the ABC package input file.
@@ -795,7 +795,7 @@ contains
     !
   end subroutine abc_lwr_term
   
-   !> @brief Observations
+  !> @brief Observations
   !!
   !! Store the observation type supported by the APT package and override
   !! BndType%bnd_df_obs

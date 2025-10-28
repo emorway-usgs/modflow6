@@ -889,6 +889,7 @@ contains
       contiguous :: boundnames
     character(len=LENBOUNDNAME) :: bndName, bndNameTemp
     character(len=9) :: cno
+    character(len=20) :: cellidstr
     integer(I4B), dimension(:), allocatable :: nboundchk
     integer(I4B), dimension(:), pointer :: cellid
     integer(I4B) :: n, noder, nodeu, rptno
@@ -945,6 +946,11 @@ contains
       ! set noder
       noder = this%dis%get_nodenumber(nodeu, 1)
       if (noder <= 0) then
+        call this%dis%nodeu_to_string(nodeu, cellidstr)
+        write (errmsg, '(a)') &
+          'Particle release point configured for inactive cell: '// &
+          trim(adjustl(cellidstr))//'.'
+        call store_error(errmsg)
         cycle
       else
         this%rptnode(rptno) = noder

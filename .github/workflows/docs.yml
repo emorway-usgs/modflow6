@@ -26,7 +26,7 @@ jobs:
       - name: Checkout modflow6
         uses: actions/checkout@v5
 
-      - uses: prefix-dev/setup-pixi@v0.9.0
+      - uses: prefix-dev/setup-pixi@v0.9.2
         with:
           pixi-version: v0.41.4
 
@@ -63,7 +63,7 @@ jobs:
           path: usgslatex
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.9.0
+        uses: prefix-dev/setup-pixi@v0.9.2
         with:
           pixi-version: v0.41.4
           manifest-path: "modflow6/pixi.toml"
@@ -138,7 +138,7 @@ jobs:
         run: cat run-time-comparison.md
     
       - name: Upload benchmarks
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: run-time-comparison
           path: modflow6/distribution/run-time-comparison.md
@@ -152,7 +152,7 @@ jobs:
         run: cat deprecations.md
 
       - name: Upload deprecations
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: deprecations
           path: modflow6/doc/mf6io/mf6ivar/md/deprecations.md
@@ -162,7 +162,7 @@ jobs:
         run: pixi run sphinx
       
       - name: Upload RTD files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: rtd-files-for-${{ github.sha }}
           path: |
@@ -171,7 +171,7 @@ jobs:
             modflow6/.build_rtd_docs/index.rst
             modflow6/.build_rtd_docs/mf6io.rst
             modflow6/.build_rtd_docs/_dev/
-            modflow6/.build_rtd_docs/_migration/
+            modflow6/.build_rtd_docs/_misc/
             modflow6/.build_rtd_docs/_mf6io/
             modflow6/.build_rtd_docs/_mf6run/
             modflow6/.build_rtd_docs/_static/
@@ -181,7 +181,7 @@ jobs:
         run: pixi run build-docs
 
       - name: Upload PDF documents
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: mf6io.pdf
           path: |
@@ -230,7 +230,7 @@ jobs:
           sudo apt-get install doxygen graphviz
 
       - name: Setup pixi
-        uses: prefix-dev/setup-pixi@v0.9.0
+        uses: prefix-dev/setup-pixi@v0.9.2
         with:
           pixi-version: v0.41.4
 

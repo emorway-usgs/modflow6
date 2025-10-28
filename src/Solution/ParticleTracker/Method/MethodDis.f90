@@ -29,12 +29,12 @@ module MethodDisModule
     procedure :: get_top !< get cell top elevation
     procedure :: update_flowja !< load intercell mass flows
     procedure :: load_particle !< load particle properties
-    procedure :: load_properties !< load cell properties
-    procedure :: load_neighbors !< load cell face neighbors
-    procedure :: load_flows !< load cell face flows
-    procedure :: load_boundary_flows_to_defn !< load boundary flows to the cell definition
-    procedure :: load_face_flows_to_defn !< load face flows to the cell definition
-    procedure :: load_celldefn !< load cell definition from the grid
+    procedure :: load_cell_properties !< load basic cell properties
+    procedure :: load_cell_neighbors !< load cell face neighbors
+    procedure :: load_cell_flows !< load cell flows
+    procedure :: load_cell_boundary_flows !< load boundary flows to the cell definition
+    procedure :: load_cell_face_flows !< load face flows to the cell definition
+    procedure :: load_cell_defn !< load cell definition from the grid
     procedure :: load_cell !< load cell geometry and flows
   end type MethodDisType
 
@@ -146,7 +146,7 @@ contains
     select type (cell => this%cell)
     type is (CellRectType)
       ic = particle%itrdomain(next_level)
-      call this%load_celldefn(ic, cell%defn)
+      call this%load_cell_defn(ic, cell%defn)
       call this%load_cell(ic, cell)
       if (this%fmi%ibdgwfsat0(ic) == 0) then
         call method_cell_ptb%init( &
@@ -276,17 +276,16 @@ contains
     ! local
     type(CellRectType), pointer :: cell
     integer(I4B) :: iface
-    logical(LGP) :: at_bnd_face, no_neighbors
+    logical(LGP) :: no_neighbors
 
     select type (c => this%cell)
     type is (CellRectType)
       cell => c
       iface = particle%iboundary(LEVEL_FEATURE)
       no_neighbors = cell%defn%facenbr(iface) == 0
-      at_bnd_face = this%fmi%is_net_out_boundary_face(cell%defn%icell, iface)
 
       ! todo AMP: reconsider when multiple models supported
-      if (no_neighbors .or. at_bnd_face) then
+      if (no_neighbors) then
         call this%terminate(particle, status=TERM_BOUNDARY)
         return
       end if
@@ -319,30 +318,25 @@ contains
   end function get_top
 
   !> @brief Loads cell definition from the grid
-  subroutine load_celldefn(this, ic, defn)
+  subroutine load_cell_defn(this, ic, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
     integer(I4B), intent(in) :: ic
     type(CellDefnType), pointer, intent(inout) :: defn
 
-    ! Load basic cell properties
-    call this%load_properties(ic, defn)
-
-    ! Load cell polygon vertices
+    call this%load_cell_properties(ic, defn)
     call this%fmi%dis%get_polyverts( &
       defn%icell, &
       defn%polyvert, &
       closed=.true.)
-    call this%load_neighbors(defn)
-
-    ! Load 180 degree face indicators
+    call this%load_cell_neighbors(defn)
+    call this%load_cell_saturation_status(defn)
     defn%ispv180(1:defn%npolyverts + 1) = .false.
+    call this%load_cell_flows(defn)
 
-    call this%load_flows(defn)
+  end subroutine load_cell_defn
 
-  end subroutine load_celldefn
-
-  subroutine load_properties(this, ic, defn)
+  subroutine load_cell_properties(this, ic, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
     integer(I4B), intent(in) :: ic
@@ -370,11 +364,12 @@ contains
     defn%izone = this%izone(ic)
     defn%can_be_rect = .true.
     defn%can_be_quad = .false.
-  end subroutine load_properties
+
+  end subroutine load_cell_properties
 
   !> @brief Loads face neighbors to cell definition from the grid.
   !! Assumes cell index and number of vertices are already loaded.
-  subroutine load_neighbors(this, defn)
+  subroutine load_cell_neighbors(this, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
     type(CellDefnType), pointer, intent(inout) :: defn
@@ -438,23 +433,24 @@ contains
     end select
     ! List of edge (polygon) faces wraps around
     defn%facenbr(defn%npolyverts + 1) = defn%facenbr(1)
-  end subroutine load_neighbors
+  end subroutine load_cell_neighbors
 
   !> @brief Load flows into the cell definition.
   !! These include face, boundary and net distributed flows.
   !! Assumes cell index and number of vertices are already loaded.
-  subroutine load_flows(this, defn)
+  subroutine load_cell_flows(this, defn)
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
 
     ! Load face flows, including boundary flows. As with cell verts,
     ! the face flow array wraps around. Top and bottom flows make up
     ! the last two elements, respectively, for size npolyverts + 3.
     ! If there is no flow through any face, set a no-exit-face flag.
     defn%faceflow = DZERO
-    defn%inoexitface = 1
-    call this%load_boundary_flows_to_defn(defn)
-    call this%load_face_flows_to_defn(defn)
+    call this%load_cell_boundary_flows(defn)
+    call this%load_cell_face_flows(defn)
+    call this%cap_cell_wt_flow(defn)
+    call this%load_cell_no_exit_face(defn)
 
     ! Add up net distributed flow
     defn%distflow = this%fmi%SourceFlows(defn%icell) + &
@@ -467,12 +463,12 @@ contains
     else
       defn%iweaksink = 0
     end if
-  end subroutine load_flows
+  end subroutine load_cell_flows
 
-  subroutine load_face_flows_to_defn(this, defn)
+  subroutine load_cell_face_flows(this, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
     integer(I4B) :: m, n, nfaces
     real(DP) :: q
@@ -484,22 +480,19 @@ contains
         q = this%fmi%gwfflowja(this%fmi%dis%con%ia(defn%icell) + n)
         defn%faceflow(m) = defn%faceflow(m) + q
       end if
-      if (defn%faceflow(m) < DZERO) defn%inoexitface = 0
     end do
-  end subroutine load_face_flows_to_defn
+  end subroutine load_cell_face_flows
 
   !> @brief Add boundary flows to the cell definition faceflow array.
   !! Assumes cell index and number of vertices are already loaded.
-  subroutine load_boundary_flows_to_defn(this, defn)
+  subroutine load_cell_boundary_flows(this, defn)
     ! dummy
     class(MethodDisType), intent(inout) :: this
-    type(CellDefnType), intent(inout) :: defn
+    type(CellDefnType), pointer, intent(inout) :: defn
     ! local
-    integer(I4B) :: max_faces
     integer(I4B) :: ioffset
 
-    max_faces = this%fmi%max_faces
-    ioffset = (defn%icell - 1) * max_faces
+    ioffset = (defn%icell - 1) * this%fmi%max_faces
     defn%faceflow(1) = defn%faceflow(1) + &
                        this%fmi%BoundaryFlows(ioffset + 1)
     defn%faceflow(2) = defn%faceflow(2) + &
@@ -510,9 +503,9 @@ contains
                        this%fmi%BoundaryFlows(ioffset + 4)
     defn%faceflow(5) = defn%faceflow(1)
     defn%faceflow(6) = defn%faceflow(6) + &
-                       this%fmi%BoundaryFlows(ioffset + max_faces - 1)
+                       this%fmi%BoundaryFlows(ioffset + this%fmi%max_faces - 1)
     defn%faceflow(7) = defn%faceflow(7) + &
-                       this%fmi%BoundaryFlows(ioffset + max_faces)
-  end subroutine load_boundary_flows_to_defn
+                       this%fmi%BoundaryFlows(ioffset + this%fmi%max_faces)
+  end subroutine load_cell_boundary_flows
 
 end module MethodDisModule
