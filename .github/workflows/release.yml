@@ -204,9 +204,17 @@ jobs:
         id: set_filters
         run: |
           filters=""
+          if [[ "${{ matrix.extended }}" == "true" ]] && [[ "${{ inputs.releasemode }}" != "true" ]]; then
+            # run only parallel/extended tests in developmode, run all tests in releasemode
+            filters="test_par or test_netcdf"
+          fi
+          # comparison fails on macos-14 with optimization=1
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            # comparison fails on macos-14 with optimization=1
-            filters="not test028_sfr_rewet"
+            if [[ "$filters" != "" ]]; then
+              filters="$filters and not test028_sfr_rewet"
+            else
+              filters="not test028_sfr_rewet"
+            fi
           fi
           echo "filters=$filters" >> $GITHUB_OUTPUT
 
@@ -266,11 +274,14 @@ jobs:
       - name: Build binaries (Windows)
         if: runner.os == 'Windows' && matrix.extended && !inputs.run_tests
         uses: ./modflow6/.github/actions/build-extended-win
+        env:
+          RELEASEMODE: ${{ inputs.releasemode }}
 
       - name: Build and test binaries (Windows)
         if: runner.os == 'Windows' && matrix.extended && inputs.run_tests
         uses: ./modflow6/.github/actions/test-extended-win
         env:
+          RELEASEMODE: ${{ inputs.releasemode }}
           MARKERS: ${{ steps.set_markers.outputs.markers }}
           FILTERS: ${{ steps.set_filters.outputs.filters }}
 

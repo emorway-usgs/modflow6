@@ -635,6 +635,18 @@ jobs:
         shell: bash
 
     steps:
+      - name: Free disk space (Ubuntu)
+        if: runner.os == 'Linux'
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+
       - name: Checkout MF6
         uses: actions/checkout@v5
         with:
@@ -670,13 +682,27 @@ jobs:
             echo "LDFLAGS=$ldflags" >> $GITHUB_ENV
           fi
 
+      - name: Set markers
+        id: set_markers
+        run: echo "markers=not large" >> $GITHUB_OUTPUT
+
+      - name: Set filters
+        id: set_filters
+        run: echo "filters=test_par or test_netcdf" >> $GITHUB_OUTPUT
+
       - name: Test extended MF6
         if: runner.os != 'Windows'
         uses: ./modflow6/.github/actions/test-extended
+        env:
+          MARKERS: ${{ steps.set_markers.outputs.markers }}
+          FILTERS: ${{ steps.set_filters.outputs.filters }}
 
       - name: Test extended MF6
         if: runner.os == 'Windows'
         uses: ./modflow6/.github/actions/test-extended-win
+        env:
+          MARKERS: ${{ steps.set_markers.outputs.markers }}
+          FILTERS: ${{ steps.set_filters.outputs.filters }}
 
       - name: Upload failed test output
         if: failure()
