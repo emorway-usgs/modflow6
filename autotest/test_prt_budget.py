@@ -92,12 +92,14 @@ def build_prt_sim(name, gwf_ws, prt_ws, mf6):
 
     # create output control package
     prt_budget_file = f"{prt_name}.bud"
+    prt_budgetcsv_file = f"{prt_name}.bud.csv"
     prt_track_file = f"{prt_name}.trk"
     prt_track_csv_file = f"{prt_name}.trk.csv"
     flopy.mf6.ModflowPrtoc(
         prt,
         pname="oc",
         budget_filerecord=[prt_budget_file],
+        budgetcsv_filerecord=[prt_budgetcsv_file],
         track_filerecord=[prt_track_file],
         trackcsv_filerecord=[prt_track_csv_file],
         saverecord=[("BUDGET", "ALL")],
@@ -189,6 +191,7 @@ def check_output(idx, test):
     # check mf6 output files exist
     gwf_budget_file = f"{gwf_name}.bud"
     gwf_head_file = f"{gwf_name}.hds"
+    prt_budgetcsv_file = f"{prt_name}.bud.csv"
     prt_track_file = f"{prt_name}.trk"
     prt_track_csv_file = f"{prt_name}.trk.csv"
     prp_track_file = f"{prt_name}.prp.trk"
@@ -216,6 +219,7 @@ def check_output(idx, test):
 
     assert (gwf_ws / gwf_budget_file).is_file()
     assert (gwf_ws / gwf_head_file).is_file()
+    assert (prt_ws / prt_budgetcsv_file).is_file()
     assert (prt_ws / prt_track_file).is_file()
     assert (prt_ws / prt_track_csv_file).is_file()
     assert (prt_ws / prp_track_file).is_file()

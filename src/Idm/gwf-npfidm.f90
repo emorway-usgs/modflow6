@@ -375,7 +375,7 @@ module GwfNpfInputModule
     '', & ! shape
     'keyword to activate HIGHEST_CELL_SATURATION option', & ! longname
     .false., & ! required
-    .false., & ! prerelease
+    .false., & ! developmode
     .false., & ! multi-record
     .false., & ! preserve case
     .false., & ! layered

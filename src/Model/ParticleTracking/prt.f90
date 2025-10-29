@@ -1079,6 +1079,7 @@ contains
     integer(I4B) :: indis = 0 ! DIS enabled flag
     character(len=LENMEMPATH) :: mempathmip = ''
     character(len=LENMEMPATH) :: mempathfmi = ''
+    character(len=LENMEMPATH) :: mempathoc = ''
 
     ! set input memory paths, input/model and input/model/namfile
     model_mempath = create_mem_path(component=this%name, context=idm_context)
@@ -1114,7 +1115,8 @@ contains
         this%infmi = 1
         mempathfmi = mempath
       case ('OC6')
-        this%inoc = inunit
+        this%inoc = 1
+        mempathoc = mempath
       case ('PRP6')
         call expandarray(bndpkgs)
         bndpkgs(size(bndpkgs)) = n
@@ -1134,7 +1136,7 @@ contains
     ! Create packages that are tied directly to model
     call mip_cr(this%mip, this%name, mempathmip, this%inmip, this%iout, this%dis)
     call fmi_cr(this%fmi, this%name, mempathfmi, this%infmi, this%iout)
-    call oc_cr(this%oc, this%name, this%inoc, this%iout)
+    call oc_cr(this%oc, this%name, mempathoc, this%inoc, this%iout)
 
     ! Check to make sure that required ftype's have been specified
     call this%ftype_check(indis)

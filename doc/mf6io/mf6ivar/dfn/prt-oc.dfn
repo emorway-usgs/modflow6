@@ -7,6 +7,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal budfilerec
 longname
 description
 
@@ -51,6 +52,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal budcsvfilerec
 longname
 description
 
@@ -84,6 +86,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal trackfilerec
 longname
 description
 
@@ -117,6 +120,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal trackcsvfilerec
 longname
 description
 
@@ -164,6 +168,7 @@ name track_subfeature_exit
 type keyword
 reader urword
 optional true
+mf6internal track_subf_exit
 longname track cell exits
 description keyword to indicate that particle tracking output is to be written when a particle exits a sub-grid-scale feature. Such features are considered implementation details of the tracking algorithm employed for particular grid types, and reporting for exit events from such features is disabled by default.
 
@@ -214,6 +219,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal ttimesrec
 longname
 description
 removed 6.6.0
@@ -248,6 +254,7 @@ shape
 reader urword
 tagged true
 optional true
+mf6internal ttimesfilerec
 longname
 description
 removed 6.6.0
@@ -281,6 +288,7 @@ name dev_dump_event_trace
 type keyword
 reader urword
 optional true
+mf6internal dev_dump_evtrace
 longname print particle tracking events
 description print a verbose particle tracking event trace to standard output
 
@@ -290,7 +298,7 @@ block dimensions
 name ntracktimes
 type integer
 reader urword
-optional false
+optional true
 longname number of particle tracking times
 description is the number of user-specified particle tracking times in the TRACKTIMES block.
 
@@ -301,6 +309,7 @@ name tracktimes
 type recarray time
 shape (ntracktimes)
 reader urword
+optional true
 longname
 description
 
@@ -311,6 +320,7 @@ shape
 tagged false
 in_record true
 reader urword
+optional false
 longname release time
 description real value that defines the tracking time with respect to the simulation start time.
 

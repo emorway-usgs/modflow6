@@ -284,7 +284,7 @@ contains
     if (this%mf6_input%subcomponent_type == 'STO') then
       allocate (sto_loader)
       this%rp_loader => sto_loader
-    else if (this%mf6_input%subcomponent_type == 'PRP') then
+    else if (this%has_setting) then
       allocate (setting_loader)
       this%rp_loader => setting_loader
     else if (this%readasarrays) then
