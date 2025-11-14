@@ -420,6 +420,7 @@ $(OBJDIR)/GwfNpfOptions.o \
 $(OBJDIR)/GwfConductanceUtils.o \
 $(OBJDIR)/gwe-swr.o \
 $(OBJDIR)/gwe-shf.o \
+$(OBJDIR)/gwe-lwr.o \
 $(OBJDIR)/gwe-lhf.o \
 $(OBJDIR)/ParticleTracks.o \
 $(OBJDIR)/ParticleReleaseSchedule.o \
