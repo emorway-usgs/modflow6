@@ -170,17 +170,17 @@ module TspAptModule
     procedure :: rp_obs_flowjaface
     procedure :: bnd_bd_obs => apt_bd_obs
     procedure :: pak_bd_obs
-    procedure :: get_volumes
     procedure :: pak_get_nbudterms
     procedure :: apt_setup_budobj
     procedure :: pak_setup_budobj
     procedure :: apt_fill_budobj
     procedure :: pak_fill_budobj
     procedure :: ancil_rp
+    procedure, public :: apt_get_volumes !< made public for sft/sfe
     procedure, public :: apt_stor_term
     procedure, public :: apt_tmvr_term
-    procedure, public :: apt_fmvr_term ! Made public for uze
-    procedure, public :: apt_fjf_term ! Made public for uze
+    procedure, public :: apt_fmvr_term !< made public for uze
+    procedure, public :: apt_fjf_term !< made public for uze
     procedure, private :: apt_copy2flowp
     procedure, private :: apt_setup_tableobj
     procedure, public :: get_mvr_depvar
@@ -1908,7 +1908,7 @@ contains
 
   !> @brief Return the feature new volume and old volume
   !<
-  subroutine get_volumes(this, icv, vnew, vold, delt)
+  subroutine apt_get_volumes(this, icv, vnew, vold, delt)
     ! -- modules
     ! -- dummy
     class(TspAptType) :: this
@@ -1926,7 +1926,7 @@ contains
       vnew = this%flowbudptr%budterm(this%idxbudsto)%auxvar(1, icv)
       vold = vnew + qss * delt
     end if
-  end subroutine get_volumes
+  end subroutine apt_get_volumes
 
   !> @brief Function to return the number of budget terms just for this package
   !!
@@ -2222,7 +2222,7 @@ contains
     call this%budobj%budterm(idx)%reset(this%ncv)
     allocate (auxvartmp(1))
     do n1 = 1, this%ncv
-      call this%get_volumes(n1, v1, v0, delt)
+      call this%apt_get_volumes(n1, v1, v0, delt)
       auxvartmp(1) = v1 * this%xnewpak(n1) ! Note: When GWE is added, check if this needs a factor of eqnsclfac
       q = this%qsto(n1)
       call this%budobj%budterm(idx)%update_term(n1, n1, q, auxvartmp)
@@ -2322,12 +2322,13 @@ contains
     !
     n1 = ientry
     n2 = ientry
-    call this%get_volumes(n1, v1, v0, delt)
+    call this%apt_get_volumes(n1, v1, v0, delt)
     c0 = this%xoldpak(n1)
     c1 = this%xnewpak(n1)
     if (present(rrate)) then
       rrate = (-c1 * v1 / delt + c0 * v0 / delt) * this%eqnsclfac
     end if
+    !
     if (present(rhsval)) rhsval = -c0 * v0 * this%eqnsclfac / delt
     if (present(hcofval)) hcofval = -v1 * this%eqnsclfac / delt
   end subroutine apt_stor_term

@@ -79,6 +79,8 @@ module GweSfeModule
     real(DP), dimension(:), pointer, contiguous :: tempevap => null() !< evaporation temperature
     real(DP), dimension(:), pointer, contiguous :: temproff => null() !< runoff temperature
     real(DP), dimension(:), pointer, contiguous :: tempiflw => null() !< inflow temperature
+    real(DP), dimension(:), pointer, contiguous :: vnew => null() !< current volume of reach
+    real(DP), dimension(:), pointer, contiguous :: vold => null() !< previous volume of reach
     real(DP), dimension(:), pointer, contiguous :: ktf => null() !< thermal conductivity between the sfe and groundwater cell
     real(DP), dimension(:), pointer, contiguous :: rfeatthk => null() !< thickness of streambed material through which thermal conduction occurs
 
@@ -88,6 +90,7 @@ module GweSfeModule
 
   contains
 
+    procedure :: bnd_ad => sfe_ad
     !procedure :: bnd_df => sfe_df
     procedure :: bnd_da => sfe_da
     !procedure :: bnd_ar => sfe_ar
@@ -111,6 +114,7 @@ module GweSfeModule
     procedure :: pak_rp_obs => sfe_rp_obs
     procedure :: pak_bd_obs => sfe_bd_obs
     procedure :: pak_set_stressperiod => sfe_set_stressperiod
+    procedure :: apt_get_volumes => sfe_get_volumes
     procedure :: apt_read_cvs => sfe_read_cvs
     procedure :: gc_options => sfe_options
 
@@ -827,6 +831,9 @@ contains
     call mem_allocate(this%temproff, this%ncv, 'TEMPROFF', this%memoryPath)
     call mem_allocate(this%tempiflw, this%ncv, 'TEMPIFLW', this%memoryPath)
     !
+    call mem_allocate(this%vnew, this%ncv, 'VNEW', this%memoryPath)
+    call mem_allocate(this%vold, this%ncv, 'VOLD', this%memoryPath)
+    !
     ! -- Call standard TspAptType allocate arrays
     call this%TspAptType%apt_allocate_arrays()
     !
@@ -836,6 +843,8 @@ contains
       this%tempevap(n) = DZERO
       this%temproff(n) = DZERO
       this%tempiflw(n) = DZERO
+      this%vnew(n) = DZERO
+      this%vold(n) = DZERO
     end do
     !
     ! -- Call sub-package(s) allocate arrays
@@ -843,6 +852,24 @@ contains
       call this%abc%abc_allocate_arrays()
     end if
   end subroutine sfe_allocate_arrays
+
+  !> @brief Advance sfe package routine
+  !<
+  subroutine sfe_ad(this)
+    ! -- dummy
+    class(GweSfeType) :: this
+    ! -- local
+    integer(I4B) :: n
+    !
+    ! -- call base bnd_ad
+    call this%TspAptType%bnd_ad()
+    !
+    ! -- update vold
+    do n = 1, this%ncv
+      this%vold(n) = this%vnew(n)
+    end do
+
+  end subroutine sfe_ad
 
   !> @brief Call Read and prepare routines for any active pbst subpackages
   !!
@@ -889,6 +916,9 @@ contains
     call mem_deallocate(this%tempevap)
     call mem_deallocate(this%temproff)
     call mem_deallocate(this%tempiflw)
+    !
+    call mem_deallocate(this%vnew)
+    call mem_deallocate(this%vold)
     !
     ! -- Deallocate arrays
     call mem_deallocate(this%ktf)
@@ -1507,5 +1537,35 @@ contains
     ! -- deallocate local storage for nboundchk
     deallocate (nboundchk)
   end subroutine sfe_read_cvs
+
+  !> @brief Return the sfr new volume and old volume
+  !<
+  subroutine sfe_get_volumes(this, icv, vnew, vold, delt)
+    ! -- dummy
+    class(GweSfeType) :: this
+    integer(I4B), intent(in) :: icv
+    real(DP), intent(inout) :: vnew, vold
+    real(DP), intent(in) :: delt
+    ! -- local
+    real(DP) :: qss
+    !
+    ! -- get volumes
+    vold = DZERO
+    vnew = vold
+    if (this%idxbudsto /= 0) then
+      qss = this%flowbudptr%budterm(this%idxbudsto)%flow(icv)
+      vnew = this%flowbudptr%budterm(this%idxbudsto)%auxvar(1, icv)
+      this%vnew(icv) = vnew
+      if (qss /= DZERO) then
+        vold = vnew + qss * delt
+      else
+        if (vnew == DZERO) then
+          vold = DZERO
+        else
+          vold = this%vold(icv)
+        end if
+      end if
+    end if
+  end subroutine sfe_get_volumes
 
 end module GweSfeModule
