@@ -533,11 +533,14 @@ contains
       ! actual cell height (geometric top - bottom).
       ! otherwise use head as cell top, clamping to
       ! the cell bottom if head is below the bottom
+      ! and to geometric cell top if head is above top
       top = this%fmi%dis%top(ic)
       bot = this%fmi%dis%bot(ic)
-      hds = this%fmi%gwfhead(ic)
-      if (this%fmi%gwfceltyp(icu) /= 0) top = hds
-      if (top < bot) top = bot
+      if (this%fmi%gwfceltyp(icu) /= 0) then
+        hds = this%fmi%gwfhead(ic)
+        top = min(top, hds)
+        top = max(top, bot)
+      end if
       z = bot + this%rptz(ip) * (top - bot)
     else
       z = this%rptz(ip)

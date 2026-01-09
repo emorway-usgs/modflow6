@@ -103,6 +103,72 @@ description wind function intercept used by calculations related to the latent h
 default_value 3.445E-09
 mf6internal wf_int
 
+block options
+name longwave_reflectance
+type double precision
+reader urword
+optional true
+longname longwave reflectance
+description longwave reflectance used by calculations related to the longwave radiation heat flux.  This value is set to 0.03 if no overriding value is specified.  A user-specified value should be provided for models that require a value other than the default.
+default_value 0.03
+mf6internal lwrefl
+
+block options
+name emissivity_water
+type double precision
+reader urword
+optional true
+longname emissivity of water
+description emissivity of water used by calculations related to the longwave radiation heat flux.  This value is set to 0.95 if no overriding value is specified.  A user-specified value should be provided for models that require a value other than the default.
+default_value 0.95
+mf6internal emissw
+
+block options
+name emissivity_canopy
+type double precision
+reader urword
+optional true
+longname emissivity of riparian canopy
+description emissivity of riparian canopy used by calculations related to the longwave radiation heat flux.  This value is set to 0.97 if no overriding value is specified.  A user-specified value should be provided for models that require a value other than the default.
+default_value 0.97
+mf6internal emissr
+
+block options
+name swr_off
+tagged true
+type keyword
+reader urword
+optional true
+longname deactivate shortwave radiation calculations
+description keyword to deactivate shortwave radiation heat exchange with the atmosphere.  Shortwave radiation heat exchange between stream reaches and the atmosphere is active by default.
+
+block options
+name lwr_off
+tagged true
+type keyword
+reader urword
+optional true
+longname deactivate longwave radiation calculations
+description keyword to deactivate longwave radiation heat exchange with the atmosphere.  Longwave radiation heat exchange between stream reaches and the atmosphere is active by default.
+
+block options
+name lhf_off
+tagged true
+type keyword
+reader urword
+optional true
+longname deactivate latent heat flux calculations
+description keyword to deactivate latent heat exchange with the atmosphere.  Latent heat exchange between stream reaches and the atmosphere is active by default.
+
+block options
+name swr_off
+tagged true
+type keyword
+reader urword
+optional true
+longname deactivate sensible heat flux calculations
+description keyword to deactivate sensible heat exchange with the atmosphere.  Sensible heat exchange between stream reaches and the atmosphere is active by default.
+
 # --------------------- gwe abc period ---------------------
 
 block period
