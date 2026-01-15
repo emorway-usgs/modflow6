@@ -132,3 +132,8 @@ description = "Fixes a bug where the internal profiler caused certain (multi-spe
 section = "features"
 subsection = "internal"
 description = "Added support for vertical hydraulic barriers in the HFB package. Also modified the name of the HFB package in the 'MODFLOW 6 Description of Input and Output' document from 'Horizontal Flow Barrier' to 'Hydraulic Flow Barrier'."
+
+[[items]]
+section = "fixes"
+subsection = "exchanges"
+description = "Fixed a bug that crashed the program during initialization when GWT or GWE models were connected through an Exchange and at least one model has grid type DISU and does not have the (currently optional) CELL2D information specified in its input. It could have happened for GWF models in a similar manner, though only when running in parallel mode."
