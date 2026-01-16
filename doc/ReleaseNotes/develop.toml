@@ -12,6 +12,7 @@ advanced = "ADVANCED STRESS PACKAGES"
 solution = "SOLUTION"
 exchanges = "EXCHANGES"
 parallel = "PARALLEL"
+netcdf = "NETCDF"
 
 [[items]]
 section = "features"
@@ -137,3 +138,9 @@ description = "Added support for vertical hydraulic barriers in the HFB package.
 section = "fixes"
 subsection = "exchanges"
 description = "Fixed a bug that crashed the program during initialization when GWT or GWE models were connected through an Exchange and at least one model has grid type DISU and does not have the (currently optional) CELL2D information specified in its input. It could have happened for GWF models in a similar manner, though only when running in parallel mode."
+
+
+[[items]]
+section = "fixes"
+subsection = "netcdf"
+description = "Previously, gridded parameters read from ascii input files could be written to configured NetCDF files with the package EXPORT\\_ARRAY\\_NETCDF option in both regular and validate simulation mode. This capability will now only be supported in validate mode and is primarily intended to support generating NetCDF files that can serve as model inputs in subsequent simulation runs. Furthermore, the time dimension in these generated NetCDF input files, when defined, has been updated from NSTP to NPER, and the MODFLOW 6 NetCDF input load interfaces have been updated to reflect that change."
