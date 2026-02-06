@@ -341,7 +341,7 @@ contains
   !!
   !<
   subroutine tags(this, params, nparam, input_name, create)
-    use DevFeatureModule, only: dev_feature
+    use FeatureFlagsModule, only: developmode
     use SimVariablesModule, only: iout
     use DefinitionSelectModule, only: get_param_definition_type
     class(LoadContextType) :: this
@@ -373,13 +373,13 @@ contains
                                   this%mf6_input%subcomponent_type, &
                                   this%blockname, this%params(n), '')
 
-      ! check if input param is prerelease
-      if (idt%prerelease) then
+      ! check if input param is developmode
+      if (idt%developmode) then
         dev_msg = 'Input tag "'//trim(idt%tagname)// &
           &'" read from file "'//trim(input_name)// &
           &'" is still under development. Install the &
           &nightly build or compile from source with IDEVELOPMODE = 1.'
-        call dev_feature(dev_msg, iout)
+        call developmode(dev_msg, iout)
       end if
 
       params(n) = this%params(n)

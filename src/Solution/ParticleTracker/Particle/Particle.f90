@@ -2,7 +2,8 @@ module ParticleModule
 
   use KindModule, only: DP, I4B, LGP
   use ListModule, only: ListType
-  use ConstantsModule, only: DZERO, DONE, LENMEMPATH, LENBOUNDNAME
+  use ConstantsModule, only: DZERO, DONE, LENMEMPATH, LENBOUNDNAME, &
+                             LINELENGTH
   use MemoryManagerModule, only: mem_allocate, mem_deallocate, &
                                  mem_reallocate
   implicit none
@@ -51,7 +52,12 @@ module ParticleModule
   !! Particles are identified by composite key, i.e.,
   !! combinations of properties imdl, iprp, irpt, and
   !! trelease. An optional label may be provided, but
-  !! need not be unique
+  !! need not be unique.
+  !!
+  !! Particles carry a coordinate transform along with
+  !! themselves, instead of just letting the tracking
+  !! methods handle transforms, because we may need to
+  !! report an event at any time in model coordinates.
   !<
   type ParticleType
     private
@@ -96,6 +102,7 @@ module ParticleModule
     procedure, public :: get_model_coords
     procedure, public :: transform => transform_coords
     procedure, public :: reset_transform
+    procedure, public :: get_id
   end type ParticleType
 
   !> @brief Structure of arrays to store particles.
@@ -354,6 +361,11 @@ contains
                    xorigin, yorigin, zorigin, &
                    sinrot, cosrot, invert)
 
+    ! Compose is needed only because we have to untransform
+    ! coordinates: we may need to report a particle event
+    ! at any point in the tracking method hierarchy, so we
+    ! need to know how to map the particle position back to
+    ! model coords from coords local to the current domain.
     call compose(this%xorigin, this%yorigin, this%zorigin, &
                  this%sinrot, this%cosrot, &
                  xorigin, yorigin, zorigin, &
@@ -401,5 +413,17 @@ contains
     class(ParticleStoreType) :: this
     n = size(this%imdl)
   end function num_stored
+
+  !> @brief Get a string identifier for the particle.
+  function get_id(this) result(str)
+    class(ParticleType), intent(in) :: this
+    character(len=:), allocatable :: str
+    ! local
+    character(len=LINELENGTH) :: temp
+
+    write (temp, '(I0,1a,I0,1a,I0,1a,G0)') &
+      this%imdl, this%iprp, this%irpt, this%trelease
+    str = trim(adjustl(temp))
+  end function get_id
 
 end module ParticleModule

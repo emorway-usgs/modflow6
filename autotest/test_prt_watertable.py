@@ -17,7 +17,7 @@ import pandas as pd
 import pytest
 from framework import TestFramework
 from modflow_devtools.misc import is_in_ci
-from prt_test_utils import get_model_name
+from prt_test_utils import compare_snapshots, get_model_name
 
 simname = "prtwt"
 cases = [simname]
@@ -197,6 +197,7 @@ def build_prt_sim(name, gwf, prt_ws, mf6):
         saverecord=[("BUDGET", "ALL")],
     )
     pd = [
+        ("GWFGRID", Path(f"../{Path(gwf.model_ws).name}/{gwf_name}.dis.grb")),
         ("GWFHEAD", Path(f"../{Path(gwf.model_ws).name}/{gwf_name}.hds")),
         ("GWFBUDGET", Path(f"../{Path(gwf.model_ws).name}/{gwf_name}.bud")),
     ]
@@ -243,6 +244,8 @@ def check_output(idx, test, snapshot):
             .round(1)
             .reset_index(drop=True)
         )
+        snapshot_dir = Path(__file__).parent / "__snapshots__" / "test_prt_watertable"
+        compare_snapshots(name, actual, snapshot_dir, prt_ws, idx=idx)
         assert snapshot == actual.to_records(index=False)
 
 
@@ -263,6 +266,7 @@ def plot_output(idx, test):
     plt.show()
 
 
+@pytest.mark.snapshot
 @pytest.mark.parametrize("idx, name", enumerate(cases))
 def test_mf6model(idx, name, function_tmpdir, targets, array_snapshot, plot):
     # skip snapshot in CI unless gfortran. flow model results vary for

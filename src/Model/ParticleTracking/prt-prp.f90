@@ -2,7 +2,7 @@ module PrtPrpModule
   use KindModule, only: DP, I4B, LGP
   use ConstantsModule, only: DZERO, DEM1, DEM5, DONE, LENFTYPE, LINELENGTH, &
                              LENBOUNDNAME, LENPAKLOC, TABLEFT, TABCENTER, &
-                             MNORMAL, DSAME, DEP3, DEP9
+                             MNORMAL, DSAME, DEP3, DEP9, DEM2
   use BndModule, only: BndType
   use BndExtModule, only: BndExtType
   use ObsModule, only: DefaultObsIdProcessor
@@ -33,6 +33,7 @@ module PrtPrpModule
 
   character(len=LENFTYPE) :: ftype = 'PRP'
   character(len=16) :: text = '             PRP'
+  real(DP), parameter :: DEFAULT_EXIT_SOLVE_TOLERANCE = DEM5
 
   !> @brief Particle release point (PRP) package
   type, extends(BndExtType) :: PrtPrpType
@@ -71,6 +72,8 @@ module PrtPrpModule
     real(DP), pointer, contiguous :: rptz(:) => null() !< release point z coordinates
     real(DP), pointer, contiguous :: rptm(:) => null() !< total mass released from point
     character(len=LENBOUNDNAME), pointer, contiguous :: rptname(:) => null() !< release point names
+    character(len=LINELENGTH), allocatable :: period_block_lines(:) !< last period block configuration for fill-forward
+    integer(I4B) :: applied_kper !< period for which configuration was last applied
   contains
     procedure :: prp_allocate_arrays
     procedure :: prp_allocate_scalars
@@ -185,6 +188,9 @@ contains
     call mem_deallocate(this%rptm)
     call mem_deallocate(this%rptname, 'RPTNAME', this%memoryPath)
 
+    ! Deallocate period block storage
+    if (allocated(this%period_block_lines)) deallocate (this%period_block_lines)
+
     ! Deallocate objects
     call this%particles%destroy(this%memoryPath)
     call this%schedule%destroy()
@@ -290,9 +296,10 @@ contains
     this%iexmeth = 0
     this%ichkmeth = 1
     this%icycwin = 0
-    this%extol = DEM5
+    this%extol = DEFAULT_EXIT_SOLVE_TOLERANCE
     this%rttol = DSAME * DEP9
     this%rtfreq = DZERO
+    this%applied_kper = 0
 
   end subroutine prp_allocate_scalars
 
@@ -317,7 +324,7 @@ contains
 
   !> @brief Advance a time step and release particles if scheduled.
   subroutine prp_ad(this)
-    use TdisModule, only: totalsimtime
+    use TdisModule, only: totalsimtime, kstp, kper
     class(PrtPrpType) :: this
     integer(I4B) :: ip, it
     real(DP) :: t
@@ -336,9 +343,21 @@ contains
       this%rptm(ip) = DZERO
     end do
 
-    ! Advance the release schedule and check if
-    ! any releases will be made this time step.
-    call this%schedule%advance()
+    ! Advance the release schedule. At the start of each period (kstp==1),
+    ! apply period block configuration if available and not yet applied.
+    ! This handles both new configuration and fill-forward periods.
+    ! For subsequent time steps, just advance without arguments to
+    ! advance the time selection object to the current time step.
+    if (kstp == 1 .and. &
+        kper /= this%applied_kper .and. &
+        allocated(this%period_block_lines)) then
+      call this%schedule%advance(lines=this%period_block_lines)
+      this%applied_kper = kper
+    else
+      call this%schedule%advance()
+    end if
+
+    ! Check if any releases will be made this time step.
     if (.not. this%schedule%any()) return
 
     ! Log the schedule to the list file.
@@ -464,6 +483,12 @@ contains
     integer(I4B) :: ic, icu, ic_old
     real(DP) :: x, y, z
     real(DP) :: top, bot, hds
+    ! formats
+    character(len=*), parameter :: fmticterr = &
+      "('Error in ',a,': Flow model interface does not contain ICELLTYPE. &
+      &ICELLTYPE is required for PRT to distinguish convertible cells &
+      &from confined cells if LOCAL_Z release coordinates are provided. &
+      &Make sure a GWFGRID entry is configured in the PRT FMI package.')"
 
     ic = this%rptnode(ip)
     icu = this%dis%get_nodeuser(ic)
@@ -509,14 +534,32 @@ contains
       end if
     end if
 
-    ! Load coordinates and transform if needed
+    ! load coordinates
     x = this%rptx(ip)
     y = this%rpty(ip)
     if (this%localz) then
+      ! make sure FMI has cell type array. we need
+      ! it to distinguish convertible and confined
+      ! cells if release z coordinates are local
+      if (this%fmi%igwfceltyp /= 1) then
+        write (errmsg, fmticterr) trim(this%text)
+        call store_error(errmsg, terminate=.TRUE.)
+      end if
+
+      ! calculate model z coord from local z coord.
+      ! if cell is confined (icelltype == 0) use the
+      ! actual cell height (geometric top - bottom).
+      ! otherwise use head as cell top, clamping to
+      ! the cell bottom if head is below the bottom
+      ! and to geometric cell top if head is above top
       top = this%fmi%dis%top(ic)
       bot = this%fmi%dis%bot(ic)
-      hds = this%fmi%gwfhead(ic)
-      z = bot + this%rptz(ip) * (hds - bot)
+      if (this%fmi%gwfceltyp(icu) /= 0) then
+        hds = this%fmi%gwfhead(ic)
+        top = min(top, hds)
+        top = max(top, bot)
+      end if
+      z = bot + this%rptz(ip) * (top - bot)
     else
       z = this%rptz(ip)
     end if
@@ -563,7 +606,6 @@ contains
     type(CharacterStringType), dimension(:), contiguous, &
       pointer :: settings
     integer(I4B), pointer :: iper, ionper, nlist
-    character(len=LINELENGTH), allocatable :: lines(:)
     integer(I4B) :: n
 
     ! set pointer to last and next period loaded
@@ -578,10 +620,10 @@ contains
       ! explicit release times, release time frequency, or period
       ! block release settings), default to a single release at the
       ! start of the first period's first time step.
-      allocate (lines(1))
-      lines(1) = "FIRST"
-      call this%schedule%advance(lines=lines)
-      deallocate (lines)
+      ! Store default configuration; advance() will be called in prp_ad().
+      if (allocated(this%period_block_lines)) deallocate (this%period_block_lines)
+      allocate (this%period_block_lines(1))
+      this%period_block_lines(1) = "FIRST"
       return
     else if (iper /= kper) then
       return
@@ -591,18 +633,12 @@ contains
     call mem_setptr(nlist, 'NBOUND', this%input_mempath)
     call mem_setptr(settings, 'SETTING', this%input_mempath)
 
-    ! allocate and set input
-    allocate (lines(nlist))
+    ! Store period block configuration for fill-forward.
+    if (allocated(this%period_block_lines)) deallocate (this%period_block_lines)
+    allocate (this%period_block_lines(nlist))
     do n = 1, nlist
-      lines(n) = settings(n)
+      this%period_block_lines(n) = settings(n)
     end do
-
-    ! update schedule
-    if (size(lines) > 0) &
-      call this%schedule%advance(lines=lines)
-
-    ! cleanup
-    deallocate (lines)
   end subroutine prp_rp
 
   !> @ brief Calculate flow between package and model.
@@ -683,6 +719,13 @@ contains
       &[character(len=LENVARNAME) :: 'NONE', 'EAGER']
     character(len=LINELENGTH) :: trackfile, trackcsvfile, fname
     type(PrtPrpParamFoundType) :: found
+    character(len=*), parameter :: fmtextolwrn = &
+      "('WARNING: EXIT_SOLVE_TOLERANCE is set to ',g10.3,' &
+      &which is much greater than the default value of ',g10.3,'. &
+      &The tolerance that strikes the best balance between accuracy &
+      &and runtime is problem-dependent. Since the variable being &
+      &solved varies from 0 to 1, tolerance values much less than 1 &
+      &typically give the best results.')"
 
     ! -- source base class options
     call this%BndExtType%source_options()
@@ -737,6 +780,11 @@ contains
     if (found%extol) then
       if (this%extol <= DZERO) &
         call store_error('EXIT_SOLVE_TOLERANCE MUST BE POSITIVE')
+      if (this%extol > DEM2) then
+        write (warnmsg, fmt=fmtextolwrn) &
+          this%extol, DEFAULT_EXIT_SOLVE_TOLERANCE
+        call store_warning(warnmsg)
+      end if
     end if
 
     if (found%rttol) then
@@ -889,6 +937,7 @@ contains
       contiguous :: boundnames
     character(len=LENBOUNDNAME) :: bndName, bndNameTemp
     character(len=9) :: cno
+    character(len=20) :: cellidstr
     integer(I4B), dimension(:), allocatable :: nboundchk
     integer(I4B), dimension(:), pointer :: cellid
     integer(I4B) :: n, noder, nodeu, rptno
@@ -945,6 +994,12 @@ contains
       ! set noder
       noder = this%dis%get_nodenumber(nodeu, 1)
       if (noder <= 0) then
+        call this%dis%nodeu_to_string(nodeu, cellidstr)
+        write (errmsg, '(a)') &
+          'Particle release point configured for nonexistent cell: '// &
+          trim(adjustl(cellidstr))//'. This cell has IDOMAIN <= 0 and '&
+          &'therefore does not exist in the model grid.'
+        call store_error(errmsg)
         cycle
       else
         this%rptnode(rptno) = noder

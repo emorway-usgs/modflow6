@@ -17,6 +17,7 @@ module IdmGwtDfnSelectorModule
   use GwtIcInputModule
   use GwtIstInputModule
   use GwtMstInputModule
+  use GwtOcInputModule
   use GwtSrcInputModule
   use GwtSsmInputModule
 
@@ -78,6 +79,8 @@ contains
       call set_param_pointer(input_definition, gwt_ist_param_definitions)
     case ('MST')
       call set_param_pointer(input_definition, gwt_mst_param_definitions)
+    case ('OC')
+      call set_param_pointer(input_definition, gwt_oc_param_definitions)
     case ('SRC')
       call set_param_pointer(input_definition, gwt_src_param_definitions)
     case ('SSM')
@@ -116,6 +119,8 @@ contains
       call set_param_pointer(input_definition, gwt_ist_aggregate_definitions)
     case ('MST')
       call set_param_pointer(input_definition, gwt_mst_aggregate_definitions)
+    case ('OC')
+      call set_param_pointer(input_definition, gwt_oc_aggregate_definitions)
     case ('SRC')
       call set_param_pointer(input_definition, gwt_src_aggregate_definitions)
     case ('SSM')
@@ -154,6 +159,8 @@ contains
       call set_block_pointer(input_definition, gwt_ist_block_definitions)
     case ('MST')
       call set_block_pointer(input_definition, gwt_mst_block_definitions)
+    case ('OC')
+      call set_block_pointer(input_definition, gwt_oc_block_definitions)
     case ('SRC')
       call set_block_pointer(input_definition, gwt_src_block_definitions)
     case ('SSM')
@@ -191,6 +198,8 @@ contains
       multi_package = gwt_ist_multi_package
     case ('MST')
       multi_package = gwt_mst_multi_package
+    case ('OC')
+      multi_package = gwt_oc_multi_package
     case ('SRC')
       multi_package = gwt_src_multi_package
     case ('SSM')
@@ -231,6 +240,8 @@ contains
       call set_subpkg_pointer(subpackages, gwt_ist_subpackages)
     case ('MST')
       call set_subpkg_pointer(subpackages, gwt_mst_subpackages)
+    case ('OC')
+      call set_subpkg_pointer(subpackages, gwt_oc_subpackages)
     case ('SRC')
       call set_subpkg_pointer(subpackages, gwt_src_subpackages)
     case ('SSM')
@@ -268,6 +279,8 @@ contains
     case ('IST')
       integrated = .true.
     case ('MST')
+      integrated = .true.
+    case ('OC')
       integrated = .true.
     case ('SRC')
       integrated = .true.

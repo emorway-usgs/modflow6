@@ -148,6 +148,7 @@
 		<File RelativePath="..\src\Idm\chf-flwidm.f90"/>
 		<File RelativePath="..\src\Idm\chf-icidm.f90"/>
 		<File RelativePath="..\src\Idm\chf-namidm.f90"/>
+		<File RelativePath="..\src\Idm\chf-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\chf-pcpidm.f90"/>
 		<File RelativePath="..\src\Idm\chf-stoidm.f90"/>
 		<File RelativePath="..\src\Idm\chf-zdgidm.f90"/>
@@ -170,6 +171,7 @@
 		<File RelativePath="..\src\Idm\gwe-fmiidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-icidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-namidm.f90"/>
+        <File RelativePath="..\src\Idm\gwe-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\gwe-ssmidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-apiidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-buyidm.f90"/>
@@ -188,6 +190,7 @@
 		<File RelativePath="..\src\Idm\gwf-icidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-namidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-npfidm.f90"/>
+		<File RelativePath="..\src\Idm\gwf-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-rchaidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-rchidm.f90"/>
 		<File RelativePath="..\src\Idm\gwf-rividm.f90"/>
@@ -208,6 +211,7 @@
 		<File RelativePath="..\src\Idm\gwt-istidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-mstidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-namidm.f90"/>
+		<File RelativePath="..\src\Idm\gwt-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-srcidm.f90"/>
 		<File RelativePath="..\src\Idm\gwt-ssmidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-cdbidm.f90"/>
@@ -219,6 +223,7 @@
 		<File RelativePath="..\src\Idm\olf-flwidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-icidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-namidm.f90"/>
+		<File RelativePath="..\src\Idm\olf-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-pcpidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-stoidm.f90"/>
 		<File RelativePath="..\src\Idm\olf-zdgidm.f90"/>
@@ -226,6 +231,7 @@
 		<File RelativePath="..\src\Idm\prt-disvidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-fmiidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-mipidm.f90"/>
+		<File RelativePath="..\src\Idm\prt-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-namidm.f90"/>
 		<File RelativePath="..\src\Idm\prt-prpidm.f90"/>
 		<File RelativePath="..\src\Idm\sim-namidm.f90"/>
@@ -241,6 +247,7 @@
 		<File RelativePath="..\src\Idm\swf-flwidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-icidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-namidm.f90"/>
+		<File RelativePath="..\src\Idm\swf-ocidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-pcpidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-stoidm.f90"/>
 		<File RelativePath="..\src\Idm\swf-zdgidm.f90"/>
@@ -408,6 +415,13 @@
 		<File RelativePath="..\src\Model\ExplicitModel.f90"/>
 		<File RelativePath="..\src\Model\NumericalModel.f90"/>
 		<File RelativePath="..\src\Model\NumericalPackage.f90"/></Filter>
+		<Filter Name="Isotherm">
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\FreundlichIsotherm.f90"/>
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\IsothermEnum.f90"/>
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\IsothermFactory.f90"/>
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\IsothermInterface.f90"/>
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\LangmuirIsotherm.f90"/>
+		<File RelativePath="..\src\Model\TransportModel\Isotherm\LinearIsotherm.f90"/></Filter>
 		<Filter Name="Solution">
 		<Filter Name="LinearMethods">
 		<File RelativePath="..\src\Solution\LinearMethods\ImsLinear.f90"/>
@@ -680,7 +694,7 @@
 			<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration>
 			<FileConfiguration Name="Release|Win32">
 			<Tool Name="VFFortranCompilerTool" Preprocess="preprocessYes"/></FileConfiguration></File>
-		<File RelativePath="..\src\Utilities\DevFeature.f90"/>
+		<File RelativePath="..\src\Utilities\FeatureFlags.f90"/>
 		<File RelativePath="..\src\Utilities\ErrorUtil.f90"/>
 		<File RelativePath="..\src\Utilities\GeomUtil.f90"/>
 		<File RelativePath="..\src\Utilities\GridFileReader.f90"/>

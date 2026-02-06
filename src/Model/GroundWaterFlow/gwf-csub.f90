@@ -1209,6 +1209,7 @@ contains
     real(DP), dimension(:), pointer, contiguous :: ssv_cc, sse_cr, theta, kv, h0
     character(len=LINELENGTH) :: cdelaystr
     character(len=LENBOUNDNAME) :: bndname
+    character(len=20) :: cellidstr
     real(DP) :: top, botm, baq, q, thick, rval
     integer(I4B) :: idelay, ndelaybeds, csubno
     integer(I4B) :: ib, n, nodeu, noder
@@ -1265,6 +1266,11 @@ contains
       ! -- set node reduced
       noder = this%dis%get_nodenumber(nodeu, 1)
       if (noder <= 0) then
+        call this%dis%nodeu_to_string(nodeu, cellidstr)
+        write (errmsg, '(a)') &
+          'CSUB configured for inactive cell: '// &
+          trim(adjustl(cellidstr))//'.'
+        call store_error(errmsg)
         cycle
       end if
 
@@ -1534,6 +1540,10 @@ contains
       call this%csub_print_packagedata()
     end if
 
+    ! -- terminate if errors encountered
+    if (count_errors() > 0) then
+      call store_error_filename(this%input_fname)
+    end if
   end subroutine csub_source_packagedata
 
   !> @ brief Print packagedata

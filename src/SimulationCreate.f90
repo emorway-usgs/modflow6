@@ -1,7 +1,7 @@
 module SimulationCreateModule
 
   use KindModule, only: DP, I4B, LGP, write_kindinfo
-  use DevFeatureModule, only: dev_feature
+  use FeatureFlagsModule, only: developmode
   use ConstantsModule, only: LINELENGTH, LENMODELNAME, LENBIGLINE, &
                              DZERO, LENEXCHANGENAME, LENMEMPATH, LENPACKAGETYPE
   use CharacterStringModule, only: CharacterStringType
@@ -98,13 +98,12 @@ contains
     use MemoryManagerModule, only: mem_setptr
     use SimVariablesModule, only: idm_context
     use MemoryManagerModule, only: mem_set_print_option
-    use ProfilerModule, only: g_prof
     use SimVariablesModule, only: isimcontinue, isimcheck
     ! -- dummy
     ! -- locals
     character(len=LENMEMPATH) :: input_mempath
     integer(I4B), pointer :: simcontinue, nocheck, maxerror
-    character(len=:), pointer :: prmem, prprof
+    character(len=:), pointer :: prmem
     character(len=LINELENGTH) :: errmsg
     !
     ! -- set input memory path
@@ -114,7 +113,6 @@ contains
     call mem_setptr(simcontinue, 'CONTINUE', input_mempath)
     call mem_setptr(nocheck, 'NOCHECK', input_mempath)
     call mem_setptr(prmem, 'PRMEM', input_mempath)
-    call mem_setptr(prprof, 'PRPROF', input_mempath)
     call mem_setptr(maxerror, 'MAXERRORS', input_mempath)
     !
     ! -- update sim options
@@ -134,9 +132,6 @@ contains
         call store_error(errmsg, .true.)
       end if
     end if
-
-    ! set profiler print option
-    call g_prof%set_print_option(prprof)
 
     !
     ! -- log values to list file
@@ -312,7 +307,7 @@ contains
           write (iout, '(4x,2a,i0,a)') trim(model_type), " model ", &
             n, " will be created"
           call chf_cr(fname, n, model_names(n))
-          call dev_feature('CHF is still under development, install the &
+          call developmode('CHF is still under development, install the &
             &nightly build or compile from source with IDEVELOPMODE = 1.')
           num_model => GetNumericalModelFromList(basemodellist, im)
           model_loc_idx(n) = im
@@ -323,7 +318,7 @@ contains
           write (iout, '(4x,2a,i0,a)') trim(model_type), " model ", &
             n, " will be created"
           call olf_cr(fname, n, model_names(n))
-          call dev_feature('OLF is still under development, install the &
+          call developmode('OLF is still under development, install the &
             &nightly build or compile from source with IDEVELOPMODE = 1.')
           num_model => GetNumericalModelFromList(basemodellist, im)
           model_loc_idx(n) = im

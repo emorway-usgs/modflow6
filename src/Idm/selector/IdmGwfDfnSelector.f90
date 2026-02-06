@@ -23,6 +23,7 @@ module IdmGwfDfnSelectorModule
   use GwfHfbInputModule
   use GwfIcInputModule
   use GwfNpfInputModule
+  use GwfOcInputModule
   use GwfRchInputModule
   use GwfRchaInputModule
   use GwfRivInputModule
@@ -102,6 +103,8 @@ contains
       call set_param_pointer(input_definition, gwf_ic_param_definitions)
     case ('NPF')
       call set_param_pointer(input_definition, gwf_npf_param_definitions)
+    case ('OC')
+      call set_param_pointer(input_definition, gwf_oc_param_definitions)
     case ('RCH')
       call set_param_pointer(input_definition, gwf_rch_param_definitions)
     case ('RCHA')
@@ -164,6 +167,8 @@ contains
       call set_param_pointer(input_definition, gwf_ic_aggregate_definitions)
     case ('NPF')
       call set_param_pointer(input_definition, gwf_npf_aggregate_definitions)
+    case ('OC')
+      call set_param_pointer(input_definition, gwf_oc_aggregate_definitions)
     case ('RCH')
       call set_param_pointer(input_definition, gwf_rch_aggregate_definitions)
     case ('RCHA')
@@ -226,6 +231,8 @@ contains
       call set_block_pointer(input_definition, gwf_ic_block_definitions)
     case ('NPF')
       call set_block_pointer(input_definition, gwf_npf_block_definitions)
+    case ('OC')
+      call set_block_pointer(input_definition, gwf_oc_block_definitions)
     case ('RCH')
       call set_block_pointer(input_definition, gwf_rch_block_definitions)
     case ('RCHA')
@@ -287,6 +294,8 @@ contains
       multi_package = gwf_ic_multi_package
     case ('NPF')
       multi_package = gwf_npf_multi_package
+    case ('OC')
+      multi_package = gwf_oc_multi_package
     case ('RCH')
       multi_package = gwf_rch_multi_package
     case ('RCHA')
@@ -351,6 +360,8 @@ contains
       call set_subpkg_pointer(subpackages, gwf_ic_subpackages)
     case ('NPF')
       call set_subpkg_pointer(subpackages, gwf_npf_subpackages)
+    case ('OC')
+      call set_subpkg_pointer(subpackages, gwf_oc_subpackages)
     case ('RCH')
       call set_subpkg_pointer(subpackages, gwf_rch_subpackages)
     case ('RCHA')
@@ -412,6 +423,8 @@ contains
     case ('IC')
       integrated = .true.
     case ('NPF')
+      integrated = .true.
+    case ('OC')
       integrated = .true.
     case ('RCH')
       integrated = .true.
