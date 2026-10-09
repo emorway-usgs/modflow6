@@ -15,6 +15,7 @@ module GweCndInputModule
   type GweCndParamFoundType
     logical :: xt3d_off = .false.
     logical :: xt3d_rhs = .false.
+    logical :: empirical_kt = .false.
     logical :: export_ascii = .false.
     logical :: export_nc = .false.
     logical :: alh = .false.
@@ -24,6 +25,8 @@ module GweCndInputModule
     logical :: atv = .false.
     logical :: ktw = .false.
     logical :: kts = .false.
+    logical :: ktresid = .false.
+    logical :: ktsat = .false.
   end type GweCndParamFoundType
 
   logical :: gwe_cnd_multi_package = .false.
@@ -65,6 +68,26 @@ module GweCndInputModule
     'KEYWORD', & ! type
     '', & ! shape
     'xt3d on right-hand side', & ! longname
+    .false., & ! required
+    .false., & ! developmode
+    .false., & ! multi-record
+    .false., & ! preserve case
+    .false., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    gwecnd_empirical_kt = InputParamDefinitionType &
+    ( &
+    'GWE', & ! component
+    'CND', & ! subcomponent
+    'OPTIONS', & ! block
+    'EMPIRICAL_KT', & ! tag name
+    'EMPIRICAL_KT', & ! fortran variable
+    'KEYWORD', & ! type
+    '', & ! shape
+    'linearly vary thermal conductivity based on cell water '// &
+    'content', & ! longname
     .false., & ! required
     .false., & ! developmode
     .false., & ! multi-record
@@ -245,10 +268,49 @@ module GweCndInputModule
     )
 
   type(InputParamDefinitionType), parameter :: &
+    gwecnd_ktresid = InputParamDefinitionType &
+    ( &
+    'GWE', & ! component
+    'CND', & ! subcomponent
+    'GRIDDATA', & ! block
+    'KTRESID', & ! tag name
+    'KTRESID', & ! fortran variable
+    'DOUBLE1D', & ! type
+    'NODES', & ! shape
+    'thermal conductivity at residual moisture content', & ! longname
+    .false., & ! required
+    .false., & ! developmode
+    .false., & ! multi-record
+    .false., & ! preserve case
+    .true., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
+    gwecnd_ktsat = InputParamDefinitionType &
+    ( &
+    'GWE', & ! component
+    'CND', & ! subcomponent
+    'GRIDDATA', & ! block
+    'KTSAT', & ! tag name
+    'KTSAT', & ! fortran variable
+    'DOUBLE1D', & ! type
+    'NODES', & ! shape
+    'thermal conductivity at saturated moisture content', & ! longname
+    .false., & ! required
+    .false., & ! developmode
+    .false., & ! multi-record
+    .false., & ! preserve case
+    .true., & ! layered
+    .false. & ! timeseries
+    )
+
+  type(InputParamDefinitionType), parameter :: &
     gwe_cnd_param_definitions(*) = &
     [ &
     gwecnd_xt3d_off, &
     gwecnd_xt3d_rhs, &
+    gwecnd_empirical_kt, &
     gwecnd_export_ascii, &
     gwecnd_export_nc, &
     gwecnd_alh, &
@@ -257,7 +319,9 @@ module GweCndInputModule
     gwecnd_ath2, &
     gwecnd_atv, &
     gwecnd_ktw, &
-    gwecnd_kts &
+    gwecnd_kts, &
+    gwecnd_ktresid, &
+    gwecnd_ktsat &
     ]
 
   type(InputParamDefinitionType), parameter :: &

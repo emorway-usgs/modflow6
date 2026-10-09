@@ -19,6 +19,15 @@ longname xt3d on right-hand side
 description add xt3d terms to right-hand side, when possible.  This option uses less memory, but may require more iterations.
 
 block options
+name empirical_kt
+type keyword
+shape
+reader urword
+optional true
+longname linearly vary thermal conductivity based on cell water content
+description is a text keyword to indicate that thermal conductivity of the cells will vary linearly between two explicitly defined thermal conductivities - the thermal conductivity when the water content is at a residual value and the thermal conductivity when the cell is fully saturated.  When this option is activated, the default behavior of varying thermal conductivity between that of the solids only (a dry cell) and the composite thermal conductivity of the solids plus that of the moisture occupying the cell is overridden.  Use of this keyword requires that KTRESID and KTSAT are specified in the GRIDDATA block.
+
+block options
 name export_array_ascii
 type keyword
 reader urword
@@ -103,7 +112,7 @@ layered true
 netcdf true
 optional true
 longname thermal conductivity of the simulated fluid
-description thermal conductivity of the simulated fluid.   Note that the CND Package does not account for the tortuosity of the flow paths when solving for the conductive spread of heat.  If tortuosity plays an important role in the thermal conductivity calculation, its effect should be reflected in the value specified for KTW.
+description thermal conductivity of the simulated fluid.  Note that the CND Package does not account for the tortuosity of the flow paths when solving for the conductive spread of heat.  If tortuosity plays an important role in the thermal conductivity calculation, its effect should be reflected in the value specified for KTW.
 
 block griddata
 name kts
@@ -116,3 +125,24 @@ optional true
 longname thermal conductivity of the aquifer material
 description thermal conductivity of the solid aquifer material
 
+block griddata
+name ktresid
+type double precision
+shape (nodes)
+reader readarray
+layered true
+netcdf true
+optional true
+longname thermal conductivity at residual moisture content
+description is an empirical, user-specified thermal conductivity when a cell is at its residual moisture content. Specifying the EMPIRICAL\_KT option in the OPTIONS block switches how the thermal conductivity is calculated.  Instead of varying the thermal conductivity of a cell between the thermal conductivity of dry aquifer material, KTS, and the composite thermal conductivity that accounts for the aquifer matrix material and water thermal conductivities when the cell is fully saturated, the EMPIRICAL\_KT approach linearly varies the thermal conductivity of a cell between KTRESID and KTSAT based on the calculated water content of the cell.  Note that the CND Package does not account for the tortuosity of the flow paths when solving for the conductive spread of heat.  If tortuosity plays an important role in the thermal conductivity calculation, its effect should be reflected in the value specified for KTRESID.
+
+block griddata
+name ktsat
+type double precision
+shape (nodes)
+reader readarray
+layered true
+netcdf true
+optional true
+longname thermal conductivity at saturated moisture content
+description is an empirical, user-specified thermal conductivity when a cell is fully saturated. Specifying the EMPIRICAL\_KT option in the OPTIONS block switches how the thermal conductivity is calculated.  Instead of varying the thermal conductivity of a cell between the thermal conductivity of dry aquifer material, KTS, and the composite thermal conductivity that accounts for the aquifer matrix material and water thermal conductivities when the cell is fully saturated, the EMPIRICAL\_KT approach linearly varies the thermal conductivity of a cell between KTRESID and KTSAT based on the calculated water content of the cell.   Note that the CND Package does not account for the tortuosity of the flow paths when solving for the conductive spread of heat.  If tortuosity plays an important role in the thermal conductivity calculation, its effect should be reflected in the value specified for KTSAT.
