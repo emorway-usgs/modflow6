@@ -38,6 +38,11 @@ module GweCndModule
     integer(I4B), pointer :: ixt3drhs => null() ! xt3d rhs flag, xt3d rhs is set active if 1
     integer(I4B), pointer :: iktw => null() ! thermal conductivity of water data flag
     integer(I4B), pointer :: ikts => null() ! thermal conductivity of aquifer material data flag
+    integer(I4B), pointer :: iempirical_kt => null() ! flag indicating empirical Kt approach is active
+    integer(I4B), pointer :: iktresid => null() ! flag: ktresid data provided
+    integer(I4B), pointer :: iktsat => null() ! flag: ktsat data provided
+    real(DP), dimension(:), pointer, contiguous :: ktresid => null() ! empirical Kt at residual moisture content
+    real(DP), dimension(:), pointer, contiguous :: ktsat => null() ! empirical Kt at full saturation
     integer(I4B), pointer :: ixt3d => null() ! flag indicating xt3d is active
     type(Xt3dType), pointer :: xt3d => null() ! xt3d object
     real(DP), dimension(:), pointer, contiguous :: dispcoef => null() ! disp coefficient (only if xt3d not active)
@@ -366,6 +371,9 @@ contains
     call mem_allocate(this%iangle3, 'IANGLE3', this%memoryPath)
     call mem_allocate(this%iktw, 'IKTW', this%memoryPath)
     call mem_allocate(this%ikts, 'IKTS', this%memoryPath)
+    call mem_allocate(this%iempirical_kt, 'IEMPIRICAL_KT', this%memoryPath)
+    call mem_allocate(this%iktresid, 'IKTRESID', this%memoryPath)
+    call mem_allocate(this%iktsat, 'IKTSAT', this%memoryPath)
     !
     ! -- Initialize
     this%idisp = 0
@@ -384,6 +392,9 @@ contains
     this%iangle3 = 1
     this%iktw = 1
     this%ikts = 1
+    this%iempirical_kt = 0
+    this%iktresid = 0
+    this%iktsat = 0
   end subroutine allocate_scalars
 
   !> @ brief Allocate arrays for package
@@ -412,6 +423,8 @@ contains
     call mem_allocate(this%angle3, nodes, 'ANGLE3', trim(this%memoryPath))
     call mem_allocate(this%ktw, nodes, 'KTW', trim(this%memoryPath))
     call mem_allocate(this%kts, nodes, 'KTS', trim(this%memoryPath))
+    call mem_allocate(this%ktresid, nodes, 'KTRESID', trim(this%memoryPath))
+    call mem_allocate(this%ktsat, nodes, 'KTSAT', trim(this%memoryPath))
     !
     ! -- Allocate dispersion coefficient array if xt3d not in use
     if (this%ixt3d == 0) then
@@ -453,6 +466,8 @@ contains
       call mem_deallocate(this%angle3)
       call mem_deallocate(this%ktw)
       call mem_deallocate(this%kts)
+      call mem_deallocate(this%ktresid)
+      call mem_deallocate(this%ktsat)
       call mem_deallocate(this%dispcoef)
       if (this%ixt3d > 0) call this%xt3d%xt3d_da()
     end if
@@ -478,6 +493,9 @@ contains
     call mem_deallocate(this%iangle3)
     call mem_deallocate(this%iktw)
     call mem_deallocate(this%ikts)
+    call mem_deallocate(this%iempirical_kt)
+    call mem_deallocate(this%iktresid)
+    call mem_deallocate(this%iktsat)
     !
     ! -- deallocate variables in NumericalPackageType
     call this%NumericalPackageType%da()
@@ -493,6 +511,10 @@ contains
     write (this%iout, '(1x,a)') 'Setting CND Options'
     write (this%iout, '(4x,a,i0)') 'XT3D formulation [0=INACTIVE, 1=ACTIVE, &
                                    &3=ACTIVE RHS] set to: ', this%ixt3d
+    if (found%empirical_kt) then
+      write (this%iout, '(4x,a)') 'EMPIRICAL_KT activated: thermal conductivity &
+        &varies linearly between KTRESID and KTSAT based on cell saturation'
+    end if
     write (this%iout, '(1x,a,/)') 'End Setting CND Options'
   end subroutine log_options
 
@@ -512,6 +534,8 @@ contains
                        found%xt3d_off)
     call mem_set_value(this%ixt3drhs, 'XT3D_RHS', this%input_mempath, &
                        found%xt3d_rhs)
+    call mem_set_value(this%iempirical_kt, 'EMPIRICAL_KT', this%input_mempath, &
+                       found%empirical_kt)
     !
     ! -- set xt3d state flag
     if (found%xt3d_off) this%ixt3d = 0
@@ -560,6 +584,14 @@ contains
       write (this%iout, '(4x,a)') 'KTS set from input file'
     end if
     !
+    if (found%ktresid) then
+      write (this%iout, '(4x,a)') 'KTRESID set from input file'
+    end if
+    !
+    if (found%ktsat) then
+      write (this%iout, '(4x,a)') 'KTSAT set from input file'
+    end if
+    !
     write (this%iout, '(1x,a,/)') 'End Setting CND Griddata'
   end subroutine log_griddata
 
@@ -592,6 +624,8 @@ contains
     call mem_set_value(this%atv, 'ATV', this%input_mempath, map, found%atv)
     call mem_set_value(this%ktw, 'KTW', this%input_mempath, map, found%ktw)
     call mem_set_value(this%kts, 'KTS', this%input_mempath, map, found%kts)
+    call mem_set_value(this%ktresid, 'KTRESID', this%input_mempath, map, found%ktresid)
+    call mem_set_value(this%ktsat, 'KTSAT', this%input_mempath, map, found%ktsat)
     !
     ! -- set active flags
     if (found%alh) this%ialh = 1
@@ -601,6 +635,22 @@ contains
     if (found%atv) this%iatv = 1
     if (found%ktw) this%iktw = 1
     if (found%kts) this%ikts = 1
+    if (found%ktresid) this%iktresid = 1
+    if (found%ktsat) this%iktsat = 1
+    !
+    ! -- validate empirical_kt requirements
+    if (this%iempirical_kt /= 0) then
+      if (this%iktresid == 0) then
+        write (errmsg, '(1x,a)') &
+          'EMPIRICAL_KT option requires KTRESID to be specified in GRIDDATA.'
+        call store_error(errmsg)
+      end if
+      if (this%iktsat == 0) then
+        write (errmsg, '(1x,a)') &
+          'EMPIRICAL_KT option requires KTSAT to be specified in GRIDDATA.'
+        call store_error(errmsg)
+      end if
+    end if
     !
     ! -- set this%idisp flag
     if (found%alh) this%idisp = this%idisp + 1
@@ -697,9 +747,21 @@ contains
       !
       ! -- calculate
       ktbulk = DZERO
-      if (this%iktw > 0) ktbulk = ktbulk + this%porosity(n) * this%ktw(n) * &
-                                  this%fmi%gwfsat(n)
-      if (this%ikts > 0) ktbulk = ktbulk + (DONE - this%porosity(n)) * this%kts(n)
+      if (this%iempirical_kt /= 0) then
+        !
+        ! -- VS2DH-style empirical approach: linearly interpolate Kt between
+        !    KTRESID (at zero effective saturation) and KTSAT (fully saturated)
+        !    using the current cell saturation from the flow model.
+        !    K_T(S) = KTRESID + (KTSAT - KTRESID) * S
+        ktbulk = this%ktresid(n) + &
+                 (this%ktsat(n) - this%ktresid(n)) * this%fmi%gwfsat(n)
+      else
+        !
+        ! -- Default composite approach: combine water and solid contributions
+        if (this%iktw > 0) ktbulk = ktbulk + this%porosity(n) * this%ktw(n) * &
+                                    this%fmi%gwfsat(n)
+        if (this%ikts > 0) ktbulk = ktbulk + (DONE - this%porosity(n)) * this%kts(n)
+      end if
       !
       ! -- The division by rhow*cpw below is undertaken to render dstar in the
       !    form of a thermal diffusivity, and not because the governing
